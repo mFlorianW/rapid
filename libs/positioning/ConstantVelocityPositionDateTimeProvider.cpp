@@ -103,7 +103,7 @@ void ConstantVelocityPositionDateTimeProvider::handleGPSPositionTick()
         mTrackDataIt = mTrackData.cbegin();
     }
 
-    auto position = PositionDateTimeData{};
+    auto position = GpsPositionData{};
 
     // Sett the position
     double lat = 0.0f;

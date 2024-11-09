@@ -11,7 +11,7 @@
 
 namespace Rapid::Common
 {
-class PositionDateTimeData;
+class GpsPositionData;
 }
 
 struct RestHttpClientPrivate;
@@ -24,7 +24,7 @@ public:
     ~RestHttpClient() override;
 
     void setUrl(QString const& url);
-    void sendPosition(Rapid::Common::PositionDateTimeData const& position);
+    void sendPosition(Rapid::Common::GpsPositionData const& position);
 
 private:
     std::unique_ptr<RestHttpClientPrivate> d;

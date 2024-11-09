@@ -19,7 +19,7 @@ TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall interpolate the po
           "point data is insufficent.")
 {
     auto positions = std::vector<PositionData>{{52.026649, 11.282535}, {52.026751, 11.282047}, {52.026807, 11.281746}};
-    auto lastPosition = PositionDateTimeData{};
+    auto lastPosition = GpsPositionData{};
 
     auto source = ConstantVelocityPositionDateTimeProvider{positions};
     source.positionTimeData.valueChanged().connect([&]() {
@@ -28,13 +28,13 @@ TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall interpolate the po
     source.setVelocityInMeterPerSecond(2.77778);
     source.start();
 
-    auto expectedPosition = PositionDateTimeData{{52.026649, 11.282535}, {}, {}};
+    auto expectedPosition = GpsPositionData{{52.026649, 11.282535}, {}, {}};
     REQUIRE_COMPARE_WITH_TIMEOUT(lastPosition.getPosition().getLatitude(),
                                  expectedPosition.getPosition().getLatitude(),
                                  timeout);
     REQUIRE(lastPosition.getPosition().getLongitude() == expectedPosition.getPosition().getLongitude());
 
-    expectedPosition = PositionDateTimeData{{52.02665, 11.28253}, {}, {}};
+    expectedPosition = GpsPositionData{{52.02665, 11.28253}, {}, {}};
     REQUIRE_COMPARE_WITH_TIMEOUT(lastPosition.getPosition().getLatitude(),
                                  expectedPosition.getPosition().getLatitude(),
                                  timeout);

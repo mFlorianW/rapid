@@ -24,7 +24,7 @@ RequestHandleResult GpsEndpoint::handleRestRequest(RestRequest& request) noexcep
             jsonDoc.containsKey("longitude")) {
             return RequestHandleResult::Error;
         }
-        auto newPos = PositionDateTimeData{};
+        auto newPos = GpsPositionData{};
         newPos.setDate({jsonDoc["date"].as<std::string>()});
         newPos.setTime({jsonDoc["time"].as<std::string>()});
         newPos.setPosition(

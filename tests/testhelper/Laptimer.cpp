@@ -14,7 +14,7 @@ void Laptimer::setTrack(Common::TrackData const& track)
 {
 }
 
-void Laptimer::updatePositionAndTime(Common::PositionDateTimeData const& data)
+void Laptimer::updatePositionAndTime(Common::GpsPositionData const& data)
 {
     lastPostionDateTime = data;
 }

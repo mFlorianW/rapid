@@ -17,7 +17,7 @@ public:
 
     void setTrack(Common::TrackData const& track) override;
 
-    void updatePositionAndTime(Common::PositionDateTimeData const& data) override;
+    void updatePositionAndTime(Common::GpsPositionData const& data) override;
 
     Common::Timestamp getLastLaptime() const override;
 
@@ -25,7 +25,7 @@ public:
 
     std::vector<Common::Timestamp> sectorTimes;
 
-    Common::PositionDateTimeData lastPostionDateTime;
+    Common::GpsPositionData lastPostionDateTime;
 };
 
 } // namespace Rapid::TestHelper

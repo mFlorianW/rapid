@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RestHttpClient.hpp"
-#include <PositionDateTimeData.hpp>
+#include <GpsPositionData.hpp>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -32,7 +32,7 @@ void RestHttpClient::setUrl(QString const& url)
     qInfo() << "New Server URL:" << d->mServerUrl;
 }
 
-void RestHttpClient::sendPosition(Rapid::Common::PositionDateTimeData const& position)
+void RestHttpClient::sendPosition(Rapid::Common::GpsPositionData const& position)
 {
     auto request = QNetworkRequest{d->mServerUrl};
     request.setHeader(QNetworkRequest::ContentTypeHeader, "Content-Type: application/json");

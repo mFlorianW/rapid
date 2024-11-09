@@ -5,7 +5,7 @@
 #ifndef IPOSITIONDATETIMEPROVIDER_HPP
 #define IPOSITIONDATETIMEPROVIDER_HPP
 
-#include "PositionDateTimeData.hpp"
+#include "GpsPositionData.hpp"
 #include <kdbindings/property.h>
 
 namespace Rapid::Positioning
@@ -42,7 +42,7 @@ public:
     /**
      * This property holds current PostionDateTimeData
      */
-    KDBindings::Property<Common::PositionDateTimeData> positionTimeData;
+    KDBindings::Property<Common::GpsPositionData> positionTimeData;
 
 protected:
     /**

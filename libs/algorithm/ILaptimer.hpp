@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <PositionDateTimeData.hpp>
+#include <GpsPositionData.hpp>
 #include <Timestamp.hpp>
 #include <TrackData.hpp>
 #include <kdbindings/property.h>
@@ -52,7 +52,7 @@ public:
      * The Position is used in the laptimer to calculate the section and laptime.
      * @param data The new position.
      */
-    virtual void updatePositionAndTime(Common::PositionDateTimeData const& data) = 0;
+    virtual void updatePositionAndTime(Common::GpsPositionData const& data) = 0;
 
     /**
      * @return Common::Timestamp Gives the last laptime.
