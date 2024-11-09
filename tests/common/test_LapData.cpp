@@ -55,3 +55,26 @@ TEST_CASE("Create LapData from a timestamp that is used as laptime for the case 
 
     REQUIRE(lap.getLaptime() == Timestamp{"00:00:45.112"});
 }
+
+TEST_CASE("The LapData shall store the position and time data for that lap.")
+{
+    auto lap = LapData{};
+    auto const expPos1 = GpsPositionData{PositionData{0.12, 0.13}, Timestamp{"00:12:33.123"}, Date{"01.01.1970"}};
+    auto const expPos2 = GpsPositionData{PositionData{0.12, 0.13}, Timestamp{"00:12:33.124"}, Date{"01.01.1970"}};
+
+    SECTION("Add single position")
+    {
+        lap.addPosition(expPos1);
+        auto const& positions = lap.getPositions();
+        REQUIRE(positions.size() == 1);
+        REQUIRE(positions.at(0) == expPos1);
+    }
+
+    SECTION("Overwrite all positions")
+    {
+        lap.overwritePositions({expPos1, expPos2});
+        auto const& positions = lap.getPositions();
+        REQUIRE(positions.size() == 2);
+        REQUIRE(positions == std::vector<GpsPositionData>{expPos1, expPos2});
+    }
+}
