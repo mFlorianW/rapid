@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Controls.hpp"
-#include <ConstantVelocityPositionDateTimeProvider.hpp>
+#include <ConstantGpsPositionProvider.hpp>
 #include <LibraryPath.hpp>
 #include <SDL2/SDL.h>
 #include <ScreenModel.hpp>
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
 
     auto eventLoop = Rapid::System::EventLoop{};
     auto gpsInfoProvider = Rapid::Positioning::StaticGpsInformationProvider{};
-    auto posDateTimeProvider = Rapid::Positioning::ConstantVelocityPositionDateTimeProvider{positions};
+    auto posDateTimeProvider = Rapid::Positioning::ConstantGpsPositionProvider{positions};
     auto sessionDatabase = Rapid::Storage::SqliteSessionDatabase{LIBRARY_FILE};
     auto trackDatabase = Rapid::Storage::SqliteTrackDatabase{LIBRARY_FILE};
     auto screenModel = ScreenModel{gpsInfoProvider, posDateTimeProvider, sessionDatabase, trackDatabase};

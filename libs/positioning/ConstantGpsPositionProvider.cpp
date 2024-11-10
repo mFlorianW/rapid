@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "ConstantVelocityPositionDateTimeProvider.hpp"
+#include "ConstantGpsPositionProvider.hpp"
 #include <UTM.hpp>
 #include <sys/time.h>
 
@@ -11,39 +11,38 @@ using namespace Rapid::Common;
 namespace Rapid::Positioning
 {
 
-ConstantVelocityPositionDateTimeProvider::ConstantVelocityPositionDateTimeProvider(
-    std::vector<Common::PositionData> const& gpsPositions)
+ConstantGpsPositionProvider::ConstantGpsPositionProvider(std::vector<Common::PositionData> const& gpsPositions)
 {
     // setup timer
     mTickTimer.setInterval(std::chrono::milliseconds(100));
-    mTickTimer.timeout.connect(&ConstantVelocityPositionDateTimeProvider::handleGPSPositionTick, this);
+    mTickTimer.timeout.connect(&ConstantGpsPositionProvider::handleGPSPositionTick, this);
 
     convertTrackPoints(gpsPositions);
 }
 
-void ConstantVelocityPositionDateTimeProvider::setGpsPositions(std::vector<Common::PositionData> const& gpsPositions)
+void ConstantGpsPositionProvider::setGpsPositions(std::vector<Common::PositionData> const& gpsPositions)
 {
     convertTrackPoints(gpsPositions);
 }
 
-ConstantVelocityPositionDateTimeProvider::~ConstantVelocityPositionDateTimeProvider() = default;
+ConstantGpsPositionProvider::~ConstantGpsPositionProvider() = default;
 
-void ConstantVelocityPositionDateTimeProvider::setVelocityInMeterPerSecond(float speed)
+void ConstantGpsPositionProvider::setVelocityInMeterPerSecond(float speed)
 {
     mSpeed = speed;
 }
 
-void ConstantVelocityPositionDateTimeProvider::start()
+void ConstantGpsPositionProvider::start()
 {
     mTickTimer.start();
 }
 
-void ConstantVelocityPositionDateTimeProvider::stop()
+void ConstantGpsPositionProvider::stop()
 {
     mTickTimer.stop();
 }
 
-void ConstantVelocityPositionDateTimeProvider::convertTrackPoints(std::vector<Common::PositionData> const& gpsPositions)
+void ConstantGpsPositionProvider::convertTrackPoints(std::vector<Common::PositionData> const& gpsPositions)
 {
     if (gpsPositions.empty()) {
         return;
@@ -60,10 +59,10 @@ void ConstantVelocityPositionDateTimeProvider::convertTrackPoints(std::vector<Co
     mCurrentPosition = *mTrackData.cbegin();
 }
 
-void ConstantVelocityPositionDateTimeProvider::handleGPSPositionTick()
+void ConstantGpsPositionProvider::handleGPSPositionTick()
 {
     if (mTrackData.empty()) {
-        std::cout << "ConstantVelocityPositionDateTimeProvider do nothing: PositionData Empty" << std::endl;
+        std::cout << "ConstantGpsPositionProvider do nothing: PositionData Empty" << std::endl;
         return;
     }
 

@@ -4,7 +4,7 @@ add_executable(test_positioning)
 
 target_sources(test_positioning
 PRIVATE
-    test_ConstantVelocityPostionDateTimeProvider.cpp
+    test_ConstantGpsPositionProvider.cpp
 )
 
 target_link_libraries(test_positioning

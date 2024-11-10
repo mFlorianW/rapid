@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RapidHeadless.hpp"
-#include <ConstantVelocityPositionDateTimeProvider.hpp>
+#include <ConstantGpsPositionProvider.hpp>
 #include <EventLoop.hpp>
 #include <LibraryPath.hpp>
 #include <PositionData.hpp>
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 
     // Load GPS position file
     auto positions = loadCsvPositions("/home/florian/Coding/laptimer_core/laps/Oschersleben.csv");
-    auto positionProvider = ConstantVelocityPositionDateTimeProvider{positions};
+    auto positionProvider = ConstantGpsPositionProvider{positions};
     positionProvider.setVelocityInMeterPerSecond(80.3333);
     positionProvider.start();
 

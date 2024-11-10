@@ -5,7 +5,7 @@
 #include "MainWindowViewModel.hpp"
 #include "PositionListModel.hpp"
 #include "RestHttpClient.hpp"
-#include <ConstantVelocityPositionDateTimeProvider.hpp>
+#include <ConstantGpsPositionProvider.hpp>
 #include <CsvGpsFileReader.hpp>
 #include <QDebug>
 #include <QUrl>
@@ -13,7 +13,7 @@
 struct MainWindowViewModelPrivate
 {
     PositionListModel mPositionListModel;
-    Rapid::Positioning::ConstantVelocityPositionDateTimeProvider mGpsProvider;
+    Rapid::Positioning::ConstantGpsPositionProvider mGpsProvider;
     QGeoCoordinate mCurrentPosition;
     bool mGpsSourceActive{false};
     QString mHostAddress{"localhost"};

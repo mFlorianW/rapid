@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "CompareHelper.hpp"
-#include "ConstantVelocityPositionDateTimeProvider.hpp"
+#include "ConstantGpsPositionProvider.hpp"
 #include <PositionData.hpp>
 #include <catch2/catch_all.hpp>
 
@@ -15,13 +15,13 @@ using namespace Catch;
 
 constexpr auto timeout = std::chrono::seconds{1};
 
-TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall interpolate the position between two points if the given "
+TEST_CASE("The ConstantGpsPositionProvider shall interpolate the position between two points if the given "
           "point data is insufficent.")
 {
     auto positions = std::vector<PositionData>{{52.026649, 11.282535}, {52.026751, 11.282047}, {52.026807, 11.281746}};
     auto lastPosition = GpsPositionData{};
 
-    auto source = ConstantVelocityPositionDateTimeProvider{positions};
+    auto source = ConstantGpsPositionProvider{positions};
     source.gpsPosition.valueChanged().connect([&]() {
         lastPosition = source.gpsPosition.get();
     });
@@ -41,11 +41,11 @@ TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall interpolate the po
     REQUIRE(lastPosition.getPosition().getLongitude() == Approx(expectedPosition.getPosition().getLongitude()));
 }
 
-TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall provide every 100ms a new position.")
+TEST_CASE("The ConstantGpsPositionProvider shall provide every 100ms a new position.")
 {
     std::uint8_t updateCounter = 0;
     auto positions = std::vector<PositionData>{{52.026649, 11.282535}, {52.026751, 11.282047}, {52.026807, 11.281746}};
-    auto source = ConstantVelocityPositionDateTimeProvider{positions};
+    auto source = ConstantGpsPositionProvider{positions};
     source.setVelocityInMeterPerSecond(2.77778);
     source.gpsPosition.valueChanged().connect([&]() {
         ++updateCounter;
@@ -60,12 +60,12 @@ TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall provide every 100m
     REQUIRE_COMPARE_WITH_TIMEOUT(updateCounter, 2, timeout);
 }
 
-TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall provide the velocity in the reported GpsPositionData.")
+TEST_CASE("The ConstantGpsPositionProvider shall provide the velocity in the reported GpsPositionData.")
 {
     auto positions = std::vector<PositionData>{{52.026649, 11.282535}, {52.026751, 11.282047}, {52.026807, 11.281746}};
     auto lastPosition = GpsPositionData{};
 
-    auto source = ConstantVelocityPositionDateTimeProvider{positions};
+    auto source = ConstantGpsPositionProvider{positions};
     source.gpsPosition.valueChanged().connect([&]() {
         lastPosition = source.gpsPosition.get();
     });
