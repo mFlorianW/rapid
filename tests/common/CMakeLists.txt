@@ -12,6 +12,7 @@ PRIVATE
     test_GpsPositionData.cpp
     test_LapData.cpp
     test_SharedDataPointer.cpp
+    test_VelocityData.cpp
 )
 
 target_link_libraries(test_common
