@@ -13,13 +13,15 @@ public:
     PositionData mPosition;
     Timestamp mTime;
     Date mDate;
+    VelocityData mVelocity;
 
     friend bool operator==(SharedGpsPositionData const& lhs, SharedGpsPositionData const& rhs)
     {
         // clang-format off
         return ((lhs.mPosition) == (rhs.mPosition) &&
                 (lhs.mTime) == (rhs.mTime) &&
-                (lhs.mDate) == (rhs.mDate));
+                (lhs.mDate) == (rhs.mDate) &&
+                (lhs.mVelocity) == (rhs.mVelocity));
         // clang-format on
     }
 };
@@ -35,6 +37,15 @@ GpsPositionData::GpsPositionData(PositionData const& posData, Timestamp const& t
     mData->mPosition = posData;
     mData->mTime = time;
     mData->mDate = date;
+}
+
+GpsPositionData::GpsPositionData(PositionData const& posData,
+                                 Timestamp const& time,
+                                 Date const& date,
+                                 VelocityData velocity)
+    : Rapid::Common::GpsPositionData{posData, time, date}
+{
+    mData->mVelocity = velocity;
 }
 
 GpsPositionData::~GpsPositionData() = default;
@@ -65,6 +76,11 @@ Timestamp GpsPositionData::getTime() const noexcept
     return mData->mTime;
 }
 
+VelocityData GpsPositionData::getVelocity() const noexcept
+{
+    return mData->mVelocity;
+}
+
 void GpsPositionData::setTime(Timestamp const& time)
 {
     mData->mTime = time;
@@ -78,6 +94,11 @@ Date GpsPositionData::getDate() const noexcept
 void GpsPositionData::setDate(Date const& date)
 {
     mData->mDate = date;
+}
+
+void GpsPositionData::setVelocity(VelocityData const& velocity)
+{
+    mData->mVelocity = velocity;
 }
 
 bool operator==(GpsPositionData const& lhs, GpsPositionData const& rhs)

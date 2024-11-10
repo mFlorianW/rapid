@@ -9,6 +9,7 @@
 #include "PositionData.hpp"
 #include "SharedDataPointer.hpp"
 #include "Timestamp.hpp"
+#include "VelocityData.hpp"
 
 namespace Rapid::Common
 {
@@ -32,6 +33,15 @@ public:
      * @param date The date data for the instance.
      */
     GpsPositionData(PositionData const& posData, Timestamp const& time, Date const& date);
+
+    /**
+     * Creates an instance of the GpsPositionData.
+     * @param posData The position data for the instance.
+     * @param time The time data for the instance.
+     * @param date The date data for the instance.
+     * @param velocity The velocity data for the instance.
+     */
+    GpsPositionData(PositionData const& posData, Timestamp const& time, Date const& date, VelocityData velocity);
 
     /**
      * Default destructor
@@ -81,6 +91,11 @@ public:
     Timestamp getTime() const noexcept;
 
     /**
+     * @return Gives the velocity.
+     */
+    VelocityData getVelocity() const noexcept;
+
+    /**
      * Sets a new time.
      * @param time The new time.
      */
@@ -96,6 +111,12 @@ public:
      * @param date The new date.
      */
     void setDate(Date const& date);
+
+    /**
+     * Sets the velocity
+     * @param velocity The new velocity
+     */
+    void setVelocity(VelocityData const& velocity);
 
     /**
      * Equal operator

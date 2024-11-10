@@ -24,14 +24,18 @@ TEST_CASE("It shall be possible to compare two PositionDateTime for equal")
     date.setDay(1);
     date.setMonth(1);
 
+    auto velocity = VelocityData{10};
+
     GpsPositionData posDateTime1;
     posDateTime1.setPosition(pos);
     posDateTime1.setDate(date);
     posDateTime1.setTime(ts);
+    posDateTime1.setVelocity(velocity);
     GpsPositionData posDateTime2;
     posDateTime2.setPosition(pos);
     posDateTime2.setDate(date);
     posDateTime2.setTime(ts);
+    posDateTime2.setVelocity(velocity);
 
     REQUIRE(posDateTime1 == posDateTime2);
 }
@@ -60,6 +64,7 @@ TEST_CASE("It shall be possible to compare two PositionDateTime for unequal")
     posDateTime1.setPosition(pos);
     posDateTime1.setDate(date);
     posDateTime1.setTime(ts);
+    posDateTime1.setVelocity(VelocityData{10});
     GpsPositionData posDateTime2;
     posDateTime2.setPosition(pos2);
     posDateTime2.setDate(date);
