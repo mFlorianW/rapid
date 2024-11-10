@@ -117,6 +117,9 @@ void ConstantVelocityPositionDateTimeProvider::handleGPSPositionTick()
     // Set the date.
     position.setDate(Date::getSystemDate());
 
+    // Set velocity.
+    position.setVelocity(VelocityData{mSpeed});
+
     // Set the new PositionDateTime
     gpsPosition.set(position);
 }

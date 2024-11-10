@@ -59,3 +59,18 @@ TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall provide every 100m
     source.stop();
     REQUIRE_COMPARE_WITH_TIMEOUT(updateCounter, 2, timeout);
 }
+
+TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall provide the velocity in the reported GpsPositionData.")
+{
+    auto positions = std::vector<PositionData>{{52.026649, 11.282535}, {52.026751, 11.282047}, {52.026807, 11.281746}};
+    auto lastPosition = GpsPositionData{};
+
+    auto source = ConstantVelocityPositionDateTimeProvider{positions};
+    source.gpsPosition.valueChanged().connect([&]() {
+        lastPosition = source.gpsPosition.get();
+    });
+    source.setVelocityInMeterPerSecond(10);
+    source.start();
+
+    REQUIRE_COMPARE_WITH_TIMEOUT(lastPosition.getVelocity().getVelocity(), 10, timeout);
+}
