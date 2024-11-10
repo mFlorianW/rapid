@@ -13,7 +13,7 @@ struct ScreenModelPrivate
 {
     explicit ScreenModelPrivate(ScreenModel& screenModel,
                                 Rapid::Positioning::IGpsInformationProvider& gpsInfoProvider,
-                                Rapid::Positioning::IPositionDateTimeProvider& posDateTimeProvider,
+                                Rapid::Positioning::IGpsPositionProvider& posDateTimeProvider,
                                 Rapid::Storage::ISessionDatabase& sessionDatabase,
                                 Rapid::Storage::ITrackDatabase& trackDatabase)
         : mMainScreen{gpsInfoProvider}
@@ -32,7 +32,7 @@ struct ScreenModelPrivate
 };
 
 ScreenModel::ScreenModel(Rapid::Positioning::IGpsInformationProvider& gpsInfoProvider,
-                         Rapid::Positioning::IPositionDateTimeProvider& posDateTimeProvider,
+                         Rapid::Positioning::IGpsPositionProvider& posDateTimeProvider,
                          Rapid::Storage::ISessionDatabase& sessionDatabase,
                          Rapid::Storage::ITrackDatabase& trackDatabase)
     : mD{std::make_unique<ScreenModelPrivate>(*this,

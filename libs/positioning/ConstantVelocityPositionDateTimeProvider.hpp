@@ -5,7 +5,7 @@
 #ifndef FILEBASEDPOSITIONDATETIMEPROVIDER_HPP
 #define FILEBASEDPOSITIONDATETIMEPROVIDER_HPP
 
-#include "IPositionDateTimeProvider.hpp"
+#include "IGpsPositionProvider.hpp"
 #include <Timer.hpp>
 
 namespace Rapid::Positioning
@@ -16,7 +16,7 @@ namespace Rapid::Positioning
  * positions are based on the provided list. Positions are automatically interpolated when the two
  * positions are to far of each other. The interpolated position is based on set veclocity.
  */
-class ConstantVelocityPositionDateTimeProvider final : public IPositionDateTimeProvider
+class ConstantVelocityPositionDateTimeProvider final : public IGpsPositionProvider
 {
 public:
     /**

@@ -228,7 +228,7 @@ TEST_CASE("The ActiveSessionWorkflow shall forward all PositionTimeDate Updates 
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
 
     actSessWf.startActiveSession();
-    dp.positionTimeData.set(GpsPositionData{Positions::getOscherslebenPositionStartFinishLine(), {}, {}});
+    dp.gpsPosition.set(GpsPositionData{Positions::getOscherslebenPositionStartFinishLine(), {}, {}});
 
     REQUIRE(lp.lastPostionDateTime == GpsPositionData{Positions::getOscherslebenPositionStartFinishLine(), {}, {}});
 }
@@ -244,7 +244,7 @@ TEST_CASE("The ActiveSessionWorkflow shall not forward all PositionTimeDate upda
 
     actSessWf.startActiveSession();
     actSessWf.stopActiveSession();
-    dp.positionTimeData.set(GpsPositionData{Positions::getOscherslebenPositionStartFinishLine(), {}, {}});
+    dp.gpsPosition.set(GpsPositionData{Positions::getOscherslebenPositionStartFinishLine(), {}, {}});
 
     REQUIRE(lp.lastPostionDateTime == GpsPositionData{{}, {}, {}});
 }

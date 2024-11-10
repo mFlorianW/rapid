@@ -22,8 +22,8 @@ TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall interpolate the po
     auto lastPosition = GpsPositionData{};
 
     auto source = ConstantVelocityPositionDateTimeProvider{positions};
-    source.positionTimeData.valueChanged().connect([&]() {
-        lastPosition = source.positionTimeData.get();
+    source.gpsPosition.valueChanged().connect([&]() {
+        lastPosition = source.gpsPosition.get();
     });
     source.setVelocityInMeterPerSecond(2.77778);
     source.start();
@@ -47,7 +47,7 @@ TEST_CASE("The ConstantVelocityPositionDateTimeProvider shall provide every 100m
     auto positions = std::vector<PositionData>{{52.026649, 11.282535}, {52.026751, 11.282047}, {52.026807, 11.281746}};
     auto source = ConstantVelocityPositionDateTimeProvider{positions};
     source.setVelocityInMeterPerSecond(2.77778);
-    source.positionTimeData.valueChanged().connect([&]() {
+    source.gpsPosition.valueChanged().connect([&]() {
         ++updateCounter;
     });
     // update postion when source is started

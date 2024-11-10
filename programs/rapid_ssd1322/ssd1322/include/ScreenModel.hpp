@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IPositionDateTimeProvider.hpp"
 #include <IGPSInformationProvider.hpp>
+#include <IGpsPositionProvider.hpp>
 #include <ISessionDatabase.hpp>
 #include <ITrackDatabase.hpp>
 #include <memory>
@@ -23,7 +23,7 @@ public:
      * @param posInfoProvider  The GPS position information provider service.
      */
     ScreenModel(Rapid::Positioning::IGpsInformationProvider& gpsInfoProvider,
-                Rapid::Positioning::IPositionDateTimeProvider& posDateTimeProvider,
+                Rapid::Positioning::IGpsPositionProvider& posDateTimeProvider,
                 Rapid::Storage::ISessionDatabase& sessionDatabase,
                 Rapid::Storage::ITrackDatabase& trackDatabase);
 

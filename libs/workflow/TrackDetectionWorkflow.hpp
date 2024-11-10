@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ITrackDetectionWorkflow.hpp"
-#include <IPositionDateTimeProvider.hpp>
+#include <IGpsPositionProvider.hpp>
 #include <ITrackDetection.hpp>
 
 namespace Rapid::Workflow
@@ -23,7 +23,7 @@ public:
      * detection.
      */
     TrackDetectionWorkflow(Algorithm::ITrackDetection& trackDetector,
-                           Positioning::IPositionDateTimeProvider& positionInfomationProvider);
+                           Positioning::IGpsPositionProvider& positionInfomationProvider);
 
     ~TrackDetectionWorkflow() override;
 
@@ -75,7 +75,7 @@ private:
     Common::TrackData mDetectedTrack;
     std::vector<Common::TrackData> mTracksToDetect;
     Algorithm::ITrackDetection& mTrackDetector;
-    Positioning::IPositionDateTimeProvider& mPositionInfoProvider;
+    Positioning::IGpsPositionProvider& mPositionInfoProvider;
 };
 
 } // namespace Rapid::Workflow

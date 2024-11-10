@@ -24,7 +24,7 @@ struct MainWindowViewModelPrivate
 MainWindowViewModel::MainWindowViewModel()
     : d{std::make_unique<MainWindowViewModelPrivate>()}
 {
-    d->mGpsProvider.positionTimeData.valueChanged().connect(&MainWindowViewModel::handlePositionUpdate, this);
+    d->mGpsProvider.gpsPosition.valueChanged().connect(&MainWindowViewModel::handlePositionUpdate, this);
     d->mGpsProvider.setVelocityInMeterPerSecond(80.6667);
 
     updateUrl();
@@ -65,7 +65,7 @@ void MainWindowViewModel::loadGpsFile(QUrl const& fileName)
 
 void MainWindowViewModel::handlePositionUpdate()
 {
-    auto const position = d->mGpsProvider.positionTimeData.get();
+    auto const position = d->mGpsProvider.gpsPosition.get();
     d->mPositionListModel.addPosition(position);
     d->mCurrentPosition = QGeoCoordinate{position.getPosition().getLatitude(), position.getPosition().getLongitude()};
     d->mRestHttpClient.sendPosition(position);

@@ -29,5 +29,5 @@ TEST_CASE("The GpsEndpoint shall parse the JSON RestRequest and shall update the
     auto const handleResult = source.handleRestRequest(restRequest);
 
     REQUIRE(handleResult == RequestHandleResult::Ok);
-    REQUIRE(source.positionTimeData.get() == expectedResult);
+    REQUIRE(source.gpsPosition.get() == expectedResult);
 }

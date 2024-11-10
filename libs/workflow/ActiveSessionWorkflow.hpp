@@ -6,8 +6,8 @@
 #define ACTIVESESSIONWORKFLOW_HPP
 
 #include "IActiveSessionWorkflow.hpp"
+#include <IGpsPositionProvider.hpp>
 #include <ILaptimer.hpp>
-#include <IPositionDateTimeProvider.hpp>
 #include <ISessionDatabase.hpp>
 
 namespace Rapid::Workflow
@@ -21,7 +21,7 @@ public:
      * @param laptimer The laptimer that is used to get notified about new laps and sectors.
      * @param database The session database that shall be used to store the data.
      */
-    ActiveSessionWorkflow(Positioning::IPositionDateTimeProvider& positionDateTimeProvider,
+    ActiveSessionWorkflow(Positioning::IGpsPositionProvider& positionDateTimeProvider,
                           Algorithm::ILaptimer& laptimer,
                           Storage::ISessionDatabase& database);
 
@@ -69,7 +69,7 @@ private:
 private:
     void addSectorTime();
 
-    Positioning::IPositionDateTimeProvider& mDateTimeProvider;
+    Positioning::IGpsPositionProvider& mDateTimeProvider;
     Algorithm::ILaptimer& mLaptimer;
     Storage::ISessionDatabase& mDatabase;
     std::optional<Common::SessionData> mSession;

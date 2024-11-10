@@ -5,6 +5,7 @@ target_sources(Positioning
 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ConstantVelocityPositionDateTimeProvider.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/IGPSInformationProvider.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/IGpsPositionProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StaticGpsInformationProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StaticPositionDateTimeProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ConstantVelocityPositionDateTimeProvider.hpp
