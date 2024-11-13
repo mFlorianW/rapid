@@ -116,8 +116,6 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
             }
             mStorageCache.erase(ctx);
         });
-
-        return storageContext->mResult;
     } else {
         storageContext->mStorageThread = std::thread{&SqliteSessionDatabase::addSession, this, storageContext.get()};
         storageContext->done.connect([&](StorageContext* ctx) {
@@ -128,12 +126,8 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
             }
             mStorageCache.erase(ctx);
         });
-
-        // System::Result result = storeNewSession(session) ? System::Result::Ok : System::Result::Error;
-        // auto asyncResult = std::make_shared<AsyncResultDb>();
-        // asyncResult->setDbResult(result);
-        return storageContext->mResult;
     }
+    return storageContext->mResult;
 }
 
 void SqliteSessionDatabase::deleteSession(std::size_t index)
