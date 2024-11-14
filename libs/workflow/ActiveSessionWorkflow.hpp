@@ -75,6 +75,7 @@ private:
     std::optional<Common::SessionData> mSession;
     Common::TrackData mTrack;
     Common::LapData mCurrentLap;
+    bool mLapActive = false;
 
     KDBindings::ConnectionHandle mPositionDateTimeUpdateHandle;
 };

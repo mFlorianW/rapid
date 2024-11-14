@@ -26,9 +26,15 @@ void ActiveSessionWorkflow::startActiveSession() noexcept
         mLaptimer.currentLaptime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentLaptimeChanged, this);
         mLaptimer.currentSectorTime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentSectorTimeChanged, this);
         mLaptimer.setTrack(mTrack);
+        mLaptimer.lapStarted.connect([this]() {
+            mLapActive = true;
+        });
 
         mPositionDateTimeUpdateHandle = mDateTimeProvider.gpsPosition.valueChanged().connect([this]() {
             mLaptimer.updatePositionAndTime(mDateTimeProvider.gpsPosition.get());
+            if (mLapActive) {
+                mCurrentLap.addPosition(mDateTimeProvider.gpsPosition.get());
+            }
         });
         auto dateTime = mDateTimeProvider.gpsPosition.get();
         mSession = Common::SessionData{mTrack, dateTime.getDate(), dateTime.getTime()};

@@ -248,3 +248,28 @@ TEST_CASE("The ActiveSessionWorkflow shall not forward all PositionTimeDate upda
 
     REQUIRE(lp.lastPostionDateTime == GpsPositionData{{}, {}, {}});
 }
+
+TEST_CASE("The ActiveSessionWorkflow shall store every GPS position updates to the lap when the lap is started")
+{
+
+    auto lp = Laptimer{};
+    auto dp = PositionDateTimeProvider{};
+    auto dbb = MemorySessionDatabaseBackend{};
+    auto sdb = SessionDatabase{dbb};
+    auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
+    auto const expectedPos =
+        GpsPositionData{PositionData{52.1, 11.3}, Timestamp{"00:00:00.000"}, Date{"01.01.1970"}, VelocityData{100}};
+
+    actSessWf.startActiveSession();
+    lp.lapStarted.emit();
+    dp.gpsPosition.set(expectedPos);
+    lp.lapFinished.emit();
+
+    auto const session = actSessWf.getSession();
+
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
+    REQUIRE(session->getNumberOfLaps() == 1);
+    REQUIRE(session->getLap(0)->getPositions().size() == 1);
+    REQUIRE(session->getLap(0)->getPositions().at(0) == expectedPos);
+    // NOLINTEND(bugprone-unchecked-optional-access)
+}
