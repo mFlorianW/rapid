@@ -4,6 +4,7 @@
 
 #include "Sessions.hpp"
 #include "Tracks.hpp"
+#include <GpsPositionData.hpp>
 #include <array>
 
 using namespace Rapid::Common;
@@ -74,11 +75,18 @@ SessionData createSession3()
     sectorTime.setFractionalOfSecond(144);
     sectorTime.setSecond(25);
 
+    auto gpsPos = GpsPositionData{PositionData{52.0258333, 11.279166666},
+                                  Timestamp{"00:00:00.000"},
+                                  Date{"01.01.1970"},
+                                  VelocityData{100}};
+
     LapData lap;
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
+    lap.addPosition(gpsPos);
+    lap.addPosition(gpsPos);
 
     auto session = SessionData{Tracks::getOscherslebenTrack2(), sessionDate, sessionTime};
     session.addLap(lap);

@@ -100,6 +100,8 @@ private:
     std::optional<std::vector<Common::LapData>> getLapsOfSession(std::size_t sessionId) const noexcept;
     std::optional<Common::TrackData> getTrack(std::size_t trackId) const noexcept;
     bool storeLapOfSession(std::size_t sessionId, std::size_t lapIndex, Common::LapData const& lapData) const noexcept;
+    bool storeLapLogPoints(std::size_t lapId, Common::LapData const& lapData) const noexcept;
+    std::optional<std::size_t> getLapId(std::size_t sessionId, std::size_t lapIndex) const noexcept;
 
     static void handleUpdates(void* objPtr, int event, char const* database, char const* table, sqlite3_int64 rowId);
 
