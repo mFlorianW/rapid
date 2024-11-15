@@ -69,6 +69,16 @@ std::vector<LapData> deserializeLapData(ArduinoJson::JsonArray const& lapArray)
             lap.addSectorTime(time);
         }
 
+        auto const logPoints = v["log_points"].as<ArduinoJson::JsonArray>();
+        for (ArduinoJson::JsonObject const& logPoint : logPoints) {
+            auto const gpsPos =
+                GpsPositionData{PositionData{logPoint["latitude"].as<float>(), logPoint["longitude"].as<float>()},
+                                Timestamp{logPoint["time"].as<std::string>()},
+                                Date{logPoint["date"].as<std::string>()},
+                                VelocityData{logPoint["velocity"].as<double>()}};
+            lap.addPosition(gpsPos);
+        }
+
         laps.push_back(lap);
     }
 

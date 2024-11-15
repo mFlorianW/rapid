@@ -94,6 +94,22 @@ TEST_CASE("JSONSerializer shall serialize the LapData to JSON")
     "\"sectors\":["
         "\"00:00:25.134\","
         "\"00:00:25.144\""
+        "],"
+    "\"log_points\":["
+        "{"
+            "\"velocity\":100,"
+            "\"longitude\":11,"
+            "\"latitude\":52,"
+            "\"time\":\"00:00:00.000\","
+            "\"date\":\"01.01.1970\""
+        "},"
+        "{"
+            "\"velocity\":100,"
+            "\"longitude\":11,"
+            "\"latitude\":52,"
+            "\"time\":\"00:00:00.000\","
+            "\"date\":\"01.01.1970\""
+        "}"
         "]"
     "}";
     // clang-format on
@@ -107,9 +123,15 @@ TEST_CASE("JSONSerializer shall serialize the LapData to JSON")
     sectorTime2.setMinute(0);
     sectorTime2.setSecond(25);
     sectorTime2.setFractionalOfSecond(144);
+
+    auto gpsPos =
+        GpsPositionData{PositionData{52.00f, 11.00f}, Timestamp{"00:00:00.000"}, Date{"01.01.1970"}, VelocityData{100}};
+
     LapData lap;
     lap.addSectorTime(sectorTime1);
     lap.addSectorTime(sectorTime2);
+    lap.addPosition(gpsPos);
+    lap.addPosition(gpsPos);
     ArduinoJson::StaticJsonDocument<1024> jsonDoc;
     auto jsonRoot = jsonDoc.to<JsonObject>();
 

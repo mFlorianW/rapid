@@ -38,6 +38,18 @@ bool JsonSerializer::serializeLapData(LapData const& lapData, JsonObject& jsonOb
         }
     }
 
+    if (lapData.getPositions().size() > 0) {
+        auto jsonLogPoints = jsonObject.createNestedArray("log_points");
+        for (auto const& gpsPos : std::as_const(lapData.getPositions())) {
+            auto pointObj = jsonLogPoints.createNestedObject();
+            pointObj["velocity"] = gpsPos.getVelocity().getVelocity();
+            pointObj["longitude"] = gpsPos.getPosition().getLongitude();
+            pointObj["latitude"] = gpsPos.getPosition().getLatitude();
+            pointObj["time"] = gpsPos.getTime().asString();
+            pointObj["date"] = gpsPos.getDate().asString();
+        }
+    }
+
     return true;
 }
 
