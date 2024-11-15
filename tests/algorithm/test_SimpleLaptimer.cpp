@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_MAIN
 #include "Positions.hpp"
 #include "SimpleLaptimer.hpp"
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace Rapid::Algorithm;
 using namespace Rapid::Common;

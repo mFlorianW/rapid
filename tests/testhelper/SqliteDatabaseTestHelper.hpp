@@ -4,9 +4,7 @@
 
 #ifndef LAPTIMERCORE_TEST_DUMMY_SQLITEDATABASETESTEVENTLISTENER_HPP
 #define LAPTIMERCORE_TEST_DUMMY_SQLITEDATABASETESTEVENTLISTENER_HPP
-#define CATCH_CONFIG_EXTERNAL_INTERFACES
-#include <catch2/catch.hpp>
-#include <filesystem>
+#include <catch2/catch_all.hpp>
 #include <unistd.h>
 
 namespace Rapid::TestHelper::SqliteDatabaseTestHelper

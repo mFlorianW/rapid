@@ -41,7 +41,7 @@ jobs:
         request_changes: true
     - name: Publish Static Code Results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: clang-tidy-results@${{ github.sha }}.yml
         path: clang-tidy-fixes.yml

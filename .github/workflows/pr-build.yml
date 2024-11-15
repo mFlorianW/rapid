@@ -27,7 +27,7 @@ jobs:
           echo "commits_json=${commits[@]}" >> "$GITHUB_OUTPUT"
 
   Build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [Generate_Build_Jobs]
     strategy:
       fail-fast: false
@@ -68,7 +68,7 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
     - name: Publish Test Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
         name: test-results@${{ matrix.commits }}.xml

@@ -1,10 +1,18 @@
 include(Catch)
 
-add_executable(test_TrackDetection test_TrackDetection.cpp)
-target_link_libraries(test_TrackDetection PRIVATE Catch2::Catch2 Rapid::AlgorithmObject)
+add_executable(test_algorithm)
 
-add_executable(test_SimpleLaptimer test_SimpleLaptimer.cpp)
-target_link_libraries(test_SimpleLaptimer PRIVATE Catch2::Catch2 Rapid::AlgorithmObject LaptimerCore::TestHelper)
+target_sources(test_algorithm
+PRIVATE
+    test_SimpleLaptimer.cpp
+    test_TrackDetection.cpp
+)
 
-catch_discover_tests(test_TrackDetection)
-catch_discover_tests(test_SimpleLaptimer)
+target_link_libraries(test_algorithm
+PRIVATE
+    Catch2::Catch2WithMain
+    Rapid::AlgorithmObject
+    Rapid::TestHelper
+)
+
+catch_discover_tests(test_algorithm)

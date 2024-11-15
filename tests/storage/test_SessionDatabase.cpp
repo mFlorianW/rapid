@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_MAIN
 #include "MemorySessionDatabaseBackend.hpp"
 #include "SessionDatabase.hpp"
 #include "Sessions.hpp"
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace Rapid::System;
 using namespace Rapid::Storage;
@@ -89,8 +88,10 @@ TEST_CASE("The SessionDatabase shall load the Session by the given valid index."
     auto session = sessionDb.getSessionByIndex(0);
 
     REQUIRE(result->getResult() == Result::Ok);
-    REQUIRE(session);
+    REQUIRE(session.has_value());
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
     REQUIRE(session.value() == Sessions::getTestSession());
+    // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
 TEST_CASE("The SessionDatabase shall store an already stored session under the same index. and shall emit the signal "

@@ -6,7 +6,7 @@
 #include "LapData.hpp"
 #include "Timestamp.hpp"
 #include <ArduinoJson.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace Rapid::Common;
 
@@ -42,7 +42,9 @@ TEST_CASE("Create LapData from vector of sector times")
     REQUIRE(lap.getLaptime() == Timestamp{"00:00:45.112"});
     REQUIRE(lap.getSectorTimeCount() == 1);
     REQUIRE(lap.getSectorTime(0).has_value() == true);
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
     REQUIRE(lap.getSectorTime(0).value() == Timestamp{"00:00:45.112"});
+    // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
 TEST_CASE("Create LapData from a timestamp that is used as laptime for the case the track doesn't have any sectors")

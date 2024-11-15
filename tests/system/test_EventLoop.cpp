@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "Event.hpp"
 #include "EventLoop.hpp"
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <thread>
 
 using namespace Rapid::System;

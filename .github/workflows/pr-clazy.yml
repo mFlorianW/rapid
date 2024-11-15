@@ -35,23 +35,21 @@ jobs:
           touch clazy.log
         fi
     - name: Publish Clazy Fixes
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: clazy-fixes@${{ github.sha }}.yml
         path: clazy-fixes.yml
     - name: Publish Clazy Log
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: clazy.log@${{ github.sha }}.yml
         path: clazy.log
     - name: Check Clazy Warnings
+      id: clazy-check
+      shell: bash
       run: |
-        if [ -e clazy.log ]; then
-          filesize=$(stat -c '%s' clazy.log)
-          if [ $filesize -gt 0 ]; then
-            echo "clazy warnings found."
-            exit 1
-          else
-            exit 0
-          fi
+        error=$(grep -c -E "error:|warning:" clazy.log || true)
+        echo "clazy found ${error} Warnings or Errors"
+        if [ ${error} -gt 0 ];then
+          exit 1
         fi

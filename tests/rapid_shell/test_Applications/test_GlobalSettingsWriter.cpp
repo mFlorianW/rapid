@@ -7,7 +7,7 @@
 #include <GlobalSettingsTypes.hpp>
 #include <GlobalSettingsWriter.hpp>
 #include <SettingsMemoryBackend.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace Rapid::RapidShell::Settings;
 using namespace Rapid::Common;

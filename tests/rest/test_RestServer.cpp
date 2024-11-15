@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_MAIN
 #include "RestServer.hpp"
 #include <CompareHelper.hpp>
 #include <boost/beast.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
+#include <iostream>
 
 using namespace Rapid::Rest;
 namespace Http = boost::beast::http;
@@ -241,8 +241,10 @@ SCENARIO("The running server shall send the HTTP TXT response body for a valid r
             THEN("The RequestHandler shall be called.")
             {
                 REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+                // NOLINTBEGIN(bugprone-unchecked-optional-access)
                 REQUIRE(request.read().value()[Http::field::content_type] == "text/plain");
                 REQUIRE(request.read().value().body() == expBody);
+                // NOLINTEND(bugprone-unchecked-optional-access)
             }
         }
     }
@@ -270,8 +272,10 @@ SCENARIO("The running server shall send the HTTP JSON response body for a valid 
             THEN("The RequestHandler shall be called.")
             {
                 REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+                // NOLINTBEGIN(bugprone-unchecked-optional-access)
                 REQUIRE(request.read().value()[Http::field::content_type] == "application/json");
                 REQUIRE(request.read().value().body() == expBody);
+                // NOLINTEND(bugprone-unchecked-optional-access)
             }
         }
     }

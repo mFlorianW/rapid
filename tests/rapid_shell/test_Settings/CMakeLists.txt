@@ -1,6 +1,17 @@
 include(Catch)
 
-add_executable(test_DeviceModel test_DeviceModel.cpp)
-target_link_libraries(test_DeviceModel PRIVATE Catch2::Catch2 Catch2::Catch2WithMain Rapid::ShellSettings LaptimerCore::TestHelper)
+add_executable(test_rapid_shell_settings)
 
-catch_discover_tests(test_DeviceModel)
+target_sources(test_rapid_shell_settings
+PRIVATE
+    test_DeviceModel.cpp
+)
+
+target_link_libraries(test_rapid_shell_settings
+PRIVATE
+    Catch2::Catch2WithMain
+    Rapid::ShellSettings
+    Rapid::TestHelper
+)
+
+catch_discover_tests(test_rapid_shell_settings)

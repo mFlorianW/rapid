@@ -1,22 +1,21 @@
 include(Catch)
 
-add_executable(test_GpsEndpoint test_GpsEndpoint.cpp)
-target_link_libraries(test_GpsEndpoint PRIVATE Catch2::Catch2 Rapid::Rest)
+add_executable(test_rest)
 
-add_executable(test_Path test_Path.cpp)
-target_link_libraries(test_Path PRIVATE Catch2::Catch2 Rapid::Rest)
+target_sources(test_rest
+PRIVATE
+    test_GpsEndpoint.cpp
+    test_Path.cpp
+    test_SessionEndpoint.cpp
+    test_RestCall.cpp
+    test_RestServer.cpp
+)
 
-add_executable(test_SessionEndpoint test_SessionEndpoint.cpp)
-target_link_libraries(test_SessionEndpoint PRIVATE Catch2::Catch2 LaptimerCore::TestHelper Rapid::Rest)
+target_link_libraries(test_rest
+PRIVATE
+    Catch2::Catch2WithMain
+    Rapid::Rest
+    Rapid::TestHelper
+)
 
-add_executable(test_RestCall test_RestCall.cpp)
-target_link_libraries(test_RestCall PRIVATE Catch2::Catch2 Rapid::Rest)
-
-add_executable(test_RestServer test_RestServer.cpp)
-target_link_libraries(test_RestServer PRIVATE Catch2::Catch2 Rapid::Rest LaptimerCore::TestHelper)
-
-catch_discover_tests(test_GpsEndpoint)
-catch_discover_tests(test_Path)
-catch_discover_tests(test_SessionEndpoint)
-catch_discover_tests(test_RestCall)
-catch_discover_tests(test_RestServer)
+catch_discover_tests(test_rest)
