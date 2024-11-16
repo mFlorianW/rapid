@@ -71,14 +71,14 @@ std::optional<Common::SessionData> SqliteSessionDatabase::getSessionByIndex(std:
     }
 
     auto sessionStm = Statement{mDbConnection};
-    if ((sessionStm.prepare(sessionQuery) != PrepareResult::Ok) ||
-        (sessionStm.bindIntValue(1, static_cast<int>(sessionIndex->second)) != BindResult::Ok) ||
-        (sessionStm.execute() != ExecuteResult::Row) || (sessionStm.getColumnCount() < 3)) {
+    auto const bindError =
+        sessionStm.prepare(sessionQuery).bindValue(1, static_cast<int>(sessionIndex->second)).hasError();
+    if (bindError or (sessionStm.execute() != ExecuteResult::Row) or (sessionStm.getColumnCount() < 3)) {
         std::cout << "Error query session:" << mDbConnection.getErrorMessage() << std::endl;
         return std::nullopt;
     }
 
-    auto const trackId = static_cast<std::size_t>(sessionStm.getIntColumn(2).value_or(0));
+    auto const trackId = static_cast<std::size_t>(sessionStm.getColumn<int>(2).value_or(0));
     auto trackData = getTrack(trackId);
     if (!trackData.has_value()) {
         return std::nullopt;
@@ -90,8 +90,8 @@ std::optional<Common::SessionData> SqliteSessionDatabase::getSessionByIndex(std:
     }
 
     auto session = Common::SessionData{trackData.value_or(Common::TrackData{}),
-                                       Common::Date{sessionStm.getStringColumn(0).value_or("")},
-                                       Common::Timestamp{sessionStm.getStringColumn(1).value_or("")}};
+                                       Common::Date{sessionStm.getColumn<std::string>(0).value_or("")},
+                                       Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")}};
     session.addLaps(laps.value_or(std::vector<Common::LapData>{}));
     return session;
 }
@@ -147,9 +147,9 @@ void SqliteSessionDatabase::deleteSession(std::size_t index)
     }
 
     auto sessionDeleteStm = Statement{mDbConnection};
-    if ((sessionDeleteStm.prepare(sessionDeleteQuery) != PrepareResult::Ok) ||
-        (sessionDeleteStm.bindIntValue(1, static_cast<int>(sessionIndex->second)) != BindResult::Ok) ||
-        (sessionDeleteStm.execute() != ExecuteResult::Ok)) {
+    auto bindError =
+        sessionDeleteStm.prepare(sessionDeleteQuery).bindValue(1, static_cast<int>(sessionIndex->second)).hasError();
+    if (bindError or (sessionDeleteStm.execute() != ExecuteResult::Ok)) {
         std::cout << "Failed to delete session under index" << index << "Error:" << mDbConnection.getErrorMessage()
                   << std::endl;
     }
@@ -159,7 +159,7 @@ void SqliteSessionDatabase::deleteSession(std::size_t index)
 
 void SqliteSessionDatabase::updateSession(StorageContext* ctx)
 {
-    if (ctx == nullptr || mStorageCache.count(ctx) == 0) {
+    if (ctx == nullptr or mStorageCache.count(ctx) == 0) {
         std::cerr << "Update session called with an invalid context.\n";
         return;
     }
@@ -197,7 +197,7 @@ void SqliteSessionDatabase::updateSession(StorageContext* ctx)
 
 void SqliteSessionDatabase::addSession(StorageContext* ctx)
 {
-    if (ctx == nullptr || mStorageCache.count(ctx) == 0) {
+    if (ctx == nullptr or mStorageCache.count(ctx) == 0) {
         std::cerr << "Update session called with an invalid context.\n";
         return;
     }
@@ -211,11 +211,12 @@ void SqliteSessionDatabase::addSession(StorageContext* ctx)
 
     // insert the session
     auto insertStm = Statement{mDbConnection};
-    if ((insertStm.prepare(insertQuery) != PrepareResult::Ok) ||
-        (insertStm.bindStringValue(1, ctx->mSession.getTrack().getTrackName()) != BindResult::Ok) ||
-        (insertStm.bindStringValue(2, ctx->mSession.getSessionDate().asString()) != BindResult::Ok) ||
-        (insertStm.bindStringValue(3, ctx->mSession.getSessionTime().asString()) != BindResult::Ok) ||
-        (insertStm.execute() != ExecuteResult::Ok)) {
+    auto bindError = insertStm.prepare(insertQuery)
+                         .bindValue(1, ctx->mSession.getTrack().getTrackName())
+                         .bindValue(2, ctx->mSession.getSessionDate().asString())
+                         .bindValue(3, ctx->mSession.getSessionTime().asString())
+                         .hasError();
+    if (bindError or (insertStm.execute() != ExecuteResult::Ok)) {
         std::cout << "Error insert session:" << mDbConnection.getErrorMessage() << std::endl;
         ctx->mStoragePromise.set_value(false);
         return;
@@ -264,15 +265,17 @@ std::optional<std::size_t> SqliteSessionDatabase::getSessionId(Common::SessionDa
                                         "Session.date = ? AND Session.time = ?";
     // clang-format on
     auto sessionIdStm = Statement{mDbConnection};
-    if ((sessionIdStm.prepare(sessionIdQuery) != PrepareResult::Ok) ||
-        (sessionIdStm.bindStringValue(1, session.getSessionDate().asString()) != BindResult::Ok) ||
-        (sessionIdStm.bindStringValue(2, session.getSessionTime().asString()) != BindResult::Ok)) {
+    auto const bindError = sessionIdStm.prepare(sessionIdQuery)
+                               .bindValue(1, session.getSessionDate().asString())
+                               .bindValue(2, session.getSessionTime().asString())
+                               .hasError();
+    if (bindError) {
         std::cout << "Error query session id:" << mDbConnection.getErrorMessage() << std::endl;
         return std::nullopt;
     }
 
-    if ((sessionIdStm.execute() == ExecuteResult::Row) && (sessionIdStm.getIntColumn(0).has_value())) {
-        return static_cast<std::size_t>(sessionIdStm.getIntColumn(0).value_or(0));
+    if ((sessionIdStm.execute() == ExecuteResult::Row) && (sessionIdStm.getColumn<int>(0).has_value())) {
+        return static_cast<std::size_t>(sessionIdStm.getColumn<int>(0).value_or(0));
     }
     return std::nullopt;
 }
@@ -298,7 +301,7 @@ std::vector<std::size_t> SqliteSessionDatabase::getSessionIds() const noexcept
                                         "Session";
     // clang-format on
     auto sessionIdsStm = Statement{mDbConnection};
-    if (sessionIdsStm.prepare(sessionIdsQuery) != PrepareResult::Ok) {
+    if (sessionIdsStm.prepare(sessionIdsQuery).hasError()) {
         std::cout << "Failed to prepare query for session ids. Error: " << mDbConnection.getErrorMessage() << std::endl;
         return {};
     }
@@ -306,7 +309,7 @@ std::vector<std::size_t> SqliteSessionDatabase::getSessionIds() const noexcept
     auto sessionIds = std::vector<std::size_t>();
     auto rowReadResult = ExecuteResult::Error;
     while (((rowReadResult = sessionIdsStm.execute()) == ExecuteResult::Row) && (sessionIdsStm.getColumnCount() > 0)) {
-        auto const sessionIndex = sessionIdsStm.getIntColumn(0);
+        auto const sessionIndex = sessionIdsStm.getColumn<int>(0);
         if (sessionIndex.has_value()) {
             sessionIds.push_back(*sessionIndex);
         } else {
@@ -346,15 +349,15 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
     // clang-format on
     auto lapIds = std::vector<std::size_t>{};
     auto lapIdStm = Statement{mDbConnection};
-    if ((lapIdStm.prepare(lapIdQuery) != PrepareResult::Ok) ||
-        (lapIdStm.bindIntValue(1, static_cast<int>(sessionId)) != BindResult::Ok)) {
+    auto const bindError = lapIdStm.prepare(lapIdQuery).bindValue(1, static_cast<int>(sessionId)).hasError();
+    if (bindError) {
         std::cout << "Error prepare query lap ids:" << mDbConnection.getErrorMessage() << std::endl;
         return std::nullopt;
     }
 
     auto state = ExecuteResult::Error;
     while (((state = lapIdStm.execute()) == ExecuteResult::Row) && (lapIdStm.getColumnCount() > 0)) {
-        auto lapId = lapIdStm.getIntColumn(0);
+        auto lapId = lapIdStm.getColumn<int>(0);
         if (lapId.has_value()) {
             lapIds.emplace_back(lapId.value_or(0));
         }
@@ -369,15 +372,17 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
     for (auto const& lapId : lapIds) {
         auto lapData = Common::LapData{};
         auto sektorStm = Statement{mDbConnection};
-        if ((sektorStm.prepare(sektorQuery) != PrepareResult::Ok) ||
-            (sektorStm.bindIntValue(1, static_cast<int>(sessionId)) != BindResult::Ok) ||
-            (sektorStm.bindIntValue(2, static_cast<int>(lapId)) != BindResult::Ok)) {
+        auto bindError = sektorStm.prepare(sektorQuery)
+                             .bindValue(1, static_cast<int>(sessionId))
+                             .bindValue(2, static_cast<int>(lapId))
+                             .hasError();
+        if (bindError) {
             std::cout << "Error prepare lap query:" << mDbConnection.getErrorMessage() << std::endl;
             return std::nullopt;
         }
 
         while (((state = sektorStm.execute()) == ExecuteResult::Row) && (sektorStm.getColumnCount() > 0)) {
-            auto const sektorTime = sektorStm.getStringColumn(0);
+            auto const sektorTime = sektorStm.getColumn<std::string>(0);
             if (sektorTime.has_value()) {
                 lapData.addSectorTime(Common::Timestamp{sektorTime.value_or("")});
             }
@@ -389,18 +394,18 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
         }
 
         auto logPointStm = Statement{mDbConnection};
-        auto const bindError = logPointStm.prepare2(logPointQuery).bindValue(1, static_cast<int>(lapId)).hasError();
+        bindError = logPointStm.prepare(logPointQuery).bindValue(1, static_cast<int>(lapId)).hasError();
         if (bindError) {
             std::cout << "Error prepare logpoint query:" << mDbConnection.getErrorMessage() << std::endl;
             return std::nullopt;
         }
 
         while (((state = logPointStm.execute()) == ExecuteResult::Row) && (logPointStm.getColumnCount() > 0)) {
-            auto const longitude = logPointStm.getFloatColumn(0);
-            auto const latitude = logPointStm.getFloatColumn(1);
-            auto const velocity = logPointStm.getFloatColumn(2);
-            auto const date = logPointStm.getStringColumn(3);
-            auto const time = logPointStm.getStringColumn(4);
+            auto const longitude = logPointStm.getColumn<float>(0);
+            auto const latitude = logPointStm.getColumn<float>(1);
+            auto const velocity = logPointStm.getColumn<float>(2);
+            auto const date = logPointStm.getColumn<std::string>(3);
+            auto const time = logPointStm.getColumn<std::string>(4);
             if (longitude.has_value() and latitude.has_value() and velocity.has_value() and date.has_value() and
                 time.has_value()) {
                 lapData.addPosition(Common::GpsPositionData{Common::PositionData{latitude.value(), longitude.value()},
@@ -409,7 +414,6 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
                                                             Common::VelocityData{velocity.value()}});
             }
         }
-
         laps.push_back(lapData);
     }
 
@@ -429,28 +433,28 @@ std::optional<Common::TrackData> SqliteSessionDatabase::getTrack(std::size_t tra
         "Position PO ON SE.PositionId = PO.PositionId WHERE Track.TrackId = ? ORDER BY SE.SektorIndex ASC";
     // clang-format on
     Statement stm{mDbConnection};
-    if ((stm.prepare(trackQuery) != PrepareResult::Ok) ||
-        (stm.bindIntValue(1, static_cast<int>(trackId)) != BindResult::Ok) || (stm.execute() != ExecuteResult::Row)) {
+    auto bindError = stm.prepare(trackQuery).bindValue(1, static_cast<int>(trackId)).hasError();
+    if (bindError or (stm.execute() != ExecuteResult::Row)) {
         std::cout << "Error prepare track statement for id:" << trackId << "Error:" << mDbConnection.getErrorMessage();
         return std::nullopt;
     }
     auto track = Rapid::Common::TrackData{};
-    track.setTrackName(stm.getStringColumn(1).value_or(""));
-    track.setFinishline({stm.getFloatColumn(2).value_or(0), stm.getFloatColumn(3).value_or(0)});
+    track.setTrackName(stm.getColumn<std::string>(1).value_or(""));
+    track.setFinishline({stm.getColumn<float>(2).value_or(0), stm.getColumn<float>(3).value_or(0)});
     if (stm.hasColumnValue(4) == HasColumnValueResult::Ok && stm.hasColumnValue(5) == HasColumnValueResult::Ok) {
-        track.setStartline({stm.getFloatColumn(4).value_or(0), stm.getFloatColumn(5).value_or(0)});
+        track.setStartline({stm.getColumn<float>(4).value_or(0), stm.getColumn<float>(5).value_or(0)});
     }
 
     // Request sektor
     Statement sektorStm{mDbConnection};
-    if (sektorStm.prepare(sektorQuery) != PrepareResult::Ok ||
-        sektorStm.bindIntValue(1, static_cast<int>(trackId)) != BindResult::Ok) {
+    bindError = sektorStm.prepare(sektorQuery).bindValue(1, static_cast<int>(trackId)).hasError();
+    if (bindError) {
         return std::nullopt;
     }
 
     auto sections = std::vector<Rapid::Common::PositionData>{};
     while (sektorStm.execute() == ExecuteResult::Row && sektorStm.getColumnCount() == 2) {
-        sections.emplace_back(sektorStm.getFloatColumn(0).value_or(0), sektorStm.getFloatColumn(1).value_or(0));
+        sections.emplace_back(sektorStm.getColumn<float>(0).value_or(0), sektorStm.getColumn<float>(1).value_or(0));
     }
     track.setSections(sections);
     return track;
@@ -469,10 +473,11 @@ bool SqliteSessionDatabase::storeLapOfSession(std::size_t sessionId,
                                       "(?, ?, ?)";
     // clang-format on
     auto lapInsertStm = Statement{mDbConnection};
-    if ((lapInsertStm.prepare(insertLapQuery) != PrepareResult::Ok) ||
-        (lapInsertStm.bindIntValue(1, static_cast<int>(sessionId)) != BindResult::Ok) ||
-        (lapInsertStm.bindIntValue(2, static_cast<int>(lapIndex)) != BindResult::Ok) ||
-        (lapInsertStm.execute() != ExecuteResult::Ok)) {
+    auto bindError = lapInsertStm.prepare(insertLapQuery)
+                         .bindValue(1, static_cast<int>(sessionId))
+                         .bindValue(2, static_cast<int>(lapIndex))
+                         .hasError();
+    if (bindError or (lapInsertStm.execute() != ExecuteResult::Ok)) {
         std::cout << "Error query session id:" << mDbConnection.getErrorMessage() << std::endl;
         return false;
     }
@@ -480,13 +485,12 @@ bool SqliteSessionDatabase::storeLapOfSession(std::size_t sessionId,
     auto lapId = static_cast<int>(getLapId(sessionId, lapIndex).value_or(0));
     auto insertSektorStm = Statement{mDbConnection};
     for (std::size_t sektorTimeIndex = 0; sektorTimeIndex < lapData.getSectorTimeCount(); ++sektorTimeIndex) {
-        if ((insertSektorStm.prepare(insetSektorQuery) != PrepareResult::Ok) ||
-            (insertSektorStm.bindIntValue(1, lapId) != BindResult::Ok) ||
-            (insertSektorStm.bindStringValue(
-                 2,
-                 lapData.getSectorTime(sektorTimeIndex).value_or(Common::Timestamp{}).asString()) != BindResult::Ok) ||
-            (insertSektorStm.bindIntValue(3, static_cast<int>(sektorTimeIndex)) != BindResult::Ok) ||
-            (insertSektorStm.execute() != ExecuteResult::Ok)) {
+        bindError = insertSektorStm.prepare(insetSektorQuery)
+                        .bindValue(1, lapId)
+                        .bindValue(2, lapData.getSectorTime(sektorTimeIndex).value_or(Common::Timestamp{}).asString())
+                        .bindValue(3, static_cast<int>(sektorTimeIndex))
+                        .hasError();
+        if (bindError or (insertSektorStm.execute() != ExecuteResult::Ok)) {
             std::cout << "Error failed to insert sektor:" << mDbConnection.getErrorMessage() << std::endl;
             return false;
         }
@@ -510,7 +514,7 @@ bool SqliteSessionDatabase::storeLapLogPoints(std::size_t lapId, Common::LapData
     auto insertLogPointStm = Statement{mDbConnection};
     for (std::size_t idx = 0; idx < positions.size(); ++idx) {
         auto const gpsPos = positions.at(idx);
-        auto const bindError = insertLogPointStm.prepare2(insertLogPoint)
+        auto const bindError = insertLogPointStm.prepare(insertLogPoint)
                                    .bindValue(1, static_cast<int>(idx))
                                    .bindValue(2, static_cast<int>(lapId))
                                    .bindValue(3, gpsPos.getVelocity().getVelocity())
@@ -538,7 +542,7 @@ std::optional<std::size_t> SqliteSessionDatabase::getLapId(std::size_t sessionId
     constexpr auto lapIdQuery = "SELECT Lap.LapId FROM Lap WHERE Lap.SessionId = ? AND Lap.LapIndex = ?";
     // clang-format on
     auto lapIdStm = Statement{mDbConnection};
-    auto const bindError = lapIdStm.prepare2(lapIdQuery)
+    auto const bindError = lapIdStm.prepare(lapIdQuery)
                                .bindValue(1, static_cast<int>(sessionId))
                                .bindValue(2, static_cast<int>(lapIndex))
                                .hasError();
@@ -546,11 +550,11 @@ std::optional<std::size_t> SqliteSessionDatabase::getLapId(std::size_t sessionId
         std::cout << "Faild to build prepare statement for lap ID.\n";
         return std::nullopt;
     }
-    if ((lapIdStm.execute() != ExecuteResult::Row) || (not lapIdStm.getIntColumn(0).has_value())) {
+    if ((lapIdStm.execute() != ExecuteResult::Row) or (not lapIdStm.getColumn<int>(0).has_value())) {
         std::cerr << "Error failed to query lap id:" << mDbConnection.getErrorMessage() << "\n";
         return false;
     }
-    return lapIdStm.getIntColumn(0);
+    return lapIdStm.getColumn<int>(0);
 }
 
 void SqliteSessionDatabase::handleUpdates(void* objPtr,
@@ -584,7 +588,7 @@ void SqliteSessionDatabase::updateIndexMapper()
                                       "ASC";
     // clang-format on
     auto sessionIdsStm = Statement{mDbConnection};
-    if (sessionIdsStm.prepare(sessionIdsQuery) != PrepareResult::Ok) {
+    if (sessionIdsStm.prepare(sessionIdsQuery).hasError()) {
         std::cout << "Failed to query session count. Error:" << mDbConnection.getErrorMessage() << std::endl;
         return;
     }
@@ -593,7 +597,7 @@ void SqliteSessionDatabase::updateIndexMapper()
     auto executeResult = ExecuteResult::Error;
     auto index = std::size_t{0};
     while (((executeResult = sessionIdsStm.execute()) == ExecuteResult::Row) && (sessionIdsStm.getColumnCount() == 1)) {
-        auto const sessionId = sessionIdsStm.getIntColumn(0);
+        auto const sessionId = sessionIdsStm.getColumn<int>(0);
         if (sessionId.has_value()) {
             mIndexMapper.emplace(index, *sessionId);
             ++index;

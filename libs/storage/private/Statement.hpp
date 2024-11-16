@@ -7,6 +7,7 @@
 
 #include "Connection.hpp"
 #include <cassert>
+#include <concepts>
 #include <cstdint>
 #include <optional>
 #include <sqlite3.h>
@@ -14,19 +15,6 @@
 
 namespace Rapid::Storage::Private
 {
-
-enum class PrepareResult
-{
-    Ok,
-    Error
-};
-
-enum class BindResult
-{
-    Ok,
-    InvalidIndex,
-    Error
-};
 
 enum class ExecuteResult
 {
@@ -91,22 +79,13 @@ public:
 
     /**
      * Prepares the statment for furhter use.
-     * @param connection The database connection.
-     * @param statement The state that shall be prepared.
-     * @return "Ok" Everything went fine and the statement is ready for further use.
-     * @return "Error" In case of error. Check the DB connection error message.
-     */
-    PrepareResult prepare(char const* statement) noexcept;
-
-    /**
-     * Prepares the statment for furhter use.
      * Can be used to chain the binding.
+     * If the operation was succesful can be checked with @ref Statement::hasError.
      * @param connection The database connection.
      * @param statement The state that shall be prepared.
-     * @return "Ok" Everything went fine and the statement is ready for further use.
-     * @return "Error" In case of error. Check the DB connection error message.
+     * @return A reference to the statement for function chainging.
      */
-    Statement& prepare2(char const* statement) noexcept;
+    Statement& prepare(char const* statement) noexcept;
 
     /**
      * Excutes the statement. Import is that the statement is prepared before calling execute.
@@ -165,26 +144,6 @@ public:
     bool hasError();
 
     /**
-     * Binds a int value to the given index.
-     * @param index The index of the value in the prepared statement.
-     * @param value The value for the placeholder in the statement.
-     * @return "Ok" Value is succesful binded.
-     * @return "InvalidIndex" The index of the value is not valid.
-     * @return "Error" for any other error. Check the error message of the connection.
-     */
-    BindResult bindIntValue(std::size_t index, std::int32_t value) noexcept;
-
-    /**
-     * Binds a string value to the statement under the given index.
-     * @param index The index that shall be bind.
-     * @param string The string value that shall be replaced in the statement.
-     * @return "Ok" Value is succesful binded.
-     * @return "InvalidIndex" The index of the value is not valid.
-     * @return "Error" for any other error. Check the error message of the connection.
-     */
-    BindResult bindStringValue(std::size_t index, std::string const& value);
-
-    /**
      * Gives the number of columns of the result. The value is zero when the statement doesn't select anything from the
      * database, e.g. UPDATE. The column count is zero when the statement isn't prepared and not succesful executed.
      * @return The number of columns in the result.
@@ -205,25 +164,32 @@ public:
     HasColumnValueResult hasColumnValue(std::size_t index) const noexcept;
 
     /**
-     * Gives the int value for the index.
+     * Gives the value for the passed index.
      * @param index The index of the column in the result row.
-     * @return std::nullopt when failed to convert the value to int or the index is not in the range.
+     * @return std::nullopt when the index is not in the range.
      */
-    std::optional<std::int32_t> getIntColumn(std::size_t index) const noexcept;
+    template <std::default_initializable T>
+    constexpr std::optional<T> getColumn(std::size_t index)
+    {
+        if (mStatement == nullptr || getColumnCount() < index) {
+            return std::nullopt;
+        }
 
-    /**
-     * Gives the float value for the index.
-     * @param index The index of the column in the result row.
-     * @return std::nullopt when failed to convert the value to int or the index is not in the range.
-     */
-    std::optional<float> getFloatColumn(std::size_t index) const noexcept;
-
-    /**
-     * Gives the string value for the index.
-     * @param index The index of the column in the result row.
-     * @return std::nullopt when failed to convert the value to int or the index is not in the range.
-     */
-    std::optional<std::string> getStringColumn(std::size_t index) const noexcept;
+        auto result = T{};
+        if constexpr (std::is_same_v<T, int>) {
+            result = sqlite3_column_int(mStatement, static_cast<std::int32_t>(index));
+        } else if constexpr (std::is_same_v<T, double> or std::is_same_v<T, float>) {
+            result = static_cast<float>(sqlite3_column_double(mStatement, static_cast<std::int32_t>(index)));
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            // TODO: This maybe contains a UTF-8 encoding, we need better encoding :-D
+            // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+            auto string =
+                reinterpret_cast<char const*>(sqlite3_column_text(mStatement, static_cast<std::int32_t>(index)));
+            result = std::string{string};
+            // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+        }
+        return result;
+    }
 
 private:
     sqlite3_stmt* mStatement{nullptr};
