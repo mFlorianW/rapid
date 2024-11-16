@@ -6,7 +6,6 @@
 #include "private/Statement.hpp"
 #include <iostream>
 #include <string>
-#include <unordered_map>
 
 using namespace Rapid::Storage::Private;
 
@@ -24,8 +23,7 @@ std::size_t SqliteTrackDatabase::getTrackCount()
 {
     constexpr auto statementStr = "SELECT COUNT(TrackId) FROM Track";
     Statement stm{mDbConnection};
-    if (stm.prepare(statementStr) != PrepareResult::Ok || stm.execute() != ExecuteResult::Row ||
-        stm.getColumnCount() == 0) {
+    if (stm.prepare2(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
         std::cout << "Database Error: " << mDbConnection.getErrorMessage() << "\n";
         return 0;
     }
@@ -42,7 +40,7 @@ std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
     auto tracksResult = std::vector<Common::TrackData>{};
 
     Statement stm{mDbConnection};
-    if (stm.prepare(trackQuery) == PrepareResult::Ok) {
+    if (not stm.prepare2(trackQuery).hasError()) {
         while (stm.execute() == ExecuteResult::Row && stm.getColumnCount() == 6) {
             auto track = Rapid::Common::TrackData{};
             auto trackId = stm.getIntColumn(0).value_or(0);
@@ -58,16 +56,15 @@ std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
                 "SELECT PO.Latitude, PO.Longitude FROM Track JOIN Sektor SE ON Track.TrackId = SE.TrackId JOIN "
                 "Position PO ON SE.PositionId = PO.PositionId WHERE Track.TrackId = ? ORDER BY SE.SektorIndex ASC";
             Statement sektorStm{mDbConnection};
-            if (sektorStm.prepare(sektorQuery) != PrepareResult::Ok ||
-                sektorStm.bindIntValue(1, trackId) != BindResult::Ok) {
+            auto const bindError = sektorStm.prepare2(sektorQuery).bindValue(1, trackId).hasError();
+            if (bindError) {
                 tracksResult.clear();
                 break;
             }
 
             auto sections = std::vector<Rapid::Common::PositionData>{};
             while (sektorStm.execute() == ExecuteResult::Row && sektorStm.getColumnCount() == 2) {
-                sections.emplace_back(sektorStm.getFloatColumn(0).value_or(0),
-                                                           sektorStm.getFloatColumn(1).value_or(0));
+                sections.emplace_back(sektorStm.getFloatColumn(0).value_or(0), sektorStm.getFloatColumn(1).value_or(0));
             }
             track.setSections(sections);
             tracksResult.emplace_back(track);
@@ -97,9 +94,9 @@ bool SqliteTrackDatabase::deleteTrack(std::size_t trackIndex)
     }
 
     auto deleteTrackStm = Statement{mDbConnection};
-    if ((deleteTrackStm.prepare(deleteTrackQuery) != PrepareResult::Ok) ||
-        (deleteTrackStm.bindIntValue(1, static_cast<int>(*trackId)) != BindResult::Ok) ||
-        (deleteTrackStm.execute() != ExecuteResult::Ok)) {
+    auto const bindError =
+        deleteTrackStm.prepare2(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
+    if (bindError or (deleteTrackStm.execute() != ExecuteResult::Ok)) {
         std::cout << "Failed to delete track. Error:" << mDbConnection.getErrorMessage() << std::endl;
         return false;
     }
@@ -120,7 +117,7 @@ std::vector<std::size_t> SqliteTrackDatabase::getTrackIds() const noexcept
                                     "Track";
     // clang-format on
     auto trackIdStm = Statement{mDbConnection};
-    if (trackIdStm.prepare(trackIdQuery) != PrepareResult::Ok) {
+    if (trackIdStm.prepare2(trackIdQuery).hasError()) {
         std::cout << "Failed to prepare track id query. Error:" << mDbConnection.getErrorMessage();
         return {};
     }
