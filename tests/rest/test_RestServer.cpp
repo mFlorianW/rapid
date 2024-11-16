@@ -6,7 +6,7 @@
 #include <CompareHelper.hpp>
 #include <boost/beast.hpp>
 #include <catch2/catch_all.hpp>
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 using namespace Rapid::Rest;
 namespace Http = boost::beast::http;
@@ -84,7 +84,7 @@ public:
             mResponse = resp;
             return resp;
         } catch (boost::system::system_error const& error) {
-            std::cerr << "Failed to read connection. Error: " << error.what() << error.code() << "\n";
+            spdlog::error("Failed to read connection. Error: {} {}", error.what(), error.code().value());
             return std::nullopt;
         }
     }
