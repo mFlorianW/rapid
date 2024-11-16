@@ -8,6 +8,7 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <memory>
+#include <spdlog/spdlog.h>
 
 namespace Asio = boost::asio;
 namespace Ip = boost::asio::ip;
@@ -41,7 +42,7 @@ public:
         try {
             mSocket.close();
         } catch (boost::system::system_error& e) {
-            std::cerr << "Socket closing throws an error. Error:" << e.what() << "\n";
+            spdlog::error("Socket closing throws an error. Error:", e.what());
         }
     }
 
@@ -84,7 +85,7 @@ public:
         }
         Http::async_write(mSocket, mResponse, [this](Beast::error_code errorCode, std::size_t) {
             if (errorCode) {
-                std::cerr << "Failed to send response. Error code:" << errorCode;
+                spdlog::error("Failed to send response. Error code: {}", errorCode.value());
             }
             finished.emit(this);
         });
@@ -234,7 +235,7 @@ bool RestServerImpl::handleEvent(System::Event* event) noexcept
                 try {
                     conn->sendResponse(result, std::string{request.getReturnBody()}, getReturnType(request));
                 } catch (...) {
-                    std::cerr << "Failed to send!\n";
+                    spdlog::error("Failed to send!");
                 }
             }
         }
