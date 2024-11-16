@@ -18,6 +18,7 @@ PRIVATE
 target_link_libraries(rapid_ssd1322
 PRIVATE
     lvgl-ssd1322-drivers::lvgl-ssd1322-drivers
+    spdlog::spdlog
     Rapid::Ssd1322Shell
     Rapid::LibraryPath
 )

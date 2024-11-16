@@ -6,7 +6,7 @@
 #include "EventLoop.hpp"
 #include <csignal>
 #include <cstring>
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::System::Private
 {
@@ -32,7 +32,7 @@ TimerImpl::TimerImpl(Timer& timer) noexcept
 
     auto result = timer_create(CLOCK_REALTIME, &timerEv, &mTimerId);
     if (result != 0) {
-        std::cerr << "Failed to create timer posix timer. Error:" << strerror(errno);
+        spdlog::error("Failed to create timer posix timer. Error: {}", strerror(errno));
     }
 
     mInitialized = true;
@@ -48,7 +48,7 @@ TimerImpl::~TimerImpl() noexcept
 void TimerImpl::setTimerInterval(std::chrono::nanoseconds interval) noexcept
 {
     if (not mInitialized) {
-        std::cerr << "Timer can't be started. Error: timer not initialized";
+        spdlog::error("Timer can't be started. Error: timer not initialized");
         return;
     }
 
@@ -60,7 +60,7 @@ void TimerImpl::setTimerInterval(std::chrono::nanoseconds interval) noexcept
 
     auto result = timer_settime(mTimerId, 0, &timerSpec, nullptr);
     if (result != 0) {
-        std::cerr << "Failed to activate timer. Timer id:" << mTimerId << "Error: " << strerror(errno);
+        spdlog::error("Failed to activate timer. Timer id: {} Error: {}", mTimerId, strerror(errno));
     }
 }
 

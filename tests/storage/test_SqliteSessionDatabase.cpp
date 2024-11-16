@@ -8,6 +8,7 @@
 #include <SqliteDatabaseTestHelper.hpp>
 #include <catch2/catch_all.hpp>
 #include <filesystem>
+#include <spdlog/spdlog.h>
 #include <sqlite3.h>
 
 using namespace Rapid::System;
@@ -48,7 +49,7 @@ class TestSqliteSessionDatabaseEventListener : public Catch::EventListenerBase
         auto* dbCon = Connection::connection(getTestDatabseFile("test_session.db")).getRawHandle();
         auto const deleted = sqlite3_exec(dbCon, "DELETE FROM Session", nullptr, nullptr, nullptr) == SQLITE_OK;
         if (not deleted) {
-            std::cerr << "Failed to delete session information. Error: " << sqlite3_errmsg(dbCon) << "\n";
+            spdlog::error("Failed to delete session information. Error: {}", sqlite3_errmsg(dbCon));
             FAIL("The session database parts are not reseted.");
         }
     }

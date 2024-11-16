@@ -90,7 +90,7 @@ public:
             mFinished = false;
             return mFuture.get();
         } catch (std::exception& e) {
-            std::cout << e.what() << std::endl;
+            std::cerr << e.what() << std::endl;
             return T{};
         }
     }

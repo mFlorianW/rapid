@@ -5,6 +5,7 @@
 #include "GpsEndpoint.hpp"
 #include "RestRequest.hpp"
 #include <ArduinoJson.hpp>
+#include <spdlog/spdlog.h>
 
 using namespace Rapid::Common;
 
@@ -33,8 +34,7 @@ RequestHandleResult GpsEndpoint::handleRestRequest(RestRequest& request) noexcep
         gpsPosition = newPos;
 
     } catch (std::exception const& e) {
-        std::cerr << "Failed to handle REST request unexpected error during deserialization. Error:" << e.what()
-                  << "\n";
+        spdlog::error("Failed to handle REST request unexpected error during deserialization. Error: {}", e.what());
         return RequestHandleResult::Error;
     }
 

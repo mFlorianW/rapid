@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Connection.hpp"
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::Storage::Private
 {
@@ -35,7 +35,7 @@ Connection::Connection(std::string const& database)
         return;
     }
 
-    std::cout << "Exiting failed to create database connection. Error: " << getErrorMessage() << std::endl;
+    spdlog::error("Exiting failed to create database connection. Error: {}", getErrorMessage());
     std::exit(255);
 }
 

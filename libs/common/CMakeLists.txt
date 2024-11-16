@@ -34,6 +34,8 @@ PRIVATE
 )
 
 target_link_libraries(CommonObject
+PRIVATE
+    spdlog::spdlog
 PUBLIC
     KDAB::KDBindings
 )

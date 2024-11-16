@@ -2,27 +2,29 @@
   "dependencies": [
     "arduinojson",
     "boost-beast",
-    {
-      "name": "catch2",
-      "version>=": "2.13.7"
-    },
+    "catch2",
     "kdbindings",
     "lvgl-ssd1322",
     "lvgl-ssd1322-drivers",
-    "sqlite3",
     {
       "name": "sdl2",
       "default-features": false,
       "features": [
-        "x11",
-        "wayland"
+        "wayland",
+        "x11"
       ]
-    }
+    },
+    "sqlite3",
+    "spdlog"
   ],
   "overrides": [
     {
       "name": "catch2",
       "version": "3.7.1"
+    },
+    {
+      "name": "spdlog",
+      "version": "1.15.0"
     }
   ]
 }

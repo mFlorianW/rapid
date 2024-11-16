@@ -31,6 +31,8 @@ else()
 endif()
 
 target_link_libraries(System
+PRIVATE
+    spdlog::spdlog
 PUBLIC
     KDAB::KDBindings
 )

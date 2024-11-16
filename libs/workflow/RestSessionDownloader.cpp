@@ -5,7 +5,7 @@
 #include "RestSessionDownloader.hpp"
 #include <ArduinoJson.hpp>
 #include <JsonDeserializer.hpp>
-#include <iostream>
+#include <spdlog/spdlog.h>
 #include <sstream>
 
 namespace Rapid::Workflow
@@ -63,8 +63,8 @@ void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) no
             auto jsonDoc = ArduinoJson::DynamicJsonDocument{256};
             auto const error = ArduinoJson::deserializeJson(jsonDoc, call->getData());
             if (error != ArduinoJson::DeserializationError::Ok) {
-                std::cout << "RestSessionDownloader fetchSessionCount Error: DeserializeJson failed: " << error.c_str()
-                          << "\n";
+                spdlog::error("RestSessionDownloader fetchSessionCount Error: DeserializeJson failed: {}",
+                              error.c_str());
             }
             mSessionCount = jsonDoc["count"].as<std::size_t>();
         }
@@ -82,8 +82,7 @@ void RestSessionDownloader::onSessionDownloadFinished(Rest::RestCall* call) noex
         if (dlResult == DownloadResult::Ok) {
             auto session = Common::JsonDeserializer::deserializeSessionData(call->getData());
             if (!session) {
-                std::cout << "RestSessionDownloader downloadSessionError: DeserializeJson failed."
-                          << "\n";
+                spdlog::error("RestSessionDownloader downloadSessionError: DeserializeJson failed.");
             } else {
                 mDownloadedSessions.insert({index, session.value()});
             }

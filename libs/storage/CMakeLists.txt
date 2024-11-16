@@ -23,6 +23,8 @@ PRIVATE
 )
 
 target_link_libraries(Storage
+PRIVATE
+    spdlog::spdlog
 PUBLIC
     SQLite::SQLite3
     KDAB::KDBindings

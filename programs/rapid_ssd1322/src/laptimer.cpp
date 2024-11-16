@@ -13,10 +13,10 @@
 #include <StaticPositionDateTimeProvider.hpp>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <monitor.h>
 #include <mouse.h>
 #include <pwd.h>
+#include <spdlog/spdlog.h>
 #include <unistd.h>
 
 [[noreturn]] static int tick_thread(void* data)
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
     // get home folder for the session database backend.
     auto databaseFolder = std::string{getpwuid(getuid())->pw_dir} + "/.local/share/laptimer/session";
     if (!std::filesystem::exists(databaseFolder)) {
-        std::cout << "Laptimer data folder doesn't exists. Creating:" << databaseFolder;
+        spdlog::info("Laptimer data folder doesn't exists. Creating: {}", databaseFolder);
         std::filesystem::create_directories(databaseFolder);
     }
 

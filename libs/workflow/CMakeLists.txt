@@ -22,6 +22,8 @@ PRIVATE
 )
 
 target_link_libraries(Workflow
+PRIVATE
+    spdlog::spdlog
 PUBLIC
     Rapid::Common
     Rapid::Positioning

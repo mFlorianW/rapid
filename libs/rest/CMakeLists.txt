@@ -29,6 +29,8 @@ if(ENABLE_BOOST)
 endif()
 
 target_link_libraries(Rest
+PRIVATE
+    spdlog::spdlog
 PUBLIC
     KDAB::KDBindings
     Rapid::Positioning

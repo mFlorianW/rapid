@@ -7,7 +7,7 @@
 #include "private/Statement.hpp"
 #include <algorithm>
 #include <cstring>
-#include <iostream>
+#include <spdlog/spdlog.h>
 
 using namespace Rapid::Storage::Private;
 
@@ -74,7 +74,7 @@ std::optional<Common::SessionData> SqliteSessionDatabase::getSessionByIndex(std:
     auto const bindError =
         sessionStm.prepare(sessionQuery).bindValue(1, static_cast<int>(sessionIndex->second)).hasError();
     if (bindError or (sessionStm.execute() != ExecuteResult::Row) or (sessionStm.getColumnCount() < 3)) {
-        std::cout << "Error query session:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Error query session. Error: {}", mDbConnection.getErrorMessage());
         return std::nullopt;
     }
 
@@ -142,7 +142,7 @@ void SqliteSessionDatabase::deleteSession(std::size_t index)
     // clang-format on
     auto const sessionIndex = mIndexMapper.find(index);
     if (sessionIndex == mIndexMapper.cend()) {
-        std::cout << "Failed to delete session under index" << index << " not found." << std::endl;
+        spdlog::error("Failed to delete session under index {} not found", index);
         return;
     }
 
@@ -150,8 +150,7 @@ void SqliteSessionDatabase::deleteSession(std::size_t index)
     auto bindError =
         sessionDeleteStm.prepare(sessionDeleteQuery).bindValue(1, static_cast<int>(sessionIndex->second)).hasError();
     if (bindError or (sessionDeleteStm.execute() != ExecuteResult::Ok)) {
-        std::cout << "Failed to delete session under index" << index << "Error:" << mDbConnection.getErrorMessage()
-                  << std::endl;
+        spdlog::error("Failed to delete session under index {} Error: {}", index, mDbConnection.getErrorMessage());
     }
     updateIndexMapper();
     sessionDeleted.emit(index);
@@ -160,7 +159,7 @@ void SqliteSessionDatabase::deleteSession(std::size_t index)
 void SqliteSessionDatabase::updateSession(StorageContext* ctx)
 {
     if (ctx == nullptr or mStorageCache.count(ctx) == 0) {
-        std::cerr << "Update session called with an invalid context.\n";
+        spdlog::error("Update session called with an invalid context.");
         return;
     }
 
@@ -198,7 +197,7 @@ void SqliteSessionDatabase::updateSession(StorageContext* ctx)
 void SqliteSessionDatabase::addSession(StorageContext* ctx)
 {
     if (ctx == nullptr or mStorageCache.count(ctx) == 0) {
-        std::cerr << "Update session called with an invalid context.\n";
+        spdlog::error("Update session called with an invalid context.");
         return;
     }
 
@@ -217,7 +216,7 @@ void SqliteSessionDatabase::addSession(StorageContext* ctx)
                          .bindValue(3, ctx->mSession.getSessionTime().asString())
                          .hasError();
     if (bindError or (insertStm.execute() != ExecuteResult::Ok)) {
-        std::cout << "Error insert session:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Error insert session. Error:", mDbConnection.getErrorMessage());
         ctx->mStoragePromise.set_value(false);
         return;
     }
@@ -225,7 +224,7 @@ void SqliteSessionDatabase::addSession(StorageContext* ctx)
     // get the session for inserting the laps.
     auto sessionId = getSessionId(ctx->mSession);
     if (!sessionId.has_value()) {
-        std::cout << "Failed to query session of new stored session." << std::endl;
+        spdlog::error("Failed to query session of new stored session");
         ctx->mStoragePromise.set_value(false);
         return;
     }
@@ -270,7 +269,7 @@ std::optional<std::size_t> SqliteSessionDatabase::getSessionId(Common::SessionDa
                                .bindValue(2, session.getSessionTime().asString())
                                .hasError();
     if (bindError) {
-        std::cout << "Error query session id:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Error query session id. Error:", mDbConnection.getErrorMessage());
         return std::nullopt;
     }
 
@@ -302,7 +301,7 @@ std::vector<std::size_t> SqliteSessionDatabase::getSessionIds() const noexcept
     // clang-format on
     auto sessionIdsStm = Statement{mDbConnection};
     if (sessionIdsStm.prepare(sessionIdsQuery).hasError()) {
-        std::cout << "Failed to prepare query for session ids. Error: " << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Failed to prepare query for session ids. Error: {}", mDbConnection.getErrorMessage());
         return {};
     }
 
@@ -351,7 +350,7 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
     auto lapIdStm = Statement{mDbConnection};
     auto const bindError = lapIdStm.prepare(lapIdQuery).bindValue(1, static_cast<int>(sessionId)).hasError();
     if (bindError) {
-        std::cout << "Error prepare query lap ids:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Error prepare query lap ids. Error: {}", mDbConnection.getErrorMessage());
         return std::nullopt;
     }
 
@@ -364,7 +363,7 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
     }
 
     if (state != ExecuteResult::Ok) {
-        std::cout << "Error query lap ids:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Error query lap ids. Error:", mDbConnection.getErrorMessage());
         return std::nullopt;
     }
 
@@ -377,7 +376,7 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
                              .bindValue(2, static_cast<int>(lapId))
                              .hasError();
         if (bindError) {
-            std::cout << "Error prepare lap query:" << mDbConnection.getErrorMessage() << std::endl;
+            spdlog::error("Error prepare lap query. Error: {}", mDbConnection.getErrorMessage());
             return std::nullopt;
         }
 
@@ -389,14 +388,14 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
         }
 
         if (state != ExecuteResult::Ok) {
-            std::cout << "Error query lap ids:" << mDbConnection.getErrorMessage() << std::endl;
+            spdlog::error("Error query lap ids. Error: {}", mDbConnection.getErrorMessage());
             return std::nullopt;
         }
 
         auto logPointStm = Statement{mDbConnection};
         bindError = logPointStm.prepare(logPointQuery).bindValue(1, static_cast<int>(lapId)).hasError();
         if (bindError) {
-            std::cout << "Error prepare logpoint query:" << mDbConnection.getErrorMessage() << std::endl;
+            spdlog::error("Error prepare logpoint query. Error {}", mDbConnection.getErrorMessage());
             return std::nullopt;
         }
 
@@ -435,7 +434,7 @@ std::optional<Common::TrackData> SqliteSessionDatabase::getTrack(std::size_t tra
     Statement stm{mDbConnection};
     auto bindError = stm.prepare(trackQuery).bindValue(1, static_cast<int>(trackId)).hasError();
     if (bindError or (stm.execute() != ExecuteResult::Row)) {
-        std::cout << "Error prepare track statement for id:" << trackId << "Error:" << mDbConnection.getErrorMessage();
+        spdlog::error("Error prepare track statement for id {}. Error {}", trackId, mDbConnection.getErrorMessage());
         return std::nullopt;
     }
     auto track = Rapid::Common::TrackData{};
@@ -478,7 +477,7 @@ bool SqliteSessionDatabase::storeLapOfSession(std::size_t sessionId,
                          .bindValue(2, static_cast<int>(lapIndex))
                          .hasError();
     if (bindError or (lapInsertStm.execute() != ExecuteResult::Ok)) {
-        std::cout << "Error query session id:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Error query session id. Error {}", mDbConnection.getErrorMessage());
         return false;
     }
 
@@ -491,7 +490,7 @@ bool SqliteSessionDatabase::storeLapOfSession(std::size_t sessionId,
                         .bindValue(3, static_cast<int>(sektorTimeIndex))
                         .hasError();
         if (bindError or (insertSektorStm.execute() != ExecuteResult::Ok)) {
-            std::cout << "Error failed to insert sektor:" << mDbConnection.getErrorMessage() << std::endl;
+            spdlog::error("Error failed to insert sektor. Error {}", mDbConnection.getErrorMessage());
             return false;
         }
     }
@@ -524,11 +523,11 @@ bool SqliteSessionDatabase::storeLapLogPoints(std::size_t lapId, Common::LapData
                                    .bindValue(7, gpsPos.getTime().asString())
                                    .hasError();
         if (bindError) {
-            std::cerr << "Failed to bind values LogPoint statement. Error: " << mDbConnection.getErrorMessage() << "\n";
+            spdlog::error("Failed to bind values LogPoint statement. Error: {}", mDbConnection.getErrorMessage());
             return false;
         }
         if (insertLogPointStm.execute() != ExecuteResult::Ok) {
-            std::cerr << "Failed to execute LogPoint statement. Error: " << mDbConnection.getErrorMessage() << "\n";
+            spdlog::error("Failed to execute LogPoint statement. Error: {}", mDbConnection.getErrorMessage());
             return false;
         }
     }
@@ -547,11 +546,11 @@ std::optional<std::size_t> SqliteSessionDatabase::getLapId(std::size_t sessionId
                                .bindValue(2, static_cast<int>(lapIndex))
                                .hasError();
     if (bindError) {
-        std::cout << "Faild to build prepare statement for lap ID.\n";
+        spdlog::error("Faild to build prepare statement for lap ID. Error {}", mDbConnection.getErrorMessage());
         return std::nullopt;
     }
     if ((lapIdStm.execute() != ExecuteResult::Row) or (not lapIdStm.getColumn<int>(0).has_value())) {
-        std::cerr << "Error failed to query lap id:" << mDbConnection.getErrorMessage() << "\n";
+        spdlog::error("Error failed to query lap id. Error {}", mDbConnection.getErrorMessage());
         return false;
     }
     return lapIdStm.getColumn<int>(0);
@@ -589,7 +588,7 @@ void SqliteSessionDatabase::updateIndexMapper()
     // clang-format on
     auto sessionIdsStm = Statement{mDbConnection};
     if (sessionIdsStm.prepare(sessionIdsQuery).hasError()) {
-        std::cout << "Failed to query session count. Error:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Failed to query session count. Error: {}", mDbConnection.getErrorMessage());
         return;
     }
 
@@ -606,7 +605,7 @@ void SqliteSessionDatabase::updateIndexMapper()
 
     if (executeResult != ExecuteResult::Ok) {
         mIndexMapper.clear();
-        std::cout << "Failed to query all session ids. Error:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Failed to query all session ids. Error: {}", mDbConnection.getErrorMessage());
     }
 }
 

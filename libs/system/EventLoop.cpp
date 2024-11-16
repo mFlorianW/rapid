@@ -5,12 +5,23 @@
 #include "EventLoop.hpp"
 #include <condition_variable>
 #include <deque>
-#include <iostream>
 #include <mutex>
+#include <spdlog/spdlog.h>
+#include <sstream>
 #include <unordered_map>
 
 namespace Rapid::System
 {
+
+namespace
+{
+inline std::string getThreadIdAsString(std::thread::id const& id)
+{
+    auto tid = std::stringstream{};
+    tid << id;
+    return tid.str();
+}
+} // namespace
 
 class EventQueue
 {
@@ -32,8 +43,8 @@ public:
     {
 
         if (tid != receiver->getThreadId()) {
-            std::cerr
-                << "The event receiver has a different thread affinity. Event posted to wrong event loop instance.";
+            spdlog::error(
+                "The event receiver has a different thread affinity. Event posted to wrong event loop instance.");
             return;
         }
 
@@ -135,8 +146,10 @@ bool EventLoop::isEventQueued(EventHandler* receiver, Event::Type type) const no
 void EventLoop::processEvents()
 {
     if (std::this_thread::get_id() != mOwningThread) {
-        std::cerr << "Events can only be processed from the EventLoop owning thread.\n";
-        std::cerr << "Owning thread: " << mOwningThread << " Calling thread: " << std::this_thread::get_id() << "\n";
+        spdlog::error("Events can only be processed from the EventLoop owning thread.");
+        spdlog::error("Owning thread: {}  Calling thread: {}",
+                      getThreadIdAsString(mOwningThread),
+                      getThreadIdAsString(std::this_thread::get_id()));
         return;
     }
     EventQueue::getInstance(mOwningThread).processEvents();
@@ -145,8 +158,10 @@ void EventLoop::processEvents()
 void EventLoop::exec()
 {
     if (std::this_thread::get_id() != mOwningThread) {
-        std::cerr << "Exec can only be called from the Eventloop owning thread.\n";
-        std::cerr << "Owning thread: " << mOwningThread << " Calling thread: " << std::this_thread::get_id() << "\n";
+        spdlog::error("Exec can only be called from the Eventloop owning thread.");
+        spdlog::error("Owning thread: {}  Calling thread: {}",
+                      getThreadIdAsString(mOwningThread),
+                      getThreadIdAsString(std::this_thread::get_id()));
     }
     EventQueue::getInstance(mOwningThread).exec();
 }

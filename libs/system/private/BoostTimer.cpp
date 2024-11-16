@@ -4,8 +4,8 @@
 
 #include "BoostTimer.hpp"
 #include "EventLoop.hpp"
-#include <iostream>
 #include <memory>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::System::Private
 {
@@ -36,14 +36,15 @@ void TimerImpl::setTimerInterval(std::chrono::nanoseconds interval) noexcept
                 }
             }};
         } catch (std::system_error const& e) {
-            std::cerr << "Failed to created timer thread for timer: " << std::addressof(mTimer) << " Error:" << e.what()
-                      << "\n";
+            spdlog::error("Failed to created timer thread for timer: {} Error: {}",
+                          fmt::ptr(std::addressof(mTimer)),
+                          e.what());
             return;
         } catch (boost::system::system_error const& e) {
-            std::cerr << "Failed to setup timer for timer: " << std::addressof(mTimer) << " Error:" << e.what() << "\n";
+            spdlog::error("Failed to setup timer for timer: {} Error: {}", fmt::ptr(std::addressof(mTimer)), e.what());
             return;
         } catch (std::exception const& e) {
-            std::cerr << "Unknown error:" << e.what() << "\n";
+            spdlog::error("Unknown error: {}", e.what());
             return;
         }
     } else {

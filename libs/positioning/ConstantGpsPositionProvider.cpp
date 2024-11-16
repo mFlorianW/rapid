@@ -4,6 +4,7 @@
 
 #include "ConstantGpsPositionProvider.hpp"
 #include <UTM.hpp>
+#include <spdlog/spdlog.h>
 #include <sys/time.h>
 
 using namespace Rapid::Common;
@@ -62,7 +63,7 @@ void ConstantGpsPositionProvider::convertTrackPoints(std::vector<Common::Positio
 void ConstantGpsPositionProvider::handleGPSPositionTick()
 {
     if (mTrackData.empty()) {
-        std::cout << "ConstantGpsPositionProvider do nothing: PositionData Empty" << std::endl;
+        spdlog::critical("ConstantGpsPositionProvider do nothing: PositionData Empty");
         return;
     }
 
