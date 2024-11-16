@@ -78,7 +78,7 @@ std::optional<Common::SessionData> SqliteSessionDatabase::getSessionByIndex(std:
         return std::nullopt;
     }
 
-    auto const trackId = static_cast<std::size_t>(sessionStm.getIntColumn(2).value_or(0));
+    auto const trackId = static_cast<std::size_t>(sessionStm.getColumn<int>(2).value_or(0));
     auto trackData = getTrack(trackId);
     if (!trackData.has_value()) {
         return std::nullopt;
@@ -90,8 +90,8 @@ std::optional<Common::SessionData> SqliteSessionDatabase::getSessionByIndex(std:
     }
 
     auto session = Common::SessionData{trackData.value_or(Common::TrackData{}),
-                                       Common::Date{sessionStm.getStringColumn(0).value_or("")},
-                                       Common::Timestamp{sessionStm.getStringColumn(1).value_or("")}};
+                                       Common::Date{sessionStm.getColumn<std::string>(0).value_or("")},
+                                       Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")}};
     session.addLaps(laps.value_or(std::vector<Common::LapData>{}));
     return session;
 }
@@ -274,8 +274,8 @@ std::optional<std::size_t> SqliteSessionDatabase::getSessionId(Common::SessionDa
         return std::nullopt;
     }
 
-    if ((sessionIdStm.execute() == ExecuteResult::Row) && (sessionIdStm.getIntColumn(0).has_value())) {
-        return static_cast<std::size_t>(sessionIdStm.getIntColumn(0).value_or(0));
+    if ((sessionIdStm.execute() == ExecuteResult::Row) && (sessionIdStm.getColumn<int>(0).has_value())) {
+        return static_cast<std::size_t>(sessionIdStm.getColumn<int>(0).value_or(0));
     }
     return std::nullopt;
 }
@@ -309,7 +309,7 @@ std::vector<std::size_t> SqliteSessionDatabase::getSessionIds() const noexcept
     auto sessionIds = std::vector<std::size_t>();
     auto rowReadResult = ExecuteResult::Error;
     while (((rowReadResult = sessionIdsStm.execute()) == ExecuteResult::Row) && (sessionIdsStm.getColumnCount() > 0)) {
-        auto const sessionIndex = sessionIdsStm.getIntColumn(0);
+        auto const sessionIndex = sessionIdsStm.getColumn<int>(0);
         if (sessionIndex.has_value()) {
             sessionIds.push_back(*sessionIndex);
         } else {
@@ -357,7 +357,7 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
 
     auto state = ExecuteResult::Error;
     while (((state = lapIdStm.execute()) == ExecuteResult::Row) && (lapIdStm.getColumnCount() > 0)) {
-        auto lapId = lapIdStm.getIntColumn(0);
+        auto lapId = lapIdStm.getColumn<int>(0);
         if (lapId.has_value()) {
             lapIds.emplace_back(lapId.value_or(0));
         }
@@ -382,7 +382,7 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
         }
 
         while (((state = sektorStm.execute()) == ExecuteResult::Row) && (sektorStm.getColumnCount() > 0)) {
-            auto const sektorTime = sektorStm.getStringColumn(0);
+            auto const sektorTime = sektorStm.getColumn<std::string>(0);
             if (sektorTime.has_value()) {
                 lapData.addSectorTime(Common::Timestamp{sektorTime.value_or("")});
             }
@@ -401,11 +401,11 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
         }
 
         while (((state = logPointStm.execute()) == ExecuteResult::Row) && (logPointStm.getColumnCount() > 0)) {
-            auto const longitude = logPointStm.getFloatColumn(0);
-            auto const latitude = logPointStm.getFloatColumn(1);
-            auto const velocity = logPointStm.getFloatColumn(2);
-            auto const date = logPointStm.getStringColumn(3);
-            auto const time = logPointStm.getStringColumn(4);
+            auto const longitude = logPointStm.getColumn<float>(0);
+            auto const latitude = logPointStm.getColumn<float>(1);
+            auto const velocity = logPointStm.getColumn<float>(2);
+            auto const date = logPointStm.getColumn<std::string>(3);
+            auto const time = logPointStm.getColumn<std::string>(4);
             if (longitude.has_value() and latitude.has_value() and velocity.has_value() and date.has_value() and
                 time.has_value()) {
                 lapData.addPosition(Common::GpsPositionData{Common::PositionData{latitude.value(), longitude.value()},
@@ -439,10 +439,10 @@ std::optional<Common::TrackData> SqliteSessionDatabase::getTrack(std::size_t tra
         return std::nullopt;
     }
     auto track = Rapid::Common::TrackData{};
-    track.setTrackName(stm.getStringColumn(1).value_or(""));
-    track.setFinishline({stm.getFloatColumn(2).value_or(0), stm.getFloatColumn(3).value_or(0)});
+    track.setTrackName(stm.getColumn<std::string>(1).value_or(""));
+    track.setFinishline({stm.getColumn<float>(2).value_or(0), stm.getColumn<float>(3).value_or(0)});
     if (stm.hasColumnValue(4) == HasColumnValueResult::Ok && stm.hasColumnValue(5) == HasColumnValueResult::Ok) {
-        track.setStartline({stm.getFloatColumn(4).value_or(0), stm.getFloatColumn(5).value_or(0)});
+        track.setStartline({stm.getColumn<float>(4).value_or(0), stm.getColumn<float>(5).value_or(0)});
     }
 
     // Request sektor
@@ -454,7 +454,7 @@ std::optional<Common::TrackData> SqliteSessionDatabase::getTrack(std::size_t tra
 
     auto sections = std::vector<Rapid::Common::PositionData>{};
     while (sektorStm.execute() == ExecuteResult::Row && sektorStm.getColumnCount() == 2) {
-        sections.emplace_back(sektorStm.getFloatColumn(0).value_or(0), sektorStm.getFloatColumn(1).value_or(0));
+        sections.emplace_back(sektorStm.getColumn<float>(0).value_or(0), sektorStm.getColumn<float>(1).value_or(0));
     }
     track.setSections(sections);
     return track;
@@ -550,11 +550,11 @@ std::optional<std::size_t> SqliteSessionDatabase::getLapId(std::size_t sessionId
         std::cout << "Faild to build prepare statement for lap ID.\n";
         return std::nullopt;
     }
-    if ((lapIdStm.execute() != ExecuteResult::Row) or (not lapIdStm.getIntColumn(0).has_value())) {
+    if ((lapIdStm.execute() != ExecuteResult::Row) or (not lapIdStm.getColumn<int>(0).has_value())) {
         std::cerr << "Error failed to query lap id:" << mDbConnection.getErrorMessage() << "\n";
         return false;
     }
-    return lapIdStm.getIntColumn(0);
+    return lapIdStm.getColumn<int>(0);
 }
 
 void SqliteSessionDatabase::handleUpdates(void* objPtr,
@@ -597,7 +597,7 @@ void SqliteSessionDatabase::updateIndexMapper()
     auto executeResult = ExecuteResult::Error;
     auto index = std::size_t{0};
     while (((executeResult = sessionIdsStm.execute()) == ExecuteResult::Row) && (sessionIdsStm.getColumnCount() == 1)) {
-        auto const sessionId = sessionIdsStm.getIntColumn(0);
+        auto const sessionId = sessionIdsStm.getColumn<int>(0);
         if (sessionId.has_value()) {
             mIndexMapper.emplace(index, *sessionId);
             ++index;

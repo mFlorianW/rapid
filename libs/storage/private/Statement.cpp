@@ -145,35 +145,4 @@ HasColumnValueResult Statement::hasColumnValue(std::size_t index) const noexcept
                                                                                    : HasColumnValueResult::Null;
 }
 
-std::optional<int32_t> Statement::getIntColumn(std::size_t index) const noexcept
-{
-    if (mStatement == nullptr || getColumnCount() < index) {
-        return std::nullopt;
-    }
-
-    return sqlite3_column_int(mStatement, static_cast<std::int32_t>(index));
-}
-
-std::optional<float> Statement::getFloatColumn(std::size_t index) const noexcept
-{
-    if (mStatement == nullptr || getColumnCount() < index) {
-        return std::nullopt;
-    }
-
-    return static_cast<float>(sqlite3_column_double(mStatement, static_cast<std::int32_t>(index)));
-}
-
-std::optional<std::string> Statement::getStringColumn(std::size_t index) const noexcept
-{
-    if (mStatement == nullptr || getColumnCount() < index) {
-        return std::nullopt;
-    }
-
-    // TODO: This maybe contains a UTF-8 encoding, we need better encoding :-D
-    // NOLINTBEGIN
-    auto string = reinterpret_cast<char const*>(sqlite3_column_text(mStatement, static_cast<std::int32_t>(index)));
-    return std::string{string};
-    // NOLINTEND
-}
-
 } // namespace Rapid::Storage::Private

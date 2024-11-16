@@ -28,7 +28,7 @@ std::size_t SqliteTrackDatabase::getTrackCount()
         return 0;
     }
 
-    return stm.getIntColumn(0).value_or(0);
+    return stm.getColumn<int>(0).value_or(0);
 }
 
 std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
@@ -43,12 +43,12 @@ std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
     if (not stm.prepare(trackQuery).hasError()) {
         while (stm.execute() == ExecuteResult::Row && stm.getColumnCount() == 6) {
             auto track = Rapid::Common::TrackData{};
-            auto trackId = stm.getIntColumn(0).value_or(0);
-            track.setTrackName(stm.getStringColumn(1).value_or(""));
-            track.setFinishline({stm.getFloatColumn(2).value_or(0), stm.getFloatColumn(3).value_or(0)});
+            auto trackId = stm.getColumn<int>(0).value_or(0);
+            track.setTrackName(stm.getColumn<std::string>(1).value_or(""));
+            track.setFinishline({stm.getColumn<float>(2).value_or(0), stm.getColumn<float>(3).value_or(0)});
             if (stm.hasColumnValue(4) == HasColumnValueResult::Ok &&
                 stm.hasColumnValue(5) == HasColumnValueResult::Ok) {
-                track.setStartline({stm.getFloatColumn(4).value_or(0), stm.getFloatColumn(5).value_or(0)});
+                track.setStartline({stm.getColumn<float>(4).value_or(0), stm.getColumn<float>(5).value_or(0)});
             }
 
             // Request sektor
@@ -64,7 +64,8 @@ std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
 
             auto sections = std::vector<Rapid::Common::PositionData>{};
             while (sektorStm.execute() == ExecuteResult::Row && sektorStm.getColumnCount() == 2) {
-                sections.emplace_back(sektorStm.getFloatColumn(0).value_or(0), sektorStm.getFloatColumn(1).value_or(0));
+                sections.emplace_back(sektorStm.getColumn<float>(0).value_or(0),
+                                      sektorStm.getColumn<float>(1).value_or(0));
             }
             track.setSections(sections);
             tracksResult.emplace_back(track);
@@ -94,8 +95,7 @@ bool SqliteTrackDatabase::deleteTrack(std::size_t trackIndex)
     }
 
     auto deleteTrackStm = Statement{mDbConnection};
-    auto const bindError =
-        deleteTrackStm.prepare(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
+    auto const bindError = deleteTrackStm.prepare(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
     if (bindError or (deleteTrackStm.execute() != ExecuteResult::Ok)) {
         std::cout << "Failed to delete track. Error:" << mDbConnection.getErrorMessage() << std::endl;
         return false;
@@ -125,7 +125,7 @@ std::vector<std::size_t> SqliteTrackDatabase::getTrackIds() const noexcept
     auto executeResult = ExecuteResult::Error;
     auto trackIds = std::vector<std::size_t>{};
     while (((executeResult = trackIdStm.execute()) == ExecuteResult::Row) && (trackIdStm.getColumnCount() > 0)) {
-        auto const trackId = trackIdStm.getIntColumn(0);
+        auto const trackId = trackIdStm.getColumn<int>(0);
         if (trackId.has_value()) {
             trackIds.push_back(*trackId);
         } else {
