@@ -4,6 +4,7 @@
 
 #include "JsonDeserializer.hpp"
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::Common
 {
@@ -50,9 +51,9 @@ std::optional<TrackData> deserializeTrackData(ArduinoJson::JsonObject const& obj
         }
         trackData.setSections(sectors);
     } catch (std::invalid_argument& e) {
-        std::cerr << "Failed deserilize lap data invalid argument" << e.what() << "\n";
+        spdlog::error("Failed deserilize lap data invalid argument.{}", e.what());
     } catch (std::out_of_range& e) {
-        std::cerr << "Failed deserilize lap data invalid argument" << e.what() << "\n";
+        spdlog::error("Failed deserilize lap data invalid argument.{}", e.what());
     }
 
     return trackData;
