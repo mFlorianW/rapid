@@ -10,7 +10,7 @@
 
 namespace Rapid::Common
 {
-class PositionDateTimeData;
+class GpsPositionData;
 }
 
 class PositionListModelPrivate;
@@ -35,7 +35,7 @@ public:
 
     QHash<qint32, QByteArray> roleNames() const override;
 
-    void addPosition(Rapid::Common::PositionDateTimeData const& position);
+    void addPosition(Rapid::Common::GpsPositionData const& position);
 
     void clear();
 

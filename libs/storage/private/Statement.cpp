@@ -22,6 +22,7 @@ Statement::~Statement()
 
 PrepareResult Statement::prepare(char const* statement) noexcept
 {
+    mPrepared = false;
     auto* dbHandle = mDbConnection.getRawHandle();
     if (dbHandle == nullptr || statement == nullptr) {
         return PrepareResult::Error;
@@ -35,10 +36,17 @@ PrepareResult Statement::prepare(char const* statement) noexcept
     auto const prepareResult =
         sqlite3_prepare_v2(dbHandle, statement, static_cast<int>(std::strlen(statement)), &mStatement, nullptr);
     if (prepareResult == SQLITE_OK) {
+        mPrepared = true;
         return PrepareResult::Ok;
     }
 
     return PrepareResult::Error;
+}
+
+Statement& Statement::prepare2(char const* statement) noexcept
+{
+    std::ignore = prepare(statement);
+    return *this;
 }
 
 ExecuteResult Statement::execute() noexcept
@@ -65,6 +73,11 @@ void Statement::reset()
     if (mStatement != nullptr) {
         sqlite3_reset(mStatement);
     }
+}
+
+bool Statement::hasError()
+{
+    return mBindError;
 }
 
 BindResult Statement::bindIntValue(std::size_t index, int32_t value) noexcept

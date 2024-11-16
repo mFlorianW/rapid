@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "IPositionDateTimeProvider.hpp"
+#include "IGpsPositionProvider.hpp"
 #include "IRestRequestHandler.hpp"
 
 namespace Rapid::Rest
 {
 
-class GpsEndpoint final : public IRestRequestHandler, public Positioning::IPositionDateTimeProvider
+class GpsEndpoint final : public IRestRequestHandler, public Positioning::IGpsPositionProvider
 {
 public:
     /**

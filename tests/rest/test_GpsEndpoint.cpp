@@ -21,7 +21,7 @@ TEST_CASE("The GpsEndpoint shall parse the JSON RestRequest and shall update the
 {
     auto restRequest = RestRequest{RequestType::Post, "/gps", request};
     auto source = GpsEndpoint{};
-    auto expectedResult = PositionDateTimeData{};
+    auto expectedResult = GpsPositionData{};
     expectedResult.setDate({"01.00.0123"});
     expectedResult.setTime({"17:19:05.045"});
     expectedResult.setPosition({52.02739715576172, 11.278840065002441});
@@ -29,5 +29,5 @@ TEST_CASE("The GpsEndpoint shall parse the JSON RestRequest and shall update the
     auto const handleResult = source.handleRestRequest(restRequest);
 
     REQUIRE(handleResult == RequestHandleResult::Ok);
-    REQUIRE(source.positionTimeData.get() == expectedResult);
+    REQUIRE(source.gpsPosition.get() == expectedResult);
 }

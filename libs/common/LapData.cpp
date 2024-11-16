@@ -13,10 +13,14 @@ class SharedLap : public SharedData
 {
 public:
     std::vector<Timestamp> mSectorTimes;
+    std::vector<GpsPositionData> mPositions;
 
     friend bool operator==(SharedLap const& lhs, SharedLap const& rhs)
     {
-        return (lhs.mSectorTimes) == (rhs.mSectorTimes);
+        // clang-format off
+        return (lhs.mSectorTimes == rhs.mSectorTimes) &&
+               (lhs.mPositions == rhs.mPositions);
+        // clang-format on
     }
 };
 
@@ -85,6 +89,11 @@ std::vector<Timestamp> const& LapData::getSectorTimes() const noexcept
     return mData->mSectorTimes;
 }
 
+std::vector<GpsPositionData> const& LapData::getPositions() const noexcept
+{
+    return mData->mPositions;
+}
+
 void LapData::addSectorTime(Timestamp const& sectorTime)
 {
     mData->mSectorTimes.push_back(sectorTime);
@@ -93,6 +102,16 @@ void LapData::addSectorTime(Timestamp const& sectorTime)
 void LapData::addSectorTimes(std::vector<Timestamp> const& sectorTimes)
 {
     mData->mSectorTimes = sectorTimes;
+}
+
+void LapData::addPosition(GpsPositionData const& pos)
+{
+    mData->mPositions.push_back(pos);
+}
+
+void LapData::overwritePositions(std::vector<GpsPositionData> const& positions)
+{
+    mData->mPositions = positions;
 }
 
 bool operator==(LapData const& lhs, LapData const& rhs)

@@ -5,7 +5,7 @@
 #include "MainWindowViewModel.hpp"
 #include "PositionListModel.hpp"
 #include "RestHttpClient.hpp"
-#include <ConstantVelocityPositionDateTimeProvider.hpp>
+#include <ConstantGpsPositionProvider.hpp>
 #include <CsvGpsFileReader.hpp>
 #include <QDebug>
 #include <QUrl>
@@ -13,7 +13,7 @@
 struct MainWindowViewModelPrivate
 {
     PositionListModel mPositionListModel;
-    Rapid::Positioning::ConstantVelocityPositionDateTimeProvider mGpsProvider;
+    Rapid::Positioning::ConstantGpsPositionProvider mGpsProvider;
     QGeoCoordinate mCurrentPosition;
     bool mGpsSourceActive{false};
     QString mHostAddress{"localhost"};
@@ -24,7 +24,7 @@ struct MainWindowViewModelPrivate
 MainWindowViewModel::MainWindowViewModel()
     : d{std::make_unique<MainWindowViewModelPrivate>()}
 {
-    d->mGpsProvider.positionTimeData.valueChanged().connect(&MainWindowViewModel::handlePositionUpdate, this);
+    d->mGpsProvider.gpsPosition.valueChanged().connect(&MainWindowViewModel::handlePositionUpdate, this);
     d->mGpsProvider.setVelocityInMeterPerSecond(80.6667);
 
     updateUrl();
@@ -65,7 +65,7 @@ void MainWindowViewModel::loadGpsFile(QUrl const& fileName)
 
 void MainWindowViewModel::handlePositionUpdate()
 {
-    auto const position = d->mGpsProvider.positionTimeData.get();
+    auto const position = d->mGpsProvider.gpsPosition.get();
     d->mPositionListModel.addPosition(position);
     d->mCurrentPosition = QGeoCoordinate{position.getPosition().getLatitude(), position.getPosition().getLongitude()};
     d->mRestHttpClient.sendPosition(position);

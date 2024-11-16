@@ -9,7 +9,7 @@ using namespace Rapid::Common;
 namespace Rapid::Workflow
 {
 
-ActiveSessionWorkflow::ActiveSessionWorkflow(Positioning::IPositionDateTimeProvider& positionDateTimeProvider,
+ActiveSessionWorkflow::ActiveSessionWorkflow(Positioning::IGpsPositionProvider& positionDateTimeProvider,
                                              Algorithm::ILaptimer& laptimer,
                                              Storage::ISessionDatabase& database)
     : mDateTimeProvider{positionDateTimeProvider}
@@ -26,11 +26,17 @@ void ActiveSessionWorkflow::startActiveSession() noexcept
         mLaptimer.currentLaptime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentLaptimeChanged, this);
         mLaptimer.currentSectorTime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentSectorTimeChanged, this);
         mLaptimer.setTrack(mTrack);
-
-        mPositionDateTimeUpdateHandle = mDateTimeProvider.positionTimeData.valueChanged().connect([this]() {
-            mLaptimer.updatePositionAndTime(mDateTimeProvider.positionTimeData.get());
+        mLaptimer.lapStarted.connect([this]() {
+            mLapActive = true;
         });
-        auto dateTime = mDateTimeProvider.positionTimeData.get();
+
+        mPositionDateTimeUpdateHandle = mDateTimeProvider.gpsPosition.valueChanged().connect([this]() {
+            mLaptimer.updatePositionAndTime(mDateTimeProvider.gpsPosition.get());
+            if (mLapActive) {
+                mCurrentLap.addPosition(mDateTimeProvider.gpsPosition.get());
+            }
+        });
+        auto dateTime = mDateTimeProvider.gpsPosition.get();
         mSession = Common::SessionData{mTrack, dateTime.getDate(), dateTime.getTime()};
         lapCount.set(0);
     } catch (std::exception const& e) {
@@ -41,7 +47,7 @@ void ActiveSessionWorkflow::startActiveSession() noexcept
 void ActiveSessionWorkflow::stopActiveSession() noexcept
 {
     try {
-        mDateTimeProvider.positionTimeData.valueChanged().disconnect(mPositionDateTimeUpdateHandle);
+        mDateTimeProvider.gpsPosition.valueChanged().disconnect(mPositionDateTimeUpdateHandle);
         mSession = std::nullopt;
     } catch (std::exception const& e) {
         std::cerr << "Unknow Error on stoping active session. Error:" << e.what() << "\n";

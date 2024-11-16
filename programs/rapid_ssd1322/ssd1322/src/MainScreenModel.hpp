@@ -8,7 +8,7 @@
 #include "ActiveSessionView.hpp"
 #include "ShowMenuScreenCommand.hpp"
 #include <ActiveSessionWorkflow.hpp>
-#include <IPositionDateTimeProvider.hpp>
+#include <IGpsPositionProvider.hpp>
 #include <SimpleLaptimer.hpp>
 #include <TrackDetection.hpp>
 #include <TrackDetectionWorkflow.hpp>
@@ -18,7 +18,7 @@ class MainScreenModel
 {
 public:
     MainScreenModel(ScreenModel& screenModel,
-                    Rapid::Positioning::IPositionDateTimeProvider& posDateTimeProvider,
+                    Rapid::Positioning::IGpsPositionProvider& posDateTimeProvider,
                     Rapid::Storage::ISessionDatabase& sessionDatabase,
                     Rapid::Storage::ITrackDatabase& trackDatabase);
     View& getActiveView();

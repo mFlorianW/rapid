@@ -9,57 +9,70 @@
 #include "PositionData.hpp"
 #include "SharedDataPointer.hpp"
 #include "Timestamp.hpp"
+#include "VelocityData.hpp"
 
 namespace Rapid::Common
 {
+class SharedGpsPositionData;
 
-class SharedPositionTimeData;
-class PositionDateTimeData final
+/**
+ * A GpsPositionData always consists of a Position, Timestamp and Date.
+ */
+class GpsPositionData final
 {
 public:
     /**
      * Creates an empty instance of PositionDateTimeDate
      */
-    PositionDateTimeData();
+    GpsPositionData();
 
     /**
-     * Creates an instance of the PositionDateTimeData.
+     * Creates an instance of the GpsPositionData.
      * @param posData The position data for the instance.
      * @param time The time data for the instance.
      * @param date The date data for the instance.
      */
-    PositionDateTimeData(PositionData const& posData, Timestamp const& time, Date const& date);
+    GpsPositionData(PositionData const& posData, Timestamp const& time, Date const& date);
+
+    /**
+     * Creates an instance of the GpsPositionData.
+     * @param posData The position data for the instance.
+     * @param time The time data for the instance.
+     * @param date The date data for the instance.
+     * @param velocity The velocity data for the instance.
+     */
+    GpsPositionData(PositionData const& posData, Timestamp const& time, Date const& date, VelocityData velocity);
 
     /**
      * Default destructor
      */
-    ~PositionDateTimeData();
+    ~GpsPositionData();
 
     /**
-     * Copy constructor for PositionDateTimeData.
+     * Copy constructor for GpsPositionData.
      * @param other The object to copy from.
      */
-    PositionDateTimeData(PositionDateTimeData const& other);
+    GpsPositionData(GpsPositionData const& other);
 
     /**
-     * Copy assignment operator for PositionDateTimeData.
+     * Copy assignment operator for GpsPositionData.
      * @param other The object to copy from.
      * @return PositionData& A reference to the copied instance.
      */
-    PositionDateTimeData& operator=(PositionDateTimeData const& other);
+    GpsPositionData& operator=(GpsPositionData const& other);
 
     /**
-     * The move constructor for PositionDateTimeData.
+     * The move constructor for GpsPositionData.
      * @param other The object to move from.
      */
-    PositionDateTimeData(PositionDateTimeData&& other);
+    GpsPositionData(GpsPositionData&& other);
 
     /**
-     * The move assignment operator for PositionDateTimeData.
+     * The move assignment operator for GpsPositionData.
      * @param other The object to move from.
      * @return PositionData& A reference of the moved instance.
      */
-    PositionDateTimeData& operator=(PositionDateTimeData&& other);
+    GpsPositionData& operator=(GpsPositionData&& other);
 
     /**
      * @return The current position
@@ -76,6 +89,11 @@ public:
      * @return The current time
      */
     Timestamp getTime() const noexcept;
+
+    /**
+     * @return Gives the velocity.
+     */
+    VelocityData getVelocity() const noexcept;
 
     /**
      * Sets a new time.
@@ -95,21 +113,27 @@ public:
     void setDate(Date const& date);
 
     /**
+     * Sets the velocity
+     * @param velocity The new velocity
+     */
+    void setVelocity(VelocityData const& velocity);
+
+    /**
      * Equal operator
      * @return true The two objects are the same.
      * @return false The two objects are not the same.
      */
-    friend bool operator==(PositionDateTimeData const& lhs, PositionDateTimeData const& rhs);
+    friend bool operator==(GpsPositionData const& lhs, GpsPositionData const& rhs);
 
     /**
      * Not Equal operator
      * @return true The two objects are not the same.
      * @return false The two objects are the same.
      */
-    friend bool operator!=(PositionDateTimeData const& lhs, PositionDateTimeData const& rhs);
+    friend bool operator!=(GpsPositionData const& lhs, GpsPositionData const& rhs);
 
 private:
-    SharedDataPointer<SharedPositionTimeData> mData;
+    SharedDataPointer<SharedGpsPositionData> mData;
 };
 
 } // namespace Rapid::Common

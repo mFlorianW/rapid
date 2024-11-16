@@ -7,7 +7,7 @@
 namespace Rapid::Workflow
 {
 TrackDetectionWorkflow::TrackDetectionWorkflow(Algorithm::ITrackDetection& trackDetector,
-                                               Positioning::IPositionDateTimeProvider& positionInfomationProvider)
+                                               Positioning::IGpsPositionProvider& positionInfomationProvider)
     : ITrackDetectionWorkflow{}
     , mTrackDetector{trackDetector}
     , mPositionInfoProvider{positionInfomationProvider}
@@ -19,9 +19,8 @@ TrackDetectionWorkflow::~TrackDetectionWorkflow() = default;
 void TrackDetectionWorkflow::startDetection()
 {
     mActive = true;
-    mPositionInfoProvider.positionTimeData.valueChanged().connect(
-        &TrackDetectionWorkflow::onPositionInformationReceived,
-        this);
+    mPositionInfoProvider.gpsPosition.valueChanged().connect(&TrackDetectionWorkflow::onPositionInformationReceived,
+                                                             this);
 }
 
 void TrackDetectionWorkflow::stopDetection()
@@ -46,7 +45,7 @@ void TrackDetectionWorkflow::onPositionInformationReceived()
     }
 
     for (auto const& track : mTracksToDetect) {
-        if (mTrackDetector.isOnTrack(track, mPositionInfoProvider.positionTimeData.get().getPosition())) {
+        if (mTrackDetector.isOnTrack(track, mPositionInfoProvider.gpsPosition.get().getPosition())) {
             mDetectedTrack = track;
             trackDetected.emit();
             break;

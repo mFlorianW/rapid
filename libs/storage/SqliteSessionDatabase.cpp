@@ -116,8 +116,6 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
             }
             mStorageCache.erase(ctx);
         });
-
-        return storageContext->mResult;
     } else {
         storageContext->mStorageThread = std::thread{&SqliteSessionDatabase::addSession, this, storageContext.get()};
         storageContext->done.connect([&](StorageContext* ctx) {
@@ -128,12 +126,8 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
             }
             mStorageCache.erase(ctx);
         });
-
-        // System::Result result = storeNewSession(session) ? System::Result::Ok : System::Result::Error;
-        // auto asyncResult = std::make_shared<AsyncResultDb>();
-        // asyncResult->setDbResult(result);
-        return storageContext->mResult;
     }
+    return storageContext->mResult;
 }
 
 void SqliteSessionDatabase::deleteSession(std::size_t index)
@@ -343,6 +337,12 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
                                     "SektorTime.LapId = Lap.LapId "
                                  "WHERE "
                                      "Session.SessionId = ? AND SektorTime.LapId = ? ORDER BY SektorTime.SektorIndex AND Lap.LapIndex ASC";
+    constexpr auto logPointQuery = "SELECT "
+                                    "LogPoint.Longitude, LogPoint.Latitude, LogPoint.Velocity, LogPoint.Date, LogPoint.Time "
+                                   "FROM "
+                                    "LogPoint "
+                                   "WHERE "
+                                     "LogPoint.LapId = ? ORDER By LogPoint.Idx";
     // clang-format on
     auto lapIds = std::vector<std::size_t>{};
     auto lapIdStm = Statement{mDbConnection};
@@ -387,6 +387,29 @@ std::optional<std::vector<Common::LapData>> SqliteSessionDatabase::getLapsOfSess
             std::cout << "Error query lap ids:" << mDbConnection.getErrorMessage() << std::endl;
             return std::nullopt;
         }
+
+        auto logPointStm = Statement{mDbConnection};
+        auto const bindError = logPointStm.prepare2(logPointQuery).bindValue(1, static_cast<int>(lapId)).hasError();
+        if (bindError) {
+            std::cout << "Error prepare logpoint query:" << mDbConnection.getErrorMessage() << std::endl;
+            return std::nullopt;
+        }
+
+        while (((state = logPointStm.execute()) == ExecuteResult::Row) && (logPointStm.getColumnCount() > 0)) {
+            auto const longitude = logPointStm.getFloatColumn(0);
+            auto const latitude = logPointStm.getFloatColumn(1);
+            auto const velocity = logPointStm.getFloatColumn(2);
+            auto const date = logPointStm.getStringColumn(3);
+            auto const time = logPointStm.getStringColumn(4);
+            if (longitude.has_value() and latitude.has_value() and velocity.has_value() and date.has_value() and
+                time.has_value()) {
+                lapData.addPosition(Common::GpsPositionData{Common::PositionData{latitude.value(), longitude.value()},
+                                                            Common::Timestamp{time.value()},
+                                                            Common::Date{date.value()},
+                                                            Common::VelocityData{velocity.value()}});
+            }
+        }
+
         laps.push_back(lapData);
     }
 
@@ -441,7 +464,6 @@ bool SqliteSessionDatabase::storeLapOfSession(std::size_t sessionId,
     constexpr auto insertLapQuery = "INSERT INTO Lap(SessionId, LapIndex) "
                                     "VALUES "
                                     "(?, ?)";
-    constexpr auto lapIdQuery = "SELECT Lap.LapId FROM Lap WHERE Lap.SessionId = ? AND Lap.LapIndex = ?";
     constexpr auto insetSektorQuery = "INSERT INTO SektorTime(LapId, Time, SektorIndex) "
                                       "VALUES "
                                       "(?, ?, ?)";
@@ -455,15 +477,7 @@ bool SqliteSessionDatabase::storeLapOfSession(std::size_t sessionId,
         return false;
     }
 
-    auto lapIdStm = Statement{mDbConnection};
-    if ((lapIdStm.prepare(lapIdQuery) != PrepareResult::Ok) ||
-        (lapIdStm.bindIntValue(1, static_cast<int>(sessionId)) != BindResult::Ok) ||
-        (lapIdStm.bindIntValue(2, static_cast<int>(lapIndex)) != BindResult::Ok) ||
-        (lapIdStm.execute() != ExecuteResult::Row) || (!lapIdStm.getIntColumn(0).has_value())) {
-        std::cout << "Error failed to query lap id:" << mDbConnection.getErrorMessage() << std::endl;
-        return false;
-    }
-    auto const lapId = lapIdStm.getIntColumn(0).value_or(0);
+    auto lapId = static_cast<int>(getLapId(sessionId, lapIndex).value_or(0));
     auto insertSektorStm = Statement{mDbConnection};
     for (std::size_t sektorTimeIndex = 0; sektorTimeIndex < lapData.getSectorTimeCount(); ++sektorTimeIndex) {
         if ((insertSektorStm.prepare(insetSektorQuery) != PrepareResult::Ok) ||
@@ -477,7 +491,66 @@ bool SqliteSessionDatabase::storeLapOfSession(std::size_t sessionId,
             return false;
         }
     }
+
+    if (!storeLapLogPoints(lapId, lapData)) {
+        return false;
+    }
+
     return true;
+}
+
+bool SqliteSessionDatabase::storeLapLogPoints(std::size_t lapId, Common::LapData const& lapData) const noexcept
+{
+    // clang-format off
+    constexpr auto insertLogPoint = "INSERT INTO LogPoint(Idx, LapId, Velocity, Longitude, Latitude, Date, Time) "
+                                    "VALUES "
+                                    "(?, ?, ?, ?, ?, ?, ?)";
+    // clang-format on
+    auto const& positions = lapData.getPositions();
+    auto insertLogPointStm = Statement{mDbConnection};
+    for (std::size_t idx = 0; idx < positions.size(); ++idx) {
+        auto const gpsPos = positions.at(idx);
+        auto const bindError = insertLogPointStm.prepare2(insertLogPoint)
+                                   .bindValue(1, static_cast<int>(idx))
+                                   .bindValue(2, static_cast<int>(lapId))
+                                   .bindValue(3, gpsPos.getVelocity().getVelocity())
+                                   .bindValue(4, gpsPos.getPosition().getLongitude())
+                                   .bindValue(5, gpsPos.getPosition().getLatitude())
+                                   .bindValue(6, gpsPos.getDate().asString())
+                                   .bindValue(7, gpsPos.getTime().asString())
+                                   .hasError();
+        if (bindError) {
+            std::cerr << "Failed to bind values LogPoint statement. Error: " << mDbConnection.getErrorMessage() << "\n";
+            return false;
+        }
+        if (insertLogPointStm.execute() != ExecuteResult::Ok) {
+            std::cerr << "Failed to execute LogPoint statement. Error: " << mDbConnection.getErrorMessage() << "\n";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+std::optional<std::size_t> SqliteSessionDatabase::getLapId(std::size_t sessionId, std::size_t lapIndex) const noexcept
+{
+    // clang-format off
+    constexpr auto lapIdQuery = "SELECT Lap.LapId FROM Lap WHERE Lap.SessionId = ? AND Lap.LapIndex = ?";
+    // clang-format on
+    auto lapIdStm = Statement{mDbConnection};
+    auto const bindError = lapIdStm.prepare2(lapIdQuery)
+                               .bindValue(1, static_cast<int>(sessionId))
+                               .bindValue(2, static_cast<int>(lapIndex))
+                               .hasError();
+    if (bindError) {
+        std::cout << "Faild to build prepare statement for lap ID.\n";
+        return std::nullopt;
+    }
+    if ((lapIdStm.execute() != ExecuteResult::Row) || (not lapIdStm.getIntColumn(0).has_value())) {
+        std::cerr << "Error failed to query lap id:" << mDbConnection.getErrorMessage() << "\n";
+        return false;
+    }
+    return lapIdStm.getIntColumn(0);
 }
 
 void SqliteSessionDatabase::handleUpdates(void* objPtr,

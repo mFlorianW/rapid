@@ -7,7 +7,7 @@
 namespace Rapid::LappyHeadless
 {
 
-LappyHeadless::LappyHeadless(Rapid::Positioning::IPositionDateTimeProvider& posProvider,
+LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvider,
                              Rapid::Storage::ISessionDatabase& sessionDatabase,
                              Rapid::Storage::ITrackDatabase& trackDatabase)
     : mPositionProvider{posProvider}

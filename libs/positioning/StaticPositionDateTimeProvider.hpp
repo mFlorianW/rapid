@@ -5,19 +5,18 @@
 #ifndef STATICPOSITIONDATETIMEPROVIDER_HPP
 #define STATICPOSITIONDATETIMEPROVIDER_HPP
 
-#include "IPositionDateTimeProvider.hpp"
+#include "IGpsPositionProvider.hpp"
 #include <Timestamp.hpp>
 
 namespace Rapid::Positioning
 {
 
-class StaticPositionDateTimeProvider final : public IPositionDateTimeProvider
+class StaticPositionDateTimeProvider final : public IGpsPositionProvider
 {
 public:
     StaticPositionDateTimeProvider()
     {
-        positionTimeData.set(
-            Common::PositionDateTimeData{{52.0270889, 11.2803483}, Common::Timestamp{"15:05:10.234"}, {}});
+        gpsPosition.set(Common::GpsPositionData{{52.0270889, 11.2803483}, Common::Timestamp{"15:05:10.234"}, {}});
     }
 
     /**

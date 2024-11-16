@@ -5,50 +5,50 @@
 #ifndef IPOSITIONDATETIMEPROVIDER_HPP
 #define IPOSITIONDATETIMEPROVIDER_HPP
 
-#include "PositionDateTimeData.hpp"
+#include "GpsPositionData.hpp"
 #include <kdbindings/property.h>
 
 namespace Rapid::Positioning
 {
 
-class IPositionDateTimeProvider
+class IGpsPositionProvider
 {
 public:
     /**
      *  Virtual default destructor.
      */
-    virtual ~IPositionDateTimeProvider() = default;
+    virtual ~IGpsPositionProvider() = default;
 
     /**
      * Disabled copy constructor
      */
-    IPositionDateTimeProvider(IPositionDateTimeProvider const&) = delete;
+    IGpsPositionProvider(IGpsPositionProvider const&) = delete;
 
     /**
      * Disabled copy operator
      */
-    IPositionDateTimeProvider& operator=(IPositionDateTimeProvider const&) = delete;
+    IGpsPositionProvider& operator=(IGpsPositionProvider const&) = delete;
 
     /**
      * Default move operator
      */
-    IPositionDateTimeProvider(IPositionDateTimeProvider&&) noexcept = default;
+    IGpsPositionProvider(IGpsPositionProvider&&) noexcept = default;
 
     /**
      * Default move operator
      */
-    IPositionDateTimeProvider& operator=(IPositionDateTimeProvider&&) noexcept = default;
+    IGpsPositionProvider& operator=(IGpsPositionProvider&&) noexcept = default;
 
     /**
      * This property holds current PostionDateTimeData
      */
-    KDBindings::Property<Common::PositionDateTimeData> positionTimeData;
+    KDBindings::Property<Common::GpsPositionData> gpsPosition;
 
 protected:
     /**
      * Default protected constructor.
      */
-    IPositionDateTimeProvider() = default;
+    IGpsPositionProvider() = default;
 };
 
 } // namespace Rapid::Positioning

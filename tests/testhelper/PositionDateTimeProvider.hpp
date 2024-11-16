@@ -5,12 +5,12 @@
 #ifndef POSITIONDATETIMEPROVIDER_HPP
 #define POSITIONDATETIMEPROVIDER_HPP
 
-#include "IPositionDateTimeProvider.hpp"
+#include "IGpsPositionProvider.hpp"
 
 namespace Rapid::TestHelper
 {
 
-class PositionDateTimeProvider : public Rapid::Positioning::IPositionDateTimeProvider
+class PositionDateTimeProvider : public Rapid::Positioning::IGpsPositionProvider
 {
 };
 

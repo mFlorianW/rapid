@@ -2,53 +2,52 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#ifndef FILEBASEDPOSITIONDATETIMEPROVIDER_HPP
-#define FILEBASEDPOSITIONDATETIMEPROVIDER_HPP
+#pragma once
 
-#include "IPositionDateTimeProvider.hpp"
+#include "IGpsPositionProvider.hpp"
 #include <Timer.hpp>
 
 namespace Rapid::Positioning
 {
 
 /**
- * This PositionDateTimeProvider replays a list of GPS positions at a 10Hz frequency. The replayed
+ * This @ref ConstantGpsPositionProvider replays a list of GPS positions at a 10Hz frequency. The replayed
  * positions are based on the provided list. Positions are automatically interpolated when the two
  * positions are to far of each other. The interpolated position is based on set veclocity.
  */
-class ConstantVelocityPositionDateTimeProvider final : public IPositionDateTimeProvider
+class ConstantGpsPositionProvider final : public IGpsPositionProvider
 {
 public:
     /**
      * Creates an instance of the FileBasedPositionDateTimeProvider.
      * @param gpsPositions The GPS position list that is used for the replay.
      */
-    explicit ConstantVelocityPositionDateTimeProvider(std::vector<Common::PositionData> const& gpsPositions = {});
+    explicit ConstantGpsPositionProvider(std::vector<Common::PositionData> const& gpsPositions = {});
 
     /**
      * Empty default destructor
      */
-    ~ConstantVelocityPositionDateTimeProvider() override;
+    ~ConstantGpsPositionProvider() override;
 
     /**
      * Disabled copy operator
      */
-    ConstantVelocityPositionDateTimeProvider(ConstantVelocityPositionDateTimeProvider const&) = delete;
+    ConstantGpsPositionProvider(ConstantGpsPositionProvider const&) = delete;
 
     /**
      * Disabled copy operator
      */
-    ConstantVelocityPositionDateTimeProvider& operator=(ConstantVelocityPositionDateTimeProvider const&) = delete;
+    ConstantGpsPositionProvider& operator=(ConstantGpsPositionProvider const&) = delete;
 
     /**
      * Disabled move operator
      */
-    ConstantVelocityPositionDateTimeProvider(ConstantVelocityPositionDateTimeProvider&&) noexcept = delete;
+    ConstantGpsPositionProvider(ConstantGpsPositionProvider&&) noexcept = delete;
 
     /**
      * Disabled move operator
      */
-    ConstantVelocityPositionDateTimeProvider& operator=(ConstantVelocityPositionDateTimeProvider&&) noexcept = delete;
+    ConstantGpsPositionProvider& operator=(ConstantGpsPositionProvider&&) noexcept = delete;
 
     /**
      * Overwrites the GPS positions for playback.
@@ -93,5 +92,3 @@ private:
 };
 
 } // namespace Rapid::Positioning
-
-#endif // FILEBASEDPOSITIONDATETIMEPROVIDER_HPP

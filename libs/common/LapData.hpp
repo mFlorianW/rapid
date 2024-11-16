@@ -5,9 +5,9 @@
 #ifndef LAP_HPP
 #define LAP_HPP
 
+#include "GpsPositionData.hpp"
 #include "SharedDataPointer.hpp"
 #include "Timestamp.hpp"
-#include <ArduinoJson.hpp>
 #include <optional>
 #include <vector>
 
@@ -22,11 +22,6 @@ class SharedLap;
 class LapData final
 {
 public:
-    /**
-     * Alias for the JsonDocument
-     */
-    using JsonDocument = ArduinoJson::StaticJsonDocument<1024>;
-
     /**
      * Creates an empty lap
      */
@@ -104,6 +99,13 @@ public:
     [[nodiscard]] std::vector<Timestamp> const& getSectorTimes() const noexcept;
 
     /**
+     * Gives the stored positions information for that lap.
+     * The position in the list is the order of the data.
+     * return The stored position of that lap.
+     */
+    [[nodiscard]] std::vector<GpsPositionData> const& getPositions() const noexcept;
+
+    /**
      * Adds a new sector time to the lap.
      * The order to this function calls define the sector ordering.
      * @param sectorTime The sector that shall be added.
@@ -116,6 +118,18 @@ public:
      * @param sectorTimes The list of sector times.
      */
     void addSectorTimes(std::vector<Timestamp> const& sectorTimes);
+
+    /**
+     * Adds a position to the list of positions of the lap.
+     * @param pos The position that shall be added.
+     */
+    void addPosition(GpsPositionData const& pos);
+
+    /**
+     * Overwrite all position data for the Lap.
+     * @param positions The new position data for that lap.
+     */
+    void overwritePositions(std::vector<GpsPositionData> const& positions);
 
     /**
      * Equal operator

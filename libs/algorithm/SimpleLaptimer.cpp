@@ -18,7 +18,7 @@ void SimpleLaptimer::setTrack(Common::TrackData const& track)
     mTrackData = track;
 }
 
-void SimpleLaptimer::updatePositionAndTime(Common::PositionDateTimeData const& data)
+void SimpleLaptimer::updatePositionAndTime(Common::GpsPositionData const& data)
 {
     mCurrentPoints.push_front(data.getPosition());
     if (mCurrentPoints.size() > 4) {

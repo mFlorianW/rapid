@@ -24,13 +24,13 @@ RequestHandleResult GpsEndpoint::handleRestRequest(RestRequest& request) noexcep
             jsonDoc.containsKey("longitude")) {
             return RequestHandleResult::Error;
         }
-        auto newPos = PositionDateTimeData{};
+        auto newPos = GpsPositionData{};
         newPos.setDate({jsonDoc["date"].as<std::string>()});
         newPos.setTime({jsonDoc["time"].as<std::string>()});
         newPos.setPosition(
             {std::stof(jsonDoc["latitude"].as<std::string>()), std::stof(jsonDoc["longitude"].as<std::string>())});
 
-        positionTimeData = newPos;
+        gpsPosition = newPos;
 
     } catch (std::exception const& e) {
         std::cerr << "Failed to handle REST request unexpected error during deserialization. Error:" << e.what()

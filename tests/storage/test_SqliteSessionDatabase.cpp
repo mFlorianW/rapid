@@ -46,7 +46,11 @@ class TestSqliteSessionDatabaseEventListener : public Catch::EventListenerBase
     void dropSessionData()
     {
         auto* dbCon = Connection::connection(getTestDatabseFile("test_session.db")).getRawHandle();
-        REQUIRE(sqlite3_exec(dbCon, "DELETE FROM Session", nullptr, nullptr, nullptr) == SQLITE_OK);
+        auto const deleted = sqlite3_exec(dbCon, "DELETE FROM Session", nullptr, nullptr, nullptr) == SQLITE_OK;
+        if (not deleted) {
+            std::cerr << "Failed to delete session information. Error: " << sqlite3_errmsg(dbCon) << "\n";
+            FAIL("The session database parts are not reseted.");
+        }
     }
 };
 } // namespace
@@ -133,7 +137,7 @@ TEST_CASE("The SqliteSessionDatabase shall store a already stored session under 
     REQUIRE(db.getSessionByIndex(1) == session2);
 }
 
-TEST_CASE("The SqliteSessionDatabase shall gives the number of stored sessions and should return the correct session "
+TEST_CASE("The SqliteSessionDatabase shall gives the number of stored sessions and should return the correct session"
           "for that index.")
 {
     auto db = SqliteSessionDatabase{getTestDatabseFile("test_session.db")};
@@ -157,9 +161,8 @@ TEST_CASE("The SqliteSessionDatabase shall gives the number of stored sessions a
     REQUIRE(db.getSessionByIndex(2) == std::nullopt);
 }
 
-TEST_CASE(
-    "The SqliteSessionDatabase shall delete a session under the index and shall emit the sessionDelete signal with the "
-    "index.")
+TEST_CASE("The SqliteSessionDatabase shall delete a session under the index and shall emit the sessionDelete signal "
+          "with the index.")
 {
     auto db = SqliteSessionDatabase{getTestDatabseFile("test_session.db")};
     auto const session1 = Sessions::getTestSession3();
@@ -186,7 +189,6 @@ TEST_CASE(
 
 TEST_CASE("The SqlieSessionDatabase shall emit session deteled on referential integrity changes")
 {
-
     auto db = SqliteSessionDatabase{getTestDatabseFile("test_session.db")};
     auto const session1 = Sessions::getTestSession3();
     auto deletedIndex = std::size_t{123456};

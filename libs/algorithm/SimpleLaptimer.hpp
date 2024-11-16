@@ -50,9 +50,9 @@ public:
     void setTrack(Common::TrackData const& track) override;
 
     /**
-     * @copydoc updatePositionAndTime(const Common::PositionDateTimeData &data)
+     * @copydoc updatePositionAndTime(const Common::GpsPositionData &data)
      */
-    void updatePositionAndTime(Common::PositionDateTimeData const& data) override;
+    void updatePositionAndTime(Common::GpsPositionData const& data) override;
 
     /**
      * @copydoc SimpleLaptimer::getLastLaptime()

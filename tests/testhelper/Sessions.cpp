@@ -4,6 +4,7 @@
 
 #include "Sessions.hpp"
 #include "Tracks.hpp"
+#include <GpsPositionData.hpp>
 #include <array>
 
 using namespace Rapid::Common;
@@ -24,11 +25,16 @@ SessionData createSession()
     sectorTime.setFractionalOfSecond(144);
     sectorTime.setSecond(25);
 
+    auto gpsPos =
+        GpsPositionData{PositionData{52.00f, 11.00f}, Timestamp{"00:00:00.000"}, Date{"01.01.1970"}, VelocityData{100}};
+
     LapData lap;
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
+    lap.addPosition(gpsPos);
+    lap.addPosition(gpsPos);
 
     auto session = SessionData{Tracks::getOscherslebenTrack(), sessionDate, sessionTime};
     session.addLap(lap);
@@ -74,11 +80,18 @@ SessionData createSession3()
     sectorTime.setFractionalOfSecond(144);
     sectorTime.setSecond(25);
 
+    auto gpsPos = GpsPositionData{PositionData{52.0258333, 11.279166666},
+                                  Timestamp{"00:00:00.000"},
+                                  Date{"01.01.1970"},
+                                  VelocityData{100}};
+
     LapData lap;
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
     lap.addSectorTime(sectorTime);
+    lap.addPosition(gpsPos);
+    lap.addPosition(gpsPos);
 
     auto session = SessionData{Tracks::getOscherslebenTrack2(), sessionDate, sessionTime};
     session.addLap(lap);
@@ -131,7 +144,7 @@ SessionData getTestSession2()
 char const* getTestSessionAsJson()
 {
     // clang-format off
-    static constexpr std::array<char, 392> TestSessionAsJson = {
+    static constexpr const char* TestSessionAsJson = {
         "{"
             "\"date\":\"01.01.1970\","
             "\"time\":\"13:00:00.000\","
@@ -158,18 +171,34 @@ char const* getTestSessionAsJson()
             "},"
             "\"laps\":["
                 "{"
-                "\"sectors\":["
-                        "\"00:00:25.144\","
-                        "\"00:00:25.144\","
-                        "\"00:00:25.144\","
-                        "\"00:00:25.144\""
+                    "\"sectors\":["
+                            "\"00:00:25.144\","
+                            "\"00:00:25.144\","
+                            "\"00:00:25.144\","
+                            "\"00:00:25.144\""
+                        "],"
+                    "\"log_points\":["
+                        "{"
+                            "\"velocity\":100,"
+                            "\"longitude\":11,"
+                            "\"latitude\":52,"
+                            "\"time\":\"00:00:00.000\","
+                            "\"date\":\"01.01.1970\""
+                        "},"
+                        "{"
+                            "\"velocity\":100,"
+                            "\"longitude\":11,"
+                            "\"latitude\":52,"
+                            "\"time\":\"00:00:00.000\","
+                            "\"date\":\"01.01.1970\""
+                        "}"
                     "]"
                 "}"
             "]"
         "}"
     };
     // clang-format on
-    return &TestSessionAsJson[0];
+    return TestSessionAsJson;
 }
 
 SessionData getTestSession4()

@@ -20,8 +20,10 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/JsonDeserializer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/JsonDeserializer.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SharedDataPointer.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PositionDateTimeData.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/PositionDateTimeData.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GpsPositionData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GpsPositionData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/VelocityData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/VelocityData.hpp
 )
 
 target_include_directories(CommonObject
