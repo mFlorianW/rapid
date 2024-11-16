@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RapidHeadless.hpp"
+#include <spdlog/spdlog.h>
 
 namespace Rapid::LappyHeadless
 {
@@ -16,15 +17,15 @@ LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvid
 {
     mTrackDetectionWorkflow.trackDetected.connect([this] {
         auto const track = mTrackDetectionWorkflow.getDetectedTrack();
-        std::cout << "Track detected:" << track.getTrackName() << "\n";
+        spdlog::info("Track detected: {}", track.getTrackName());
         mTrackDetectionWorkflow.stopDetection();
         mActiveSessionWorkflow.setTrack(track);
         mActiveSessionWorkflow.startActiveSession();
     });
 
     mActiveSessionWorkflow.lapFinished.connect([this] {
-        std::cout << "Lap finished:" << mActiveSessionWorkflow.lastLaptime.get().asString() << "\n";
-        std::cout << "Lap count:" << mActiveSessionWorkflow.lapCount.get() << "\n";
+        spdlog::info("Lap finished: {}", mActiveSessionWorkflow.lastLaptime.get().asString());
+        spdlog::info("Lap count: {}", mActiveSessionWorkflow.lapCount.get());
     });
 
     mTrackDetectionWorkflow.setTracks(mTrackDatabase.getTracks());

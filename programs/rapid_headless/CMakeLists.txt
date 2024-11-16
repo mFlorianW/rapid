@@ -14,6 +14,7 @@ PRIVATE
 
 target_link_libraries(rapid_headless
 PRIVATE
+    spdlog::spdlog
     Rapid::LibraryPath
     Rapid::System
     Rapid::Positioning
