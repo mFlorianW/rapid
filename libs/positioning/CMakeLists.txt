@@ -17,6 +17,8 @@ PUBLIC
 )
 
 target_link_libraries(Positioning
+PRIVATE
+    spdlog::spdlog
 PUBLIC
     Rapid::Common
     Rapid::System
