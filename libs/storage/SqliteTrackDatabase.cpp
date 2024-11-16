@@ -4,7 +4,7 @@
 
 #include "SqliteTrackDatabase.hpp"
 #include "private/Statement.hpp"
-#include <iostream>
+#include <spdlog/spdlog.h>
 #include <string>
 
 using namespace Rapid::Storage::Private;
@@ -24,7 +24,7 @@ std::size_t SqliteTrackDatabase::getTrackCount()
     constexpr auto statementStr = "SELECT COUNT(TrackId) FROM Track";
     Statement stm{mDbConnection};
     if (stm.prepare(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
-        std::cout << "Database Error: " << mDbConnection.getErrorMessage() << "\n";
+        spdlog::error("Database Error: {}", mDbConnection.getErrorMessage());
         return 0;
     }
 
@@ -90,14 +90,14 @@ bool SqliteTrackDatabase::deleteTrack(std::size_t trackIndex)
     // clang-format on
     auto const trackId = getTrackIdOfIndex(trackIndex);
     if (!trackId.has_value()) {
-        std::cout << "Failed to delete Track. Index not found:" << trackIndex << std::endl;
+        spdlog::error("Failed to delete Track. Index {} not found", trackIndex);
         return false;
     }
 
     auto deleteTrackStm = Statement{mDbConnection};
     auto const bindError = deleteTrackStm.prepare(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
     if (bindError or (deleteTrackStm.execute() != ExecuteResult::Ok)) {
-        std::cout << "Failed to delete track. Error:" << mDbConnection.getErrorMessage() << std::endl;
+        spdlog::error("Failed to delete track. Error: {}", mDbConnection.getErrorMessage());
         return false;
     }
     return true;
@@ -118,7 +118,7 @@ std::vector<std::size_t> SqliteTrackDatabase::getTrackIds() const noexcept
     // clang-format on
     auto trackIdStm = Statement{mDbConnection};
     if (trackIdStm.prepare(trackIdQuery).hasError()) {
-        std::cout << "Failed to prepare track id query. Error:" << mDbConnection.getErrorMessage();
+        spdlog::error("Failed to prepare track id query. Error: {}", mDbConnection.getErrorMessage());
         return {};
     }
 
