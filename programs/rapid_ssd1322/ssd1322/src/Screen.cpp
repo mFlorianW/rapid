@@ -4,8 +4,8 @@
 
 #include "Screen.hpp"
 #include <cstdio>
-#include <iostream>
 #include <lv_obj.h>
+#include <spdlog/spdlog.h>
 
 Screen::Screen()
     : m_screen{lv_obj_create(nullptr, nullptr)}
@@ -133,7 +133,7 @@ void Screen::restoreParent()
         try {
             mActiveView->requestPopup.disconnect(mPopupRequestConnectionHandle);
         } catch (std::out_of_range const& e) {
-            std::cerr << "Error on connection disconnect. Error:" << e.what() << "\n";
+            spdlog::error("Error on connection disconnect. Error: {}", e.what());
         }
     }
 }
