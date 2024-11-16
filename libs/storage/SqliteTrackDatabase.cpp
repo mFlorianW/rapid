@@ -23,7 +23,7 @@ std::size_t SqliteTrackDatabase::getTrackCount()
 {
     constexpr auto statementStr = "SELECT COUNT(TrackId) FROM Track";
     Statement stm{mDbConnection};
-    if (stm.prepare2(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
+    if (stm.prepare(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
         std::cout << "Database Error: " << mDbConnection.getErrorMessage() << "\n";
         return 0;
     }
@@ -40,7 +40,7 @@ std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
     auto tracksResult = std::vector<Common::TrackData>{};
 
     Statement stm{mDbConnection};
-    if (not stm.prepare2(trackQuery).hasError()) {
+    if (not stm.prepare(trackQuery).hasError()) {
         while (stm.execute() == ExecuteResult::Row && stm.getColumnCount() == 6) {
             auto track = Rapid::Common::TrackData{};
             auto trackId = stm.getIntColumn(0).value_or(0);
@@ -56,7 +56,7 @@ std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
                 "SELECT PO.Latitude, PO.Longitude FROM Track JOIN Sektor SE ON Track.TrackId = SE.TrackId JOIN "
                 "Position PO ON SE.PositionId = PO.PositionId WHERE Track.TrackId = ? ORDER BY SE.SektorIndex ASC";
             Statement sektorStm{mDbConnection};
-            auto const bindError = sektorStm.prepare2(sektorQuery).bindValue(1, trackId).hasError();
+            auto const bindError = sektorStm.prepare(sektorQuery).bindValue(1, trackId).hasError();
             if (bindError) {
                 tracksResult.clear();
                 break;
@@ -95,7 +95,7 @@ bool SqliteTrackDatabase::deleteTrack(std::size_t trackIndex)
 
     auto deleteTrackStm = Statement{mDbConnection};
     auto const bindError =
-        deleteTrackStm.prepare2(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
+        deleteTrackStm.prepare(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
     if (bindError or (deleteTrackStm.execute() != ExecuteResult::Ok)) {
         std::cout << "Failed to delete track. Error:" << mDbConnection.getErrorMessage() << std::endl;
         return false;
@@ -117,7 +117,7 @@ std::vector<std::size_t> SqliteTrackDatabase::getTrackIds() const noexcept
                                     "Track";
     // clang-format on
     auto trackIdStm = Statement{mDbConnection};
-    if (trackIdStm.prepare2(trackIdQuery).hasError()) {
+    if (trackIdStm.prepare(trackIdQuery).hasError()) {
         std::cout << "Failed to prepare track id query. Error:" << mDbConnection.getErrorMessage();
         return {};
     }

@@ -91,22 +91,13 @@ public:
 
     /**
      * Prepares the statment for furhter use.
-     * @param connection The database connection.
-     * @param statement The state that shall be prepared.
-     * @return "Ok" Everything went fine and the statement is ready for further use.
-     * @return "Error" In case of error. Check the DB connection error message.
-     */
-    PrepareResult prepare(char const* statement) noexcept;
-
-    /**
-     * Prepares the statment for furhter use.
      * Can be used to chain the binding.
+     * If the operation was succesful can be checked with @ref Statement::hasError.
      * @param connection The database connection.
      * @param statement The state that shall be prepared.
-     * @return "Ok" Everything went fine and the statement is ready for further use.
-     * @return "Error" In case of error. Check the DB connection error message.
+     * @return A reference to the statement for function chainging.
      */
-    Statement& prepare2(char const* statement) noexcept;
+    Statement& prepare(char const* statement) noexcept;
 
     /**
      * Excutes the statement. Import is that the statement is prepared before calling execute.

@@ -20,12 +20,12 @@ Statement::~Statement()
     }
 }
 
-PrepareResult Statement::prepare(char const* statement) noexcept
+Statement& Statement::prepare(char const* statement) noexcept
 {
     mPrepared = false;
     auto* dbHandle = mDbConnection.getRawHandle();
-    if (dbHandle == nullptr || statement == nullptr) {
-        return PrepareResult::Error;
+    if (dbHandle == nullptr or statement == nullptr) {
+        mBindError = true;
     }
 
     // If the statement is reused and shall be prepared again, the statement must be reset to it's initial state.
@@ -37,15 +37,8 @@ PrepareResult Statement::prepare(char const* statement) noexcept
         sqlite3_prepare_v2(dbHandle, statement, static_cast<int>(std::strlen(statement)), &mStatement, nullptr);
     if (prepareResult == SQLITE_OK) {
         mPrepared = true;
-        return PrepareResult::Ok;
     }
 
-    return PrepareResult::Error;
-}
-
-Statement& Statement::prepare2(char const* statement) noexcept
-{
-    std::ignore = prepare(statement);
     return *this;
 }
 
