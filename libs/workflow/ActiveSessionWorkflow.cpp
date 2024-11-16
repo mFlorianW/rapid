@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "ActiveSessionWorkflow.hpp"
+#include <spdlog/spdlog.h>
 
 using namespace Rapid::Common;
 
@@ -40,7 +41,7 @@ void ActiveSessionWorkflow::startActiveSession() noexcept
         mSession = Common::SessionData{mTrack, dateTime.getDate(), dateTime.getTime()};
         lapCount.set(0);
     } catch (std::exception const& e) {
-        std::cerr << "Unknow Error on starting active session. Error:" << e.what() << "\n";
+        spdlog::error("Unknow Error on starting active session. Error: {}", e.what());
     }
 }
 
@@ -50,7 +51,7 @@ void ActiveSessionWorkflow::stopActiveSession() noexcept
         mDateTimeProvider.gpsPosition.valueChanged().disconnect(mPositionDateTimeUpdateHandle);
         mSession = std::nullopt;
     } catch (std::exception const& e) {
-        std::cerr << "Unknow Error on stoping active session. Error:" << e.what() << "\n";
+        spdlog::error("Unknow Error on stopping active session. Error: {}", e.what());
     }
 }
 
