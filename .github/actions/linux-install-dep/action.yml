@@ -8,6 +8,11 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: "Install clazy ppa"
+      if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
+      shell: bash
+      run: |
+        sudo add-apt-repository ppa:daschuer/clazy
     - name: "Install Qt for Linux"
       if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
       shell: bash

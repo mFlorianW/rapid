@@ -8,32 +8,31 @@ set(DUMMY_PROCESS_BINARY_PATH ${CMAKE_CURRENT_BINARY_DIR}/dummy_process)
 set(DUMMY_PROCESS_BINARY_NAME "dummy_process")
 configure_file(DummyProcessPath.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/DummyProcessPath.hpp)
 
-
-add_executable(test_ApplicationConfigReader test_ApplicationConfigReader.cpp)
-target_link_libraries(test_ApplicationConfigReader PRIVATE Catch2::Catch2 Rapid::ShellApplications)
-target_include_directories(test_ApplicationConfigReader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-add_executable(test_ApplicationVersion test_ApplicationVersion.cpp)
-target_link_libraries(test_ApplicationVersion PRIVATE Catch2::Catch2 Rapid::ShellApplications)
-
-add_executable(test_ApplicationModel test_ApplicationModel.cpp)
-target_link_libraries(test_ApplicationModel PRIVATE Catch2::Catch2 Rapid::ShellApplications)
-target_include_directories(test_ApplicationModel PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-add_executable(test_ApplicationListModel test_ApplicationListModel.cpp)
-target_link_libraries(test_ApplicationListModel PRIVATE Catch2::Catch2 Catch2::Catch2WithMain Rapid::ShellApplications Qt6::Test)
-target_include_directories(test_ApplicationListModel PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-add_executable(test_GlobalSettingsWriter test_GlobalSettingsWriter.cpp)
-target_link_libraries(test_GlobalSettingsWriter PRIVATE Catch2::Catch2 Catch2::Catch2WithMain Rapid::ShellSettings LaptimerCore::TestHelper)
-
-add_executable(test_ProcessManager test_ProcessManager.cpp)
-target_link_libraries(test_ProcessManager PRIVATE Catch2::Catch2 Catch2::Catch2WithMain LaptimerCore::TestHelper Rapid::ShellApplications Qt6::Test)
-target_include_directories(test_ProcessManager PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+add_executable(test_rapid_shell_application)
 add_executable(dummy_process DummyProcess.cpp)
 
-catch_discover_tests(test_ApplicationConfigReader)
-catch_discover_tests(test_ApplicationVersion)
-catch_discover_tests(test_ApplicationModel)
-catch_discover_tests(test_ApplicationListModel)
-catch_discover_tests(test_GlobalSettingsWriter)
+target_sources(test_rapid_shell_application
+PRIVATE
+    test_ApplicationConfigReader.cpp
+    test_ApplicationVersion.cpp
+    test_ApplicationModel.cpp
+    test_ApplicationListModel.cpp
+    test_GlobalSettingsWriter.cpp
+    test_ProcessManager.cpp
+)
+
+target_include_directories(test_rapid_shell_application
+PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_link_libraries(test_rapid_shell_application
+PRIVATE
+    Catch2::Catch2
+    Qt6::Test
+    Rapid::ShellApplications
+    Rapid::ShellSettings
+    Rapid::TestHelper
+)
+
+catch_discover_tests(test_rapid_shell_application)

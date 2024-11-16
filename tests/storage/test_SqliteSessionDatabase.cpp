@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_MAIN
 #include "Sessions.hpp"
 #include "SqliteSessionDatabase.hpp"
 #include "private/Connection.hpp"
 #include <SqliteDatabaseTestHelper.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
+#include <filesystem>
 #include <sqlite3.h>
 
 using namespace Rapid::System;
@@ -15,13 +15,14 @@ using namespace Rapid::Storage;
 using namespace Rapid::TestHelper;
 using namespace Rapid::TestHelper::SqliteDatabaseTestHelper;
 using namespace Rapid::Storage::Private;
+using namespace Rapid::Common;
 
 namespace
 {
 
-class TestSqliteSessionDatabaseEventListener : public Catch::TestEventListenerBase
+class TestSqliteSessionDatabaseEventListener : public Catch::EventListenerBase
 {
-    using Catch::TestEventListenerBase::TestEventListenerBase;
+    using Catch::EventListenerBase::EventListenerBase;
 
     void testCaseStarting(Catch::TestCaseInfo const& testInfo) override
     {
@@ -91,7 +92,9 @@ TEST_CASE("The SqliteSessionDatabase shall store a session and the session shall
 
     auto const readResult = db.getSessionByIndex(addedIndex);
     REQUIRE(readResult.has_value() == true);
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
     REQUIRE(readResult.value() == Sessions::getTestSession3());
+    // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
 TEST_CASE("The SqliteSessionDatabase shall store a already stored session under the same index and shall emit session "
@@ -149,8 +152,8 @@ TEST_CASE("The SqliteSessionDatabase shall gives the number of stored sessions a
     auto const sessionCount = db.getSessionCount();
     REQUIRE(sessionCount == expectedSessionCount);
 
-    REQUIRE(db.getSessionByIndex(0).value() == session1);
-    REQUIRE(db.getSessionByIndex(1).value() == session2);
+    REQUIRE(db.getSessionByIndex(0).value_or(SessionData{}) == session1);
+    REQUIRE(db.getSessionByIndex(1).value_or(SessionData{}) == session2);
     REQUIRE(db.getSessionByIndex(2) == std::nullopt);
 }
 

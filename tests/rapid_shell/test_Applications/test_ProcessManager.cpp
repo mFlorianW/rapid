@@ -2,13 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_RUNNER
 #include "DummyProcessPath.hpp"
 #include <ProcessManager.hpp>
 #include <ProcessStatusChecker.hpp>
 #include <QSignalSpy>
 #include <QTest>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace Rapid::RapidShell;
 

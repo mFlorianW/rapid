@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_MAIN
 #include "CompareHelper.hpp"
 #include "ConstantVelocityPositionDateTimeProvider.hpp"
 #include <PositionData.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace Rapid::Positioning;
 using namespace Rapid::Common;
 using namespace Rapid::System;
 using namespace Rapid::Testhelper;
+using namespace Catch;
 
 constexpr auto timeout = std::chrono::seconds{1};
 

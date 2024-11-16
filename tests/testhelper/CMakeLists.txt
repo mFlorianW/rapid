@@ -4,7 +4,7 @@ if(UNIX)
 endif()
 
 add_library(TestHelper OBJECT)
-add_library(LaptimerCore::TestHelper ALIAS TestHelper)
+add_library(Rapid::TestHelper ALIAS TestHelper)
 
 target_sources(TestHelper
 PRIVATE

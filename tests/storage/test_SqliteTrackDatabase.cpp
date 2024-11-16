@@ -4,19 +4,19 @@
 
 #define CATCH_CONFIG_MAIN
 #include "SqliteTrackDatabase.hpp"
-#include "private/Connection.hpp"
 #include <SqliteDatabaseTestHelper.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
+#include <filesystem>
 
 using namespace Rapid::Storage;
 using namespace Rapid::TestHelper::SqliteDatabaseTestHelper;
 namespace
 {
 
-class SqliteDatabaseTestEventlistener : public Catch::TestEventListenerBase
+class SqliteDatabaseTestEventlistener : public Catch::EventListenerBase
 {
 public:
-    using Catch::TestEventListenerBase::TestEventListenerBase;
+    using Catch::EventListenerBase::EventListenerBase;
 
     void testCaseStarting(Catch::TestCaseInfo const& testInfo) override
     {

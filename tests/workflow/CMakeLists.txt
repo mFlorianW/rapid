@@ -1,14 +1,19 @@
 include(Catch)
 
-add_executable(test_TrackDetectionWorkflow test_TrackDetectionWorkflow.cpp)
-target_link_libraries(test_TrackDetectionWorkflow PRIVATE Catch2::Catch2 Rapid::Workflow LaptimerCore::TestHelper)
+add_executable(test_workflow)
 
-add_executable(test_ActiveSessionWorkflow test_ActiveSessionWorkflow.cpp)
-target_link_libraries(test_ActiveSessionWorkflow PRIVATE Catch2::Catch2 Rapid::Workflow LaptimerCore::TestHelper)
+target_sources(test_workflow
+PRIVATE
+    test_ActiveSessionWorkflow.cpp
+    test_RestSessionDownloader.cpp
+    test_TrackDetectionWorkflow.cpp
+)
 
-add_executable(test_RestSessionDownloader test_RestSessionDownloader.cpp)
-target_link_libraries(test_RestSessionDownloader PRIVATE Catch2::Catch2 Rapid::Workflow LaptimerCore::TestHelper Rapid::Rest)
+target_link_libraries(test_workflow
+PRIVATE
+    Catch2::Catch2WithMain
+    Rapid::Workflow
+    Rapid::TestHelper
+)
 
-catch_discover_tests(test_TrackDetectionWorkflow)
-catch_discover_tests(test_ActiveSessionWorkflow)
-catch_discover_tests(test_RestSessionDownloader)
+catch_discover_tests(test_workflow)

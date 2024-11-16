@@ -4,7 +4,7 @@
 
 #pragma once
 #include "EventLoop.hpp"
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <chrono>
 #include <sstream>
 
@@ -14,7 +14,7 @@ namespace Rapid::Testhelper
 {
 
 template <typename T>
-class IsBetweenMatcher : public Catch::MatcherBase<T>
+class IsBetweenMatcher : public Catch::Matchers::MatcherBase<T>
 {
     T m_begin, m_end;
 

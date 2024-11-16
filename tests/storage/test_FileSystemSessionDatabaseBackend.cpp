@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_MAIN
 #include <FileSystemSessionDatabaseBackend.hpp>
 #include <Sessions.hpp>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 #include <filesystem>
+#include <fstream>
 #include <unistd.h>
 
 using namespace Rapid::Storage;
@@ -29,10 +29,10 @@ std::string getTestDatabseFolder()
     return dbDir;
 }
 
-class FileSystemTestEventListener : public Catch::TestEventListenerBase
+class FileSystemTestEventListener : public Catch::EventListenerBase
 {
 public:
-    using Catch::TestEventListenerBase::TestEventListenerBase;
+    using Catch::EventListenerBase::EventListenerBase;
 
     void testCaseStarting(Catch::TestCaseInfo const& testInfo) override
     {
@@ -70,7 +70,6 @@ TEST_CASE("The FileSystemSessionDatabaseBackend store shall fail when database f
 {
     auto dbFolder = getTestDatabseFolder();
     auto fsBackend = FileSystemSessionDatabaseBackend{dbFolder};
-    auto expectedFilePath = std::filesystem::path{dbFolder + "/session1.json"};
 
     std::filesystem::remove_all(dbFolder);
 
@@ -96,7 +95,6 @@ TEST_CASE("The FileSystemSessionDatabaseBackend shall return the last stored ind
 {
     auto dbFolder = getTestDatabseFolder();
     auto fsBackend = FileSystemSessionDatabaseBackend{dbFolder};
-    auto expectedFilePath = std::filesystem::path{dbFolder + "/session1.json"};
 
     REQUIRE(fsBackend.storeSession(1, Sessions::getTestSessionAsJson()));
     REQUIRE(fsBackend.getLastStoredIndex() == 1);

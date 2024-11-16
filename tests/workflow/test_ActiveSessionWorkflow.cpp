@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_MAIN
 #include "ActiveSessionWorkflow.hpp"
 #include "Laptimer.hpp"
 #include "MemorySessionDatabaseBackend.hpp"
 #include "PositionDateTimeProvider.hpp"
 #include "Positions.hpp"
 #include "SessionDatabase.hpp"
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 using namespace Rapid::Workflow;
 using namespace Rapid::TestHelper;
@@ -110,8 +109,8 @@ TEST_CASE("The ActiveSessionWorkflow shall store the laptime when finished.")
     lp.sectorTimes.emplace_back("00:23:13.123");
     lp.lapFinished.emit();
 
-    REQUIRE(actSessWf.getSession()->getLaps().size() == 1);
-    REQUIRE(actSessWf.getSession()->getLap(0) == expectedLap);
+    REQUIRE(actSessWf.getSession().value_or(SessionData{}).getLaps().size() == 1);
+    REQUIRE(actSessWf.getSession().value_or(SessionData{}).getLap(0) == expectedLap);
     REQUIRE(lapFinishedEmitted == true);
 }
 
@@ -195,8 +194,8 @@ TEST_CASE("The ActiveSessionWorkflow shall store the sector times in a lap of a 
     lp.lapFinished.emit();
 
     REQUIRE(actSessWf.getSession());
-    REQUIRE(actSessWf.getSession()->getNumberOfLaps() == 1);
-    REQUIRE(actSessWf.getSession()->getLap(0) == expectedLap);
+    REQUIRE(actSessWf.getSession().value_or(SessionData{}).getNumberOfLaps() == 1);
+    REQUIRE(actSessWf.getSession().value_or(SessionData{}).getLap(0) == expectedLap);
 }
 
 TEST_CASE("The ActiveSessionWorkflow shall update the lap counter when a lap is finished.")

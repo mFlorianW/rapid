@@ -17,21 +17,49 @@ add_custom_command(OUTPUT test_session.db
 VERBATIM)
 add_custom_target(test_session_db ALL DEPENDS test_session.db)
 
-add_executable(test_SessionDatabase test_SessionDatabase.cpp)
-target_link_libraries(test_SessionDatabase PRIVATE Catch2::Catch2 Rapid::Storage LaptimerCore::TestHelper)
+add_executable(test_storage)
+add_dependencies(test_storage test_session_db)
 
-add_executable(test_FileSystemDataBaseBackend test_FileSystemSessionDatabaseBackend.cpp)
-target_link_libraries(test_FileSystemDataBaseBackend PRIVATE Catch2::Catch2 Rapid::Storage LaptimerCore::TestHelper)
+target_sources(test_storage
+PRIVATE
+    test_SessionDatabase.cpp
+    test_FileSystemSessionDatabaseBackend.cpp
+)
 
-add_executable(test_SqliteSessionDatabase test_SqliteSessionDatabase.cpp)
-target_link_libraries(test_SqliteSessionDatabase PRIVATE Catch2::Catch2 Rapid::Storage LaptimerCore::TestHelper)
-add_dependencies(test_SqliteSessionDatabase test_session_db)
+target_link_libraries(test_storage
+PRIVATE
+    Catch2::Catch2WithMain
+    Rapid::Storage
+    Rapid::TestHelper
+)
+catch_discover_tests(test_storage)
 
-add_executable(test_SqliteTrackDatabase test_SqliteTrackDatabase.cpp)
-target_link_libraries(test_SqliteTrackDatabase PRIVATE Catch2::Catch2 Rapid::Storage LaptimerCore::TestHelper)
-add_dependencies(test_SqliteTrackDatabase test_trackmangement_db)
+add_executable(test_storage_sqlitesession_database)
+add_dependencies(test_storage_sqlitesession_database test_session_db)
 
-catch_discover_tests(test_SessionDatabase)
-catch_discover_tests(test_FileSystemDataBaseBackend)
-catch_discover_tests(test_SqliteSessionDatabase)
-catch_discover_tests(test_SqliteTrackDatabase)
+target_sources(test_storage_sqlitesession_database
+PRIVATE
+    test_SqliteSessionDatabase.cpp
+)
+target_link_libraries(test_storage_sqlitesession_database
+PRIVATE
+    Catch2::Catch2WithMain
+    Rapid::Storage
+    Rapid::TestHelper
+)
+catch_discover_tests(test_storage_sqlitesession_database)
+
+add_executable(test_storage_sqlitetrack_database)
+add_dependencies(test_storage_sqlitetrack_database test_trackmangement_db)
+
+target_sources(test_storage_sqlitetrack_database
+PRIVATE
+    test_SqliteTrackDatabase.cpp
+)
+target_link_libraries(test_storage_sqlitetrack_database
+PRIVATE
+    Catch2::Catch2WithMain
+    Rapid::Storage
+    Rapid::TestHelper
+)
+catch_discover_tests(test_storage_sqlitetrack_database)
