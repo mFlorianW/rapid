@@ -23,12 +23,7 @@ SqliteSessionDatabase::StorageContext::StorageContext()
     });
 }
 
-SqliteSessionDatabase::StorageContext::~StorageContext()
-{
-    if (mStorageThread.joinable()) {
-        mStorageThread.join();
-    }
-}
+SqliteSessionDatabase::StorageContext::~StorageContext() = default;
 
 SqliteSessionDatabase::SqliteSessionDatabase(std::string const& databaseFile)
     : mDbConnection{Connection::connection(databaseFile)}
@@ -113,6 +108,9 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
             ctx->mResult->setDbResult(updateResult);
             if (updateResult == System::Result::Ok) {
                 sessionUpdated.emit(getIndexOfSessionId(ctx->mSessionId).value_or(0));
+            };
+            if (ctx->mStorageThread.joinable()) {
+                ctx->mStorageThread.join();
             }
             mStorageCache.erase(ctx);
         });
@@ -123,6 +121,9 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
             ctx->mResult->setDbResult(updateResult);
             if (updateResult == System::Result::Ok) {
                 sessionAdded.emit(getIndexOfSessionId(ctx->mSessionId).value_or(0));
+            }
+            if (ctx->mStorageThread.joinable()) {
+                ctx->mStorageThread.join();
             }
             mStorageCache.erase(ctx);
         });
