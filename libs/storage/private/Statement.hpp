@@ -16,19 +16,6 @@
 namespace Rapid::Storage::Private
 {
 
-enum class PrepareResult
-{
-    Ok,
-    Error
-};
-
-enum class BindResult
-{
-    Ok,
-    InvalidIndex,
-    Error
-};
-
 enum class ExecuteResult
 {
     Ok,
@@ -155,26 +142,6 @@ public:
      * @return True a bind error happens otherwise false.
      */
     bool hasError();
-
-    /**
-     * Binds a int value to the given index.
-     * @param index The index of the value in the prepared statement.
-     * @param value The value for the placeholder in the statement.
-     * @return "Ok" Value is succesful binded.
-     * @return "InvalidIndex" The index of the value is not valid.
-     * @return "Error" for any other error. Check the error message of the connection.
-     */
-    BindResult bindIntValue(std::size_t index, std::int32_t value) noexcept;
-
-    /**
-     * Binds a string value to the statement under the given index.
-     * @param index The index that shall be bind.
-     * @param string The string value that shall be replaced in the statement.
-     * @return "Ok" Value is succesful binded.
-     * @return "InvalidIndex" The index of the value is not valid.
-     * @return "Error" for any other error. Check the error message of the connection.
-     */
-    BindResult bindStringValue(std::size_t index, std::string const& value);
 
     /**
      * Gives the number of columns of the result. The value is zero when the statement doesn't select anything from the

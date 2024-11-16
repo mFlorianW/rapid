@@ -73,38 +73,6 @@ bool Statement::hasError()
     return mBindError;
 }
 
-BindResult Statement::bindIntValue(std::size_t index, int32_t value) noexcept
-{
-    if (mStatement == nullptr) {
-        return BindResult::Error;
-    }
-
-    auto const result = sqlite3_bind_int(mStatement, static_cast<int>(index), value);
-    if (result == SQLITE_OK) {
-        return BindResult::Ok;
-    }
-
-    return BindResult::Error;
-}
-
-BindResult Statement::bindStringValue(std::size_t index, std::string const& value)
-{
-    if (mStatement == nullptr) {
-        return BindResult::Error;
-    }
-
-    auto const result = sqlite3_bind_text(mStatement,
-                                          static_cast<int>(index),
-                                          value.c_str(),
-                                          static_cast<int>(value.size()),
-                                          SQLITE_STATIC);
-    if (result == SQLITE_OK) {
-        return BindResult::Ok;
-    }
-
-    return BindResult::Error;
-}
-
 std::size_t Statement::getColumnCount() const noexcept
 {
     if (mStatement == nullptr) {
