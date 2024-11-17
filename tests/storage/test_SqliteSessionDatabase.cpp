@@ -7,7 +7,6 @@
 #include "private/Connection.hpp"
 #include <SqliteDatabaseTestHelper.hpp>
 #include <catch2/catch_all.hpp>
-#include <filesystem>
 #include <spdlog/spdlog.h>
 #include <sqlite3.h>
 
@@ -21,46 +20,24 @@ using namespace Rapid::Common;
 namespace
 {
 
-class TestSqliteSessionDatabaseEventListener : public Catch::EventListenerBase
+class SqliteSessionDatabaseEventListener : public SqliteDatabaseTestEventlistener
 {
-    using Catch::EventListenerBase::EventListenerBase;
+    using SqliteDatabaseTestEventlistener::SqliteDatabaseTestEventlistener;
 
-    void testCaseStarting(Catch::TestCaseInfo const& testInfo) override
+    [[nodiscard]] std::string getCleanDbFileName() const noexcept override
     {
-        // For the case the test crashes.
-        if (std::filesystem::exists(getTestDatabaseFile("test_session.db")) == true) {
-            dropSessionData();
-        } else {
-            if (!std::filesystem::exists(getTestDatabseFolder())) {
-                REQUIRE(std::filesystem::create_directory(getTestDatabseFolder()) == true);
-            }
-            auto const cleanDbFile = getWorkingDir() + "/test_session.db";
-            REQUIRE(std::filesystem::copy_file(cleanDbFile, getTestDatabaseFile("test_session.db")) == true);
-        }
-    }
-
-    void testCaseEnded(Catch::TestCaseStats const& testCaseStatu) override
-    {
-        dropSessionData();
-    }
-
-    void dropSessionData()
-    {
-        auto* dbCon = Connection::connection(getTestDatabaseFile("test_session.db")).getRawHandle();
-        auto const deleted = sqlite3_exec(dbCon, "DELETE FROM Session", nullptr, nullptr, nullptr) == SQLITE_OK;
-        if (not deleted) {
-            spdlog::error("Failed to delete session information. Error: {}", sqlite3_errmsg(dbCon));
-            FAIL("The session database parts are not reseted.");
-        }
+        static auto dbFile = std::string{"test_session.db"};
+        return dbFile;
     }
 };
+
 } // namespace
 
-CATCH_REGISTER_LISTENER(TestSqliteSessionDatabaseEventListener)
+CATCH_REGISTER_LISTENER(SqliteSessionDatabaseEventListener)
 
 TEST_CASE("The SqliteSessionDatabase shall store as session and shall emit the session added signal.")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile("test_session.db")};
+    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto sessionAddedSignalEmitted = false;
     auto addedIndex = std::size_t{123456};
     db.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
@@ -84,7 +61,7 @@ TEST_CASE("The SqliteSessionDatabase shall store as session and shall emit the s
 
 TEST_CASE("The SqliteSessionDatabase shall store a session and the session shall be directly read again.")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile("test_session.db")};
+    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto addedIndex = std::size_t{123456};
     db.sessionAdded.connect([&addedIndex](std::size_t index) {
         addedIndex = index;
@@ -105,7 +82,7 @@ TEST_CASE("The SqliteSessionDatabase shall store a session and the session shall
 TEST_CASE("The SqliteSessionDatabase shall store a already stored session under the same index and shall emit session "
           "updated.")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile("test_session.db")};
+    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto updatedIndex = std::size_t{123456};
     db.sessionUpdated.connect([&updatedIndex](std::size_t index) {
         updatedIndex = index;
@@ -141,7 +118,7 @@ TEST_CASE("The SqliteSessionDatabase shall store a already stored session under 
 TEST_CASE("The SqliteSessionDatabase shall gives the number of stored sessions and should return the correct session"
           "for that index.")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile("test_session.db")};
+    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto const session1 = Sessions::getTestSession3();
     auto const session2 = Sessions::getTestSession4();
     constexpr auto expectedSessionCount = 2;
@@ -165,7 +142,7 @@ TEST_CASE("The SqliteSessionDatabase shall gives the number of stored sessions a
 TEST_CASE("The SqliteSessionDatabase shall delete a session under the index and shall emit the sessionDelete signal "
           "with the index.")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile("test_session.db")};
+    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto const session1 = Sessions::getTestSession3();
     auto const session2 = Sessions::getTestSession4();
     auto deletedIndex = std::size_t{123456};
@@ -190,7 +167,7 @@ TEST_CASE("The SqliteSessionDatabase shall delete a session under the index and 
 
 TEST_CASE("The SqlieSessionDatabase shall emit session deteled on referential integrity changes")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile("test_session.db")};
+    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto const session1 = Sessions::getTestSession3();
     auto deletedIndex = std::size_t{123456};
     constexpr auto indexToDelete = 0;
@@ -204,7 +181,7 @@ TEST_CASE("The SqlieSessionDatabase shall emit session deteled on referential in
 
     // Delete the Oschersleben Track these commands should trigger the referential integrity changes
     // and that should also delete session in the database.
-    auto* dbCon = Connection::connection(getTestDatabaseFile("test_session.db")).getRawHandle();
+    auto* dbCon = Connection::connection(getTestDatabaseFile()).getRawHandle();
     REQUIRE(sqlite3_exec(dbCon, "DELETE FROM Track WHERE Track.Name = 'Oschersleben'", nullptr, nullptr, nullptr) ==
             SQLITE_OK);
 
