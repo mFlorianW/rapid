@@ -4,48 +4,41 @@
 
 #define CATCH_CONFIG_MAIN
 #include "SqliteTrackDatabase.hpp"
+#include <CompareHelper.hpp>
 #include <SqliteDatabaseTestHelper.hpp>
 #include <catch2/catch_all.hpp>
-#include <filesystem>
 
 using namespace Rapid::Storage;
+using namespace Rapid::TestHelper;
 using namespace Rapid::TestHelper::SqliteDatabaseTestHelper;
+
 namespace
 {
 
-class SqliteDatabaseTestEventlistener : public Catch::EventListenerBase
+class SqliteTrackDatabaseEventListener : public SqliteDatabaseTestEventlistener
 {
-public:
-    using Catch::EventListenerBase::EventListenerBase;
+    using SqliteDatabaseTestEventlistener::SqliteDatabaseTestEventlistener;
 
-    void testCaseStarting(Catch::TestCaseInfo const& testInfo) override
+    [[nodiscard]] std::string getCleanDbFileName() const noexcept override
     {
-        // For the case the test crashes.
-        if (std::filesystem::exists(getTestDatabseFolder()) == true) {
-            std::filesystem::remove_all(getTestDatabseFolder());
-        }
-        REQUIRE(std::filesystem::create_directory(getTestDatabseFolder()) == true);
-        auto const cleanDbFile = getWorkingDir() + "/test_trackmanagement.db";
-        REQUIRE(std::filesystem::copy_file(cleanDbFile, getTestDatabseFile()) == true);
-    }
-
-    void testCaseEnded(Catch::TestCaseStats const& testCaseStats) override
-    {
-        REQUIRE(std::filesystem::remove(getTestDatabseFile()) == true);
+        static auto dbFile = std::string{"test_trackmanagement.db"};
+        return dbFile;
     }
 };
+
 } // namespace
-CATCH_REGISTER_LISTENER(SqliteDatabaseTestEventlistener);
+
+CATCH_REGISTER_LISTENER(SqliteTrackDatabaseEventListener);
 
 TEST_CASE("The SqliteDatabaseTrackDatabase shall return the number of stored tracks.")
 {
-    auto trackDb = SqliteTrackDatabase{getTestDatabseFile()};
+    auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
     REQUIRE(trackDb.getTrackCount() == 2);
 }
 
 TEST_CASE("The SqliteDatabaseTrackDatabase shall return all stored tracks.")
 {
-    auto trackDb = SqliteTrackDatabase{getTestDatabseFile()};
+    auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
 
     auto osl = Rapid::Common::TrackData{};
     osl.setTrackName("Oschersleben");
@@ -65,7 +58,7 @@ TEST_CASE("The SqliteDatabaseTrackDatabase shall return all stored tracks.")
 
 TEST_CASE("The SqliteTrackDatabase shall delete a specific track.")
 {
-    auto trackDb = SqliteTrackDatabase{getTestDatabseFile()};
+    auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
 
     auto osl = Rapid::Common::TrackData{};
     osl.setTrackName("Oschersleben");
@@ -79,7 +72,8 @@ TEST_CASE("The SqliteTrackDatabase shall delete a specific track.")
     assen.setSections({{52.959453, 6.525305}, {52.955628, 6.512773}});
 
     auto const deleteResult = trackDb.deleteTrack(1);
-    REQUIRE(deleteResult == true);
+    deleteResult->waitForFinished();
+    REQUIRE(deleteResult->getResult() == Result::Ok);
 
     auto const tracks = trackDb.getTracks();
     REQUIRE_THAT(tracks, Catch::Matchers::UnorderedEquals(std::vector<Rapid::Common::TrackData>{osl}));

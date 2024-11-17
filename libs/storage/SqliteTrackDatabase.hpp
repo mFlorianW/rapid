@@ -7,6 +7,8 @@
 
 #include "ITrackDatabase.hpp"
 #include "private/Connection.hpp"
+#include "private/StorageContext.hpp"
+#include <LapData.hpp>
 #include <optional>
 
 namespace Rapid::Storage
@@ -58,23 +60,26 @@ public:
     /**
      * @copydoc ITrackdatabase::saveTrack(const std::vector<Common::TrackData> &tracks)
      */
-    bool saveTrack(std::vector<Common::TrackData> const& tracks) override;
+    std::shared_ptr<System::AsyncResult> saveTrack(std::vector<Common::TrackData> const& tracks) override;
 
     /**
      * @copydoc ITrackdatabase::deleteTrack(std::size_t trackIndex)
      */
-    bool deleteTrack(std::size_t trackIndex) override;
+    std::shared_ptr<System::AsyncResult> deleteTrack(std::size_t trackIndex) override;
 
     /**
      * @copydoc ITrackdatabase::deleteAllTracks()
      */
-    bool deleteAllTracks() override;
+    std::shared_ptr<System::AsyncResult> deleteAllTracks() override;
 
 private:
+    void removeOneTrack(Private::TrackStorageContext* ctx);
     std::vector<std::size_t> getTrackIds() const noexcept;
     std::optional<std::size_t> getTrackIdOfIndex(std::size_t trackIndex) const noexcept;
 
     Private::Connection& mDbConnection;
+    std::unordered_map<Private::StorageContextBase*, std::shared_ptr<Private::TrackStorageContext>> mStorageCache;
+    std::mutex mutable mMutex;
 };
 
 } // namespace Rapid::Storage

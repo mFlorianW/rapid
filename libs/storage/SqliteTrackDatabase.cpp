@@ -21,6 +21,7 @@ SqliteTrackDatabase::~SqliteTrackDatabase() = default;
 
 std::size_t SqliteTrackDatabase::getTrackCount()
 {
+    std::lock_guard<std::mutex> const guard{mMutex};
     constexpr auto statementStr = "SELECT COUNT(TrackId) FROM Track";
     Statement stm{mDbConnection};
     if (stm.prepare(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
@@ -33,6 +34,7 @@ std::size_t SqliteTrackDatabase::getTrackCount()
 
 std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
 {
+    std::lock_guard<std::mutex> const guard{mMutex};
     constexpr auto trackQuery =
         "SELECT TrackId, Track.Name, FL.Latitude AS FlLat, FL.Longitude AS FlLong, "
         "SL.Latitude AS SlLat, SL.Longitude AS SlLong from Track LEFT JOIN Position FL ON Track.Finishline = "
@@ -74,13 +76,48 @@ std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
     return tracksResult;
 }
 
-bool SqliteTrackDatabase::saveTrack(std::vector<Common::TrackData> const& tracks)
+std::shared_ptr<System::AsyncResult> SqliteTrackDatabase::saveTrack(std::vector<Common::TrackData> const& tracks)
 {
-    return false;
+    std::lock_guard<std::mutex> const guard{mMutex};
+    auto context = std::make_shared<TrackStorageContext>();
+    mStorageCache.insert({context.get(), context});
+    return context->mResult;
 }
 
-bool SqliteTrackDatabase::deleteTrack(std::size_t trackIndex)
+std::shared_ptr<System::AsyncResult> SqliteTrackDatabase::deleteTrack(std::size_t trackIndex)
 {
+    auto const guard = std::lock_guard<std::mutex>{mMutex};
+    auto context = std::make_shared<TrackStorageContext>();
+    mStorageCache.insert({context.get(), context});
+    context->mTrackIndex = trackIndex;
+    context->done.connect([this](StorageContextBase* baseCtx) {
+        auto const updateResult = baseCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
+        baseCtx->mResult->setDbResult(updateResult);
+        if (baseCtx->mStorageThread.joinable()) {
+            baseCtx->mStorageThread.join();
+        }
+        mStorageCache.erase(baseCtx);
+    });
+    context->mStorageThread = std::thread{&SqliteTrackDatabase::removeOneTrack, this, context.get()};
+    return context->mResult;
+}
+
+std::shared_ptr<System::AsyncResult> SqliteTrackDatabase::deleteAllTracks()
+{
+    std::lock_guard<std::mutex> const guard{mMutex};
+    auto context = std::make_shared<TrackStorageContext>();
+    mStorageCache.insert({context.get(), context});
+    return context->mResult;
+}
+
+void SqliteTrackDatabase::removeOneTrack(Private::TrackStorageContext* ctx)
+{
+    if (ctx == nullptr or mStorageCache.count(ctx) == 0) {
+        spdlog::error("Update session called with an invalid context.");
+        return;
+    }
+
+    auto context = mStorageCache.at(ctx);
     // clang-format off
     constexpr auto deleteTrackQuery = "DELETE "
                                      "FROM "
@@ -88,24 +125,21 @@ bool SqliteTrackDatabase::deleteTrack(std::size_t trackIndex)
                                      "WHERE "
                                         "Track.TrackId = ?";
     // clang-format on
-    auto const trackId = getTrackIdOfIndex(trackIndex);
+    auto const trackId = getTrackIdOfIndex(context->mTrackIndex);
     if (!trackId.has_value()) {
-        spdlog::error("Failed to delete Track. Index {} not found", trackIndex);
-        return false;
+        spdlog::error("Failed to delete Track. Index {} not found", context->mTrackIndex);
+        context->mStoragePromise.set_value(false);
+        return;
     }
 
     auto deleteTrackStm = Statement{mDbConnection};
     auto const bindError = deleteTrackStm.prepare(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
     if (bindError or (deleteTrackStm.execute() != ExecuteResult::Ok)) {
         spdlog::error("Failed to delete track. Error: {}", mDbConnection.getErrorMessage());
-        return false;
+        context->mStoragePromise.set_value(false);
+        return;
     }
-    return true;
-}
-
-bool SqliteTrackDatabase::deleteAllTracks()
-{
-    return false;
+    context->mStoragePromise.set_value(true);
 }
 
 std::vector<std::size_t> SqliteTrackDatabase::getTrackIds() const noexcept

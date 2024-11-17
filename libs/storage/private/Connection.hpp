@@ -25,6 +25,12 @@ public:
     static Connection& connection(std::string const& database);
 
     /**
+     * Tries to open the sqlite3 database for the given string.
+     * @param database The path to the database.
+     */
+    Connection(std::string const& database);
+
+    /**
      * Default empty constructor
      */
     ~Connection();
@@ -61,13 +67,6 @@ public:
      * @return If connection is correctly created the valid handle otherwise a nullptr.
      */
     sqlite3* getRawHandle() const noexcept;
-
-private:
-    /**
-     * Tries to open the sqlite3 database for the given string.
-     * @param database The path to the database.
-     */
-    Connection(std::string const& database);
 
 private:
     sqlite3* mHandle{nullptr};

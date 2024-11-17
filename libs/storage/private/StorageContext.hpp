@@ -59,4 +59,9 @@ struct SessionStorageContext : public StorageContext<Common::SessionData>
     std::size_t mSessionId = std::size_t{0};
 };
 
+struct TrackStorageContext : public StorageContext<Common::LapData>
+{
+    std::size_t mTrackIndex = std::size_t{0};
+};
+
 } // namespace Rapid::Storage::Private
