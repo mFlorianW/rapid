@@ -8,6 +8,7 @@
 #include <SqliteDatabaseTestHelper.hpp>
 #include <catch2/catch_all.hpp>
 #include <chrono>
+#include <private/Connection.hpp>
 
 using namespace Rapid::Storage;
 using namespace Rapid::TestHelper;
@@ -102,4 +103,26 @@ TEST_CASE("The SqliteTrackDatabase shall save a track")
     auto const tracks = trackDb.getTracks();
     REQUIRE(tracks.size() == 3);
     REQUIRE_THAT(tracks, Catch::Matchers::UnorderedEquals(std::vector<Rapid::Common::TrackData>{osl, assen, osl2}));
+}
+
+TEST_CASE("Delete all tracks in the SqliteTrackDatabase")
+{
+    auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
+
+    auto const saveResult = trackDb.deleteAllTracks();
+    REQUIRE_COMPARE_WITH_TIMEOUT(saveResult->getResult(), Result::Ok, std::chrono::seconds{1});
+
+    auto const tracks = trackDb.getTracks();
+    REQUIRE(tracks.size() == 0);
+
+    auto resultHandler = [](void*, int columns, char**, char**) -> int {
+        REQUIRE(columns == 0);
+        return SQLITE_OK;
+    };
+
+    // Make sure that the tables are realy cleared.
+    auto* dbCon = Private::Connection::connection(getTestDatabaseFile()).getRawHandle();
+    REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Sektor", resultHandler, nullptr, nullptr) == SQLITE_OK);
+    REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Track", resultHandler, nullptr, nullptr) == SQLITE_OK);
+    REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Position", resultHandler, nullptr, nullptr) == SQLITE_OK);
 }

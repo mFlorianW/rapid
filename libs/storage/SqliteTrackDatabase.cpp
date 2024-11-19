@@ -121,7 +121,18 @@ std::shared_ptr<System::AsyncResult> SqliteTrackDatabase::deleteAllTracks()
     std::lock_guard<std::mutex> const guard{mMutex};
     auto context = std::make_shared<TrackStorageContext>();
     mStorageCache.insert({context.get(), context});
-    context->mStoragePromise.set_value(false);
+    mStorageCache.insert({context.get(), context});
+    context->done.connect([this](StorageContextBase* baseCtx) {
+        auto const updateResult = baseCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
+        baseCtx->mResult->setDbResult(updateResult);
+        if (baseCtx->mStorageThread.joinable()) {
+            baseCtx->mStorageThread.join();
+        }
+        mStorageCache.erase(baseCtx);
+    });
+    context->mStorageThread = std::thread{[this, context]() {
+        deleteAllTracks(context);
+    }};
     return context->mResult;
 }
 
@@ -184,6 +195,42 @@ void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext
         if (not saveSection(trackId.value(), sections.at(index), index)) {
             spdlog::error("Failed to save section of track. Error {}", mDbConnection.getErrorMessage());
         }
+    }
+    ctx->mStoragePromise.set_value(true);
+}
+
+void SqliteTrackDatabase::deleteAllTracks(std::shared_ptr<Private::TrackStorageContext> ctx)
+{
+    constexpr auto deleteAllTrackQuery = "DELETE FROM Track";
+
+    auto const trackIds = getTrackIds();
+    auto positionIds = std::vector<std::size_t>{};
+    for (auto const& trackId : trackIds) {
+        auto finishlineId = getFinishlinePositionId(trackId);
+        auto startlineId = getStartlinePositionId(trackId);
+        auto sectionIds = getSectionPositionIds(trackId);
+        if (finishlineId.has_value()) {
+            positionIds.push_back(finishlineId.value());
+        }
+
+        if (startlineId.has_value()) {
+            positionIds.push_back(startlineId.value());
+        }
+
+        if (sectionIds.size() > 0) {
+            positionIds.insert(positionIds.end(), sectionIds.cbegin(), sectionIds.cend());
+        }
+    }
+
+    for (auto const& pos : positionIds) {
+        if (not deletePositionId(pos)) {
+            ctx->mStoragePromise.set_value(false);
+        }
+    }
+
+    auto stm = Statement{mDbConnection};
+    if (stm.prepare(deleteAllTrackQuery).hasError() or stm.execute() != ExecuteResult::Ok) {
+        ctx->mStoragePromise.set_value(false);
     }
     ctx->mStoragePromise.set_value(true);
 }
@@ -309,6 +356,87 @@ bool SqliteTrackDatabase::saveSection(std::size_t trackId, Common::PositionData 
         return false;
     }
     return true;
+}
+
+std::optional<std::size_t> SqliteTrackDatabase::getFinishlinePositionId(std::size_t trackId) const noexcept
+{
+    // clang-format off
+    constexpr auto finishlinePositionIdQuery =
+                                    "SELECT "
+                                        "PositionId "
+                                    "FROM "
+                                        "Position "
+                                    "WHERE "
+                                        "PositionId = "
+                                            "(SELECT Track.Finishline FROM Track WHERE TrackId = ?)";
+    // clang-format on
+    auto stm = Statement{mDbConnection};
+    auto const bindError = stm.prepare(finishlinePositionIdQuery).bindValue(1, trackId).hasError();
+    if (bindError or stm.execute() != ExecuteResult::Row) {
+        return std::nullopt;
+    }
+    return stm.getColumn<int>(0);
+}
+
+std::optional<std::size_t> SqliteTrackDatabase::getStartlinePositionId(std::size_t trackId) const noexcept
+{
+    // clang-format off
+    constexpr auto startLinePositionIdQuery =
+                                        "SELECT "
+                                            "PositionId "
+                                        "FROM "
+                                            "Position "
+                                        "WHERE "
+                                            "PositionId = "
+                                                "(SELECT Track.Startline FROM Track WHERE TrackId = ?)";
+    // clang-format on
+    auto stm = Statement{mDbConnection};
+    auto const bindError = stm.prepare(startLinePositionIdQuery).bindValue(1, trackId).hasError();
+    if (bindError or stm.execute() != ExecuteResult::Row) {
+        return std::nullopt;
+    }
+    return stm.getColumn<int>(0);
+}
+
+bool SqliteTrackDatabase::deletePositionId(std::size_t positionId)
+{
+    // clang-format off
+    constexpr auto deletePositionQuery =
+                                    "DELETE "
+                                    "FROM "
+                                        "POSITION "
+                                    "WHERE "
+                                        "PositionId = ?";
+    // clang-format onn
+
+    auto stm = Statement{mDbConnection};
+    auto const bindError = stm.prepare(deletePositionQuery).bindValue(1, positionId).hasError();
+    if (bindError or stm.execute() != ExecuteResult::Ok) {
+        return true;
+    }
+    return true;
+}
+
+std::vector<std::size_t> SqliteTrackDatabase::getSectionPositionIds(std::size_t trackId)
+{
+    // clang-format off
+    constexpr auto sectionIdsQuery =
+        "SELECT PositionId FROM Sektor WHERE TrackId = ?";
+    // clang-format on
+    auto stm = Statement{mDbConnection};
+    auto const bindError = stm.prepare(sectionIdsQuery).bindValue(1, trackId).hasError();
+    if (bindError or stm.execute() != ExecuteResult::Row) {
+        return {};
+    }
+    auto ids = std::vector<std::size_t>{};
+
+    do {
+        auto const id = stm.getColumn<int>(0);
+        if (id.has_value()) {
+            ids.push_back(id.value());
+        }
+    } while (stm.execute() == ExecuteResult::Row && stm.getColumnCount() == 1);
+    return ids;
 }
 
 } // namespace Rapid::Storage
