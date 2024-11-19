@@ -119,7 +119,7 @@ public:
         }
 
         auto result = int{0};
-        if constexpr (std::is_same_v<T, int>) {
+        if constexpr (std::is_same_v<T, int> or std::is_same_v<T, std::size_t>) {
             result = sqlite3_bind_int(mStatement, static_cast<int>(index), value);
         } else if constexpr (std::is_same_v<T, double> or std::is_same_v<T, float>) {
             result = sqlite3_bind_double(mStatement, static_cast<int>(index), value);
@@ -129,6 +129,8 @@ public:
                                        value.c_str(),
                                        static_cast<int>(value.size()),
                                        SQLITE_STATIC);
+        } else {
+            static_assert("Unsupported Type passed to bindValue");
         }
         if (result != SQLITE_OK) {
             mBindError = false;

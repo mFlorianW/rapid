@@ -54,12 +54,12 @@ public:
     virtual std::vector<Common::TrackData> getTracks() = 0;
 
     /**
-     * The backend saves the tracks.
+     * Store the passed track in the database.
      * @param tracks The trackdata that shall be saved.
      * @return true Track data is successfull saved.
      * @return false The track data couldn't be saved.
      */
-    virtual std::shared_ptr<System::AsyncResult> saveTrack(std::vector<Common::TrackData> const& tracks) = 0;
+    virtual std::shared_ptr<System::AsyncResult> saveTrack(Common::TrackData const& track) = 0;
 
     /**
      * Deletes all track data.
