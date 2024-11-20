@@ -30,6 +30,18 @@ struct StorageContextBase
     StorageContextBase(StorageContextBase&& other) noexcept = delete;
     StorageContextBase& operator=(StorageContextBase&& ohter) = delete;
 
+    template <typename T>
+    std::shared_ptr<T> getResultAs()
+    {
+        return std::dynamic_pointer_cast<T>(mResult);
+    }
+
+    template <typename T>
+    static std::shared_ptr<T> getStorageAs(std::shared_ptr<StorageContextBase> const& ctx)
+    {
+        return std::dynamic_pointer_cast<T>(ctx);
+    }
+
     std::thread mStorageThread{};
     std::promise<bool> mStoragePromise;
     System::FutureWatcher<bool> mStorageResult;
@@ -42,6 +54,12 @@ template <typename T>
 struct StorageContext : public StorageContextBase
 {
     StorageContext() = default;
+
+    StorageContext(std::shared_ptr<System::AsyncResult> result)
+        : StorageContextBase{result}
+    {
+    }
+
     ~StorageContext() override = default;
 
     StorageContext(StorageContext const& other) = delete;
@@ -61,7 +79,41 @@ struct SessionStorageContext : public StorageContext<Common::SessionData>
 
 struct TrackStorageContext : public StorageContext<Common::TrackData>
 {
+    TrackStorageContext() = default;
+
+    TrackStorageContext(std::shared_ptr<System::AsyncResult> result)
+        : StorageContext<Common::TrackData>{result}
+    {
+    }
+
+    ~TrackStorageContext() override = default;
+
+    TrackStorageContext(TrackStorageContext const& other) = delete;
+    TrackStorageContext& operator=(TrackStorageContext const& ohter) = delete;
+
+    TrackStorageContext(TrackStorageContext&& other) noexcept = delete;
+    TrackStorageContext& operator=(TrackStorageContext&& ohter) = delete;
+
     std::size_t mTrackIndex = std::size_t{0};
+};
+
+template <typename T>
+struct TrackStorageContextWithValue : public TrackStorageContext
+{
+    TrackStorageContextWithValue(std::shared_ptr<System::AsyncResult> result)
+        : TrackStorageContext{result}
+    {
+    }
+
+    ~TrackStorageContextWithValue() override = default;
+
+    TrackStorageContextWithValue(TrackStorageContextWithValue const& other) = delete;
+    TrackStorageContextWithValue& operator=(TrackStorageContextWithValue const& ohter) = delete;
+
+    TrackStorageContextWithValue(TrackStorageContextWithValue&& other) noexcept = delete;
+    TrackStorageContextWithValue& operator=(TrackStorageContextWithValue&& ohter) = delete;
+
+    T value;
 };
 
 } // namespace Rapid::Storage::Private
