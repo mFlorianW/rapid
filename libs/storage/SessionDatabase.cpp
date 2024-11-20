@@ -5,7 +5,8 @@
 #include "SessionDatabase.hpp"
 #include "JsonDeserializer.hpp"
 #include "JsonSerializer.hpp"
-#include "private/AsyncResultDb.hpp"
+
+using namespace Rapid::System;
 
 namespace Rapid::Storage
 {
@@ -40,10 +41,10 @@ std::optional<Rapid::Common::SessionData> SessionDatabase::getSessionByIndex(std
 std::shared_ptr<System::AsyncResult> SessionDatabase::storeSession(Common::SessionData const& session)
 {
     ArduinoJson::StaticJsonDocument<8192> jsonDoc;
-    auto result = std::make_shared<AsyncResultDb>();
+    auto result = std::make_shared<AsyncResult>();
     auto jsonRootObject = jsonDoc.to<ArduinoJson::JsonObject>();
     if (!Common::JsonSerializer::serializeSessionData(session, jsonRootObject)) {
-        result->setDbResult(System::Result::Error);
+        result->setResult(System::Result::Error);
         return result;
     }
 
@@ -62,7 +63,7 @@ std::shared_ptr<System::AsyncResult> SessionDatabase::storeSession(Common::Sessi
                 }
 
                 auto const updateResult = updated ? System::Result::Ok : System::Result::Error;
-                result->setDbResult(updateResult);
+                result->setResult(updateResult);
                 return result;
             }
         }
@@ -75,7 +76,7 @@ std::shared_ptr<System::AsyncResult> SessionDatabase::storeSession(Common::Sessi
         sessionAdded.emit(storageIndex);
     }
     auto const storeResult = stored ? System::Result::Ok : System::Result::Error;
-    result->setDbResult(storeResult);
+    result->setResult(storeResult);
     return result;
 }
 

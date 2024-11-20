@@ -5,8 +5,6 @@ target_sources(Storage
 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private/Connection.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/private/Connection.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/private/AsyncResultDb.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/private/AsyncResultDb.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/private/Statement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/private/Statement.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FileSystemSessionDatabaseBackend.cpp

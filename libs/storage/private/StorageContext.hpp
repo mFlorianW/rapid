@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "AsyncResultDb.hpp"
+#include <AsyncResult.hpp>
 #include <FutureWatcher.hpp>
 #include <SessionData.hpp>
 #include <thread>
@@ -14,8 +14,8 @@ namespace Rapid::Storage::Private
 
 struct StorageContextBase
 {
-    StorageContextBase()
-        : mResult{std::make_shared<AsyncResultDb>()}
+    StorageContextBase(std::shared_ptr<System::AsyncResult> result = std::make_shared<System::AsyncResult>())
+        : mResult{std::move(result)}
     {
         mStorageResult.setFuture(mStoragePromise.get_future());
         mStorageResult.finished.connect([this] {
@@ -33,7 +33,7 @@ struct StorageContextBase
     std::thread mStorageThread{};
     std::promise<bool> mStoragePromise;
     System::FutureWatcher<bool> mStorageResult;
-    std::shared_ptr<AsyncResultDb> mResult;
+    std::shared_ptr<System::AsyncResult> mResult;
 
     KDBindings::Signal<StorageContextBase*> done;
 };

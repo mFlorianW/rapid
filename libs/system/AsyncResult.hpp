@@ -76,7 +76,6 @@ public:
      */
     KDBindings::Signal<AsyncResult*> done;
 
-protected:
     /**
      * Set the result of the AsyncResult and emits the @AsyncResult::finished signal
      * @result The result state of the AsyncResult
