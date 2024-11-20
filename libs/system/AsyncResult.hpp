@@ -5,6 +5,7 @@
 #pragma once
 
 #include "SystemTypes.hpp"
+#include <expected>
 #include <kdbindings/signal.h>
 
 namespace Rapid::System
@@ -87,4 +88,39 @@ private:
     Result mResult{Result::NotFinished};
     std::string mErrorMsg{};
 };
+
+/**
+ * Extends the AsyncResult with a retun value
+ */
+template <typename T>
+class AsyncResultWithValue : public AsyncResult
+{
+public:
+    /**
+     * Gives the result of the async operation.
+     * If the calls fails the returned value.
+     * @return The value or a std::nullopt in case the result is marked as error or not ready.
+     */
+    std::optional<T> getResultValue() const noexcept
+    {
+        if (getResult() != Result::Ok) {
+            return std::nullopt;
+        }
+        return mValue;
+    }
+
+    /**
+     * Sets the result value.
+     * This call doesn't emit the done signal so the result can be set as often as needed.
+     * The done signal is emitted when the protected @ref AsyncResult::setResult function is called.
+     */
+    void setResultValue(T const& value)
+    {
+        mValue = value;
+    }
+
+private:
+    T mValue;
+};
+
 } // namespace Rapid::System

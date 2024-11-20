@@ -1,4 +1,4 @@
-﻿---
+---
 BasedOnStyle: Microsoft
 BreakBeforeBraces: Custom
 BraceWrapping:
@@ -37,4 +37,5 @@ ConstructorInitializerIndentWidth: '4'
 AlwaysBreakTemplateDeclarations: 'true'
 AllowShortLambdasOnASingleLine: None
 QualifierAlignment: Right
+ReflowComments: false
 ...
