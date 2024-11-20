@@ -4,14 +4,18 @@
 
 #include "Connection.hpp"
 #include <spdlog/spdlog.h>
+#include <unordered_map>
 
 namespace Rapid::Storage::Private
 {
 
 Connection& Connection::connection(std::string const& database)
 {
-    static auto connection = Connection{database};
-    return connection;
+    static auto connections = std::unordered_map<std::string, std::unique_ptr<Connection>>{};
+    if (not connections.contains(database)) {
+        connections.insert({database, std::make_unique<Connection>(database)});
+    }
+    return *connections[database].get();
 }
 
 Connection::~Connection()

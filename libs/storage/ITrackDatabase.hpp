@@ -5,6 +5,7 @@
 #ifndef ITRACKDATABASEBACKEND_HPP
 #define ITRACKDATABASEBACKEND_HPP
 
+#include <AsyncResult.hpp>
 #include <TrackData.hpp>
 
 namespace Rapid::Storage
@@ -53,26 +54,26 @@ public:
     virtual std::vector<Common::TrackData> getTracks() = 0;
 
     /**
-     * The backend saves the tracks.
+     * Store the passed track in the database.
      * @param tracks The trackdata that shall be saved.
      * @return true Track data is successfull saved.
      * @return false The track data couldn't be saved.
      */
-    virtual bool saveTrack(std::vector<Common::TrackData> const& tracks) = 0;
+    virtual std::shared_ptr<System::AsyncResult> saveTrack(Common::TrackData const& track) = 0;
 
     /**
      * Deletes all track data.
      * @return true Track data successful deleted.
      * @return false Failed to delete the track data.
      */
-    virtual bool deleteTrack(std::size_t trackIndex) = 0;
+    virtual std::shared_ptr<System::AsyncResult> deleteTrack(std::size_t trackIndex) = 0;
 
     /**
      * Deletes all track data.
      * @return true Track data successful deleted.
      * @return false Failed to delete the track data.
      */
-    virtual bool deleteAllTracks() = 0;
+    virtual std::shared_ptr<System::AsyncResult> deleteAllTracks() = 0;
 
 protected:
     /**

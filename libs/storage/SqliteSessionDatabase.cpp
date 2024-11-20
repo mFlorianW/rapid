@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SqliteSessionDatabase.hpp"
-#include "private/AsyncResultDb.hpp"
 #include "private/Statement.hpp"
 #include <algorithm>
 #include <cstring>
@@ -13,17 +12,6 @@ using namespace Rapid::Storage::Private;
 
 namespace Rapid::Storage
 {
-
-SqliteSessionDatabase::StorageContext::StorageContext()
-    : mResult{std::make_shared<AsyncResultDb>()}
-{
-    mStorageResult.setFuture(mStoragePromise.get_future());
-    mStorageResult.finished.connect([this] {
-        done.emit(this);
-    });
-}
-
-SqliteSessionDatabase::StorageContext::~StorageContext() = default;
 
 SqliteSessionDatabase::SqliteSessionDatabase(std::string const& databaseFile)
     : mDbConnection{Connection::connection(databaseFile)}
@@ -96,38 +84,32 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
     std::lock_guard<std::mutex> const guard{mMutex};
     auto sessionId = getSessionId(session);
 
-    auto storageContext = std::make_shared<StorageContext>();
+    auto storageContext = std::make_shared<Private::SessionStorageContext>();
     mStorageCache.emplace(storageContext.get(), storageContext);
-    storageContext->mSession = session;
+    storageContext->mStorageObject = session;
     storageContext->mSessionId = sessionId.value_or(0);
 
+    auto storageOperationHandler = [this](Private::StorageContextBase* ctx) {
+        auto sessionCtx = mStorageCache[ctx];
+        auto const updateResult = sessionCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
+        sessionCtx->mResult->setDbResult(updateResult);
+        if (updateResult == System::Result::Ok) {
+            auto const sessionId = getIndexOfSessionId(sessionCtx->mSessionId).value_or(0);
+            sessionCtx->mIsUpdateContext ? sessionUpdated.emit(sessionId) : sessionAdded.emit(sessionId);
+        };
+        if (sessionCtx->mStorageThread.joinable()) {
+            sessionCtx->mStorageThread.join();
+        }
+        mStorageCache.erase(ctx);
+    };
+
     if (sessionId.has_value()) {
+        storageContext->mIsUpdateContext = true;
         storageContext->mStorageThread = std::thread{&SqliteSessionDatabase::updateSession, this, storageContext.get()};
-        storageContext->done.connect([&](StorageContext* ctx) {
-            auto const updateResult = ctx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
-            ctx->mResult->setDbResult(updateResult);
-            if (updateResult == System::Result::Ok) {
-                sessionUpdated.emit(getIndexOfSessionId(ctx->mSessionId).value_or(0));
-            };
-            if (ctx->mStorageThread.joinable()) {
-                ctx->mStorageThread.join();
-            }
-            mStorageCache.erase(ctx);
-        });
     } else {
         storageContext->mStorageThread = std::thread{&SqliteSessionDatabase::addSession, this, storageContext.get()};
-        storageContext->done.connect([&](StorageContext* ctx) {
-            auto const updateResult = ctx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
-            ctx->mResult->setDbResult(updateResult);
-            if (updateResult == System::Result::Ok) {
-                sessionAdded.emit(getIndexOfSessionId(ctx->mSessionId).value_or(0));
-            }
-            if (ctx->mStorageThread.joinable()) {
-                ctx->mStorageThread.join();
-            }
-            mStorageCache.erase(ctx);
-        });
     }
+    storageContext->done.connect(storageOperationHandler);
     return storageContext->mResult;
 }
 
@@ -157,7 +139,7 @@ void SqliteSessionDatabase::deleteSession(std::size_t index)
     sessionDeleted.emit(index);
 }
 
-void SqliteSessionDatabase::updateSession(StorageContext* ctx)
+void SqliteSessionDatabase::updateSession(Private::SessionStorageContext* ctx)
 {
     if (ctx == nullptr or mStorageCache.count(ctx) == 0) {
         spdlog::error("Update session called with an invalid context.");
@@ -173,14 +155,14 @@ void SqliteSessionDatabase::updateSession(StorageContext* ctx)
         return;
     }
 
-    auto const sessionLaps = context->mSession.getLaps();
+    auto const sessionLaps = context->mStorageObject.getLaps();
     if (sessionLaps.size() < storedLaps->size()) {
         ctx->mStoragePromise.set_value(true);
         return;
     }
 
     for (std::size_t lapIndex = storedLaps->size(); lapIndex < sessionLaps.size(); ++lapIndex) {
-        if (!storeLapOfSession(context->mSessionId, lapIndex, context->mSession.getLaps().at(lapIndex))) {
+        if (!storeLapOfSession(context->mSessionId, lapIndex, context->mStorageObject.getLaps().at(lapIndex))) {
             ctx->mStoragePromise.set_value(false);
             return;
         }
@@ -195,7 +177,7 @@ void SqliteSessionDatabase::updateSession(StorageContext* ctx)
     ctx->mStoragePromise.set_value(true);
 }
 
-void SqliteSessionDatabase::addSession(StorageContext* ctx)
+void SqliteSessionDatabase::addSession(Private::SessionStorageContext* ctx)
 {
     if (ctx == nullptr or mStorageCache.count(ctx) == 0) {
         spdlog::error("Update session called with an invalid context.");
@@ -212,9 +194,9 @@ void SqliteSessionDatabase::addSession(StorageContext* ctx)
     // insert the session
     auto insertStm = Statement{mDbConnection};
     auto bindError = insertStm.prepare(insertQuery)
-                         .bindValue(1, ctx->mSession.getTrack().getTrackName())
-                         .bindValue(2, ctx->mSession.getSessionDate().asString())
-                         .bindValue(3, ctx->mSession.getSessionTime().asString())
+                         .bindValue(1, ctx->mStorageObject.getTrack().getTrackName())
+                         .bindValue(2, ctx->mStorageObject.getSessionDate().asString())
+                         .bindValue(3, ctx->mStorageObject.getSessionTime().asString())
                          .hasError();
     if (bindError or (insertStm.execute() != ExecuteResult::Ok)) {
         spdlog::error("Error insert session. Error:", mDbConnection.getErrorMessage());
@@ -223,7 +205,7 @@ void SqliteSessionDatabase::addSession(StorageContext* ctx)
     }
 
     // get the session for inserting the laps.
-    auto sessionId = getSessionId(ctx->mSession);
+    auto sessionId = getSessionId(ctx->mStorageObject);
     if (!sessionId.has_value()) {
         spdlog::error("Failed to query session of new stored session");
         ctx->mStoragePromise.set_value(false);
@@ -231,7 +213,7 @@ void SqliteSessionDatabase::addSession(StorageContext* ctx)
     }
 
     // insert the laps of the session
-    auto const laps = ctx->mSession.getLaps();
+    auto const laps = ctx->mStorageObject.getLaps();
     for (std::size_t lapIndex = 0; lapIndex < laps.size(); ++lapIndex) {
         if (!storeLapOfSession(sessionId.value(), lapIndex, laps.at(lapIndex))) {
             ctx->mStoragePromise.set_value(false);

@@ -13,8 +13,28 @@ std::string getWorkingDir();
 
 std::string getTestDatabseFolder();
 
-std::string getTestDatabseFile(std::string const& dbFile = "trackmanagement_test.db");
+std::string getDbNameForTest() noexcept;
+
+std::string getTestDatabaseFile(std::string const& dbFile = getDbNameForTest());
 
 } // namespace Rapid::TestHelper::SqliteDatabaseTestHelper
+
+namespace Rapid::TestHelper
+{
+
+class SqliteDatabaseTestEventlistener : public Catch::EventListenerBase
+{
+public:
+    using EventListenerBase::EventListenerBase;
+
+    [[nodiscard]] virtual std::string getCleanDbFileName() const noexcept = 0;
+
+    void testCaseStarting(Catch::TestCaseInfo const& testInfo) override;
+
+private:
+    std::string mCleanDbFileName;
+};
+
+} // namespace Rapid::TestHelper
 
 #endif // LAPTIMERCORE_TEST_DUMMY_SQLITEDATABASETESTEVENTLISTENER_HPP

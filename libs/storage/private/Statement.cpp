@@ -4,6 +4,7 @@
 
 #include "Statement.hpp"
 #include "cstring"
+#include <spdlog/spdlog.h>
 
 namespace Rapid::Storage::Private
 {
@@ -37,6 +38,8 @@ Statement& Statement::prepare(char const* statement) noexcept
         sqlite3_prepare_v2(dbHandle, statement, static_cast<int>(std::strlen(statement)), &mStatement, nullptr);
     if (prepareResult == SQLITE_OK) {
         mPrepared = true;
+    } else {
+        spdlog::error("Failed to prepare statement {} Error: {}", statement, mDbConnection.getErrorMessage());
     }
 
     return *this;

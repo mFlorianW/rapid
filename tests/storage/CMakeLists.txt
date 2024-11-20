@@ -18,7 +18,6 @@ VERBATIM)
 add_custom_target(test_session_db ALL DEPENDS test_session.db)
 
 add_executable(test_storage)
-add_dependencies(test_storage test_session_db)
 
 target_sources(test_storage
 PRIVATE
