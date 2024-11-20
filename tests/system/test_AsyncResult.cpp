@@ -21,6 +21,17 @@ public:
     }
 };
 
+class TestAsyncResultWithValue : public AsyncResultWithValue<int>
+{
+public:
+    using AsyncResultWithValue::AsyncResultWithValue;
+
+    void setResult(Result result, std::string const& errorMessage = std::string{})
+    {
+        AsyncResult::setResult(result, errorMessage);
+    }
+};
+
 std::shared_ptr<AsyncResult> startLongOperation(std::thread& thread)
 {
     auto result = std::make_shared<TestAsyncResult>();
@@ -30,6 +41,28 @@ std::shared_ptr<AsyncResult> startLongOperation(std::thread& thread)
     });
     return result;
 }
+
+std::shared_ptr<AsyncResultWithValue<int>> startLongOperationWithValue(std::thread& thread)
+{
+    auto result = std::make_shared<TestAsyncResultWithValue>();
+    thread = std::thread([result]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        result->setResultValue(123);
+        result->setResult(Result::Ok);
+    });
+    return result;
+}
+
+std::shared_ptr<AsyncResultWithValue<int>> startLongOperationWithValueError(std::thread& thread)
+{
+    auto result = std::make_shared<TestAsyncResultWithValue>();
+    thread = std::thread([result]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        result->setResult(Result::Error, std::string{"Error occured!"});
+    });
+    return result;
+}
+
 } // namespace
 
 SCENARIO("The AsyncResult shall emit done signal when operation is finshed")
@@ -119,5 +152,37 @@ SCENARIO("The AsyncResult shall be to suspend the current thread and should wait
             }
         }
         thread.join();
+    }
+}
+
+SCENARIO("The AsyncResultWithValue shall return the value when the operation is finished")
+{
+    GIVEN("A AsyncResultWithValue")
+    {
+        auto thread = std::thread{};
+        WHEN("The AsyncResultWithValue has a value")
+        {
+            auto aResult = startLongOperationWithValue(thread);
+            aResult->waitForFinished();
+            THEN("The AsyncResultWithValue returns the correct value")
+            {
+                CHECK(aResult->getResult() == Result::Ok);
+                CHECK(aResult->getResultValue().has_value());
+                CHECK(aResult->getResultValue() == 123);
+            }
+            thread.join();
+        }
+
+        WHEN("TestAsyncResultWithValue has no value")
+        {
+            auto aResult = startLongOperationWithValueError(thread);
+            aResult->waitForFinished();
+            THEN("The AsyncResultWithValue returns the error code and optional message")
+            {
+                CHECK_FALSE(aResult->getResultValue().has_value());
+                CHECK(aResult->getErrorMessage() == std::string_view{"Error occured!"});
+            }
+            thread.join();
+        }
     }
 }
