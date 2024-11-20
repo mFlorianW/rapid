@@ -10,6 +10,7 @@
 
 namespace Rapid::Storage
 {
+using AsyncTrackCountResult = System::AsyncResultWithValue<std::size_t>;
 
 class ITrackDatabase
 {
@@ -40,11 +41,18 @@ public:
     ITrackDatabase& operator=(ITrackDatabase&& other) = delete;
 
     /**
-     * Gives the number of stored tracks in the database. The number from 0...[TrackCount-1] is the valid index range
-     * for track requests and deletions.
+     * Gives the number of stored tracks in the database.
+     * The number from 0...[TrackCount-1] is the valid index range for track requests and deletions.
      * @return The nummber of stored tracks.
      */
     virtual std::size_t getTrackCount() = 0;
+
+    /**
+     * Gives the number of stored tracks in the database.
+     * The number from 0...[TrackCount-1] is the valid index range for track requests and deletions.
+     * @return The nummber of stored tracks.
+     */
+    virtual std::shared_ptr<AsyncTrackCountResult> getTrackCountAsync() = 0;
 
     /**
      * The backend loads all track data.

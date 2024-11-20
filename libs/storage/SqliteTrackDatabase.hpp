@@ -53,6 +53,11 @@ public:
     std::size_t getTrackCount() override;
 
     /**
+     * @copydoc ITrackdatabase::getTrackAsyncCount()
+     */
+    std::shared_ptr<AsyncTrackCountResult> getTrackCountAsync() override;
+
+    /**
      * @copydoc ITrackdatabase::loadTracks()
      */
     std::vector<Common::TrackData> getTracks() override;
@@ -76,6 +81,7 @@ private:
     void deleteTrack(std::shared_ptr<Private::TrackStorageContext> ctx);
     void saveTrack(std::shared_ptr<Private::TrackStorageContext> ctx);
     void deleteAllTracks(std::shared_ptr<Private::TrackStorageContext> ctx);
+    void getTrackCountAsync(std::shared_ptr<Private::TrackStorageContextWithValue<std::size_t>> ctx);
     std::vector<std::size_t> getTrackIds() const noexcept;
     std::optional<std::size_t> getTrackIdOfIndex(std::size_t trackIndex) const noexcept;
     std::optional<std::size_t> savePosition(Common::PositionData const& position) const noexcept;
@@ -87,6 +93,7 @@ private:
     std::optional<std::size_t> getStartlinePositionId(std::size_t trackId) const noexcept;
     bool deletePositionId(std::size_t positionId);
     std::vector<std::size_t> getSectionPositionIds(std::size_t trackId);
+    std::optional<std::size_t> readTrackCount();
 
     Private::Connection& mDbConnection;
     std::unordered_map<Private::StorageContextBase*, std::shared_ptr<Private::TrackStorageContext>> mStorageCache;

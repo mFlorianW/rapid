@@ -126,3 +126,14 @@ TEST_CASE("Delete all tracks in the SqliteTrackDatabase")
     REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Track", resultHandler, nullptr, nullptr) == SQLITE_OK);
     REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Position", resultHandler, nullptr, nullptr) == SQLITE_OK);
 }
+
+TEST_CASE("Read the track count with an asynchronous")
+{
+    auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
+    auto const result = trackDb.getTrackCountAsync();
+
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
+    REQUIRE_COMPARE_WITH_TIMEOUT(result->getResultValue().has_value(), true, std::chrono::milliseconds{10});
+    REQUIRE(result->getResultValue().value());
+    // NOLINTEND(bugprone-unchecked-optional-access)
+}

@@ -21,15 +21,34 @@ SqliteTrackDatabase::~SqliteTrackDatabase() = default;
 
 std::size_t SqliteTrackDatabase::getTrackCount()
 {
-    std::lock_guard<std::mutex> const guard{mMutex};
-    constexpr auto statementStr = "SELECT COUNT(TrackId) FROM Track";
-    Statement stm{mDbConnection};
-    if (stm.prepare(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
-        spdlog::error("Database Error: {}", mDbConnection.getErrorMessage());
-        return 0;
+    auto const trackCount = readTrackCount();
+    if (trackCount.has_value()) {
+        return trackCount.value();
     }
+    return 0;
+}
 
-    return stm.getColumn<int>(0).value_or(0);
+std::shared_ptr<AsyncTrackCountResult> SqliteTrackDatabase::getTrackCountAsync()
+{
+    std::lock_guard<std::mutex> const guard{mMutex};
+    auto result = std::make_shared<AsyncTrackCountResult>();
+    auto context = std::make_shared<TrackStorageContextWithValue<std::size_t>>(result);
+    mStorageCache.insert({context.get(), context});
+    context->done.connect([this](StorageContextBase* ctx) {
+        auto const updateResult = ctx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
+        auto const context =
+            StorageContextBase::getStorageAs<TrackStorageContextWithValue<std::size_t>>(mStorageCache.at(ctx));
+        ctx->getResultAs<AsyncTrackCountResult>()->setResultValue(context->value);
+        ctx->mResult->setResult(updateResult);
+        if (ctx->mStorageThread.joinable()) {
+            ctx->mStorageThread.join();
+        }
+        mStorageCache.erase(ctx);
+    });
+    context->mStorageThread = std::thread{[this, context]() {
+        getTrackCountAsync(context);
+    }};
+    return result;
 }
 
 std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
@@ -235,6 +254,17 @@ void SqliteTrackDatabase::deleteAllTracks(std::shared_ptr<Private::TrackStorageC
     ctx->mStoragePromise.set_value(true);
 }
 
+void SqliteTrackDatabase::getTrackCountAsync(std::shared_ptr<Private::TrackStorageContextWithValue<std::size_t>> ctx)
+{
+    auto trackCount = readTrackCount();
+    auto success = false;
+    if (trackCount.has_value()) {
+        ctx->value = trackCount.value();
+        success = true;
+    }
+    ctx->mStoragePromise.set_value(success);
+}
+
 std::vector<std::size_t> SqliteTrackDatabase::getTrackIds() const noexcept
 {
     // clang-format off
@@ -437,6 +467,18 @@ std::vector<std::size_t> SqliteTrackDatabase::getSectionPositionIds(std::size_t 
         }
     } while (stm.execute() == ExecuteResult::Row && stm.getColumnCount() == 1);
     return ids;
+}
+
+std::optional<std::size_t> SqliteTrackDatabase::readTrackCount()
+{
+    std::lock_guard<std::mutex> const guard{mMutex};
+    constexpr auto statementStr = "SELECT COUNT(TrackId) FROM Track";
+    Statement stm{mDbConnection};
+    if (stm.prepare(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
+        spdlog::error("Database Error: {}", mDbConnection.getErrorMessage());
+        return std::nullopt;
+    }
+    return stm.getColumn<int>(0).value_or(0);
 }
 
 } // namespace Rapid::Storage
