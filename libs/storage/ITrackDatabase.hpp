@@ -11,6 +11,7 @@
 namespace Rapid::Storage
 {
 using AsyncTrackCountResult = System::AsyncResultWithValue<std::size_t>;
+using AsyncTrackResult = System::AsyncResultWithValue<std::vector<Common::TrackData>>;
 
 class ITrackDatabase
 {
@@ -55,11 +56,17 @@ public:
     virtual std::shared_ptr<AsyncTrackCountResult> getTrackCountAsync() = 0;
 
     /**
-     * The backend loads all track data.
-     * @return true Track data successful loaded.
-     * @return false Failed to load track data.
+     * The loads all track data from the database.
+     * @return The list with all stored tracks in the database on success, or nothing.
      */
     virtual std::vector<Common::TrackData> getTracks() = 0;
+
+    /**
+     * The loads all track data from the database.
+     * Wait for the @AsyncResult::finished signal to be emitted before reading the result value.
+     * @return The list with all stored tracks in the database on success, or nothing.
+     */
+    virtual std::shared_ptr<AsyncTrackResult> getTracksAsync() = 0;
 
     /**
      * Store the passed track in the database.

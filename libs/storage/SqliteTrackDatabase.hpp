@@ -15,6 +15,9 @@ namespace Rapid::Storage
 {
 class SqliteTrackDatabase : public ITrackDatabase
 {
+private:
+    using GetTrackContext = Private::TrackStorageContextWithValue<std::vector<Common::TrackData>>;
+
 public:
     /**
      * Creates an Instance of the SqliteTrackDatabase
@@ -58,9 +61,14 @@ public:
     std::shared_ptr<AsyncTrackCountResult> getTrackCountAsync() override;
 
     /**
-     * @copydoc ITrackdatabase::loadTracks()
+     * @copydoc ITrackdatabase::getTracks()
      */
     std::vector<Common::TrackData> getTracks() override;
+
+    /**
+     * @copydoc ITrackdatabase::getTracksAsync()
+     */
+    std::shared_ptr<AsyncTrackResult> getTracksAsync() override;
 
     /**
      * @copydoc ITrackdatabase::saveTrack(const std::vector<Common::TrackData> &tracks)
@@ -82,6 +90,7 @@ private:
     void saveTrack(std::shared_ptr<Private::TrackStorageContext> ctx);
     void deleteAllTracks(std::shared_ptr<Private::TrackStorageContext> ctx);
     void getTrackCountAsync(std::shared_ptr<Private::TrackStorageContextWithValue<std::size_t>> ctx);
+    void getTracksAsync(std::shared_ptr<GetTrackContext> ctx);
     std::vector<std::size_t> getTrackIds() const noexcept;
     std::optional<std::size_t> getTrackIdOfIndex(std::size_t trackIndex) const noexcept;
     std::optional<std::size_t> savePosition(Common::PositionData const& position) const noexcept;
@@ -94,6 +103,7 @@ private:
     bool deletePositionId(std::size_t positionId);
     std::vector<std::size_t> getSectionPositionIds(std::size_t trackId);
     std::optional<std::size_t> readTrackCount();
+    std::optional<std::vector<Common::TrackData>> readTracks();
 
     Private::Connection& mDbConnection;
     std::unordered_map<Private::StorageContextBase*, std::shared_ptr<Private::TrackStorageContext>> mStorageCache;

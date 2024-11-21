@@ -54,45 +54,33 @@ std::shared_ptr<AsyncTrackCountResult> SqliteTrackDatabase::getTrackCountAsync()
 std::vector<Common::TrackData> SqliteTrackDatabase::getTracks()
 {
     std::lock_guard<std::mutex> const guard{mMutex};
-    constexpr auto trackQuery =
-        "SELECT TrackId, Track.Name, FL.Latitude AS FlLat, FL.Longitude AS FlLong, "
-        "SL.Latitude AS SlLat, SL.Longitude AS SlLong from Track LEFT JOIN Position FL ON Track.Finishline = "
-        "FL.PositionId LEFT JOIN Position SL ON Track.Startline = SL.PositionId";
-    auto tracksResult = std::vector<Common::TrackData>{};
-
-    Statement stm{mDbConnection};
-    if (not stm.prepare(trackQuery).hasError()) {
-        while (stm.execute() == ExecuteResult::Row && stm.getColumnCount() == 6) {
-            auto track = Rapid::Common::TrackData{};
-            auto trackId = stm.getColumn<int>(0).value_or(0);
-            track.setTrackName(stm.getColumn<std::string>(1).value_or(""));
-            track.setFinishline({stm.getColumn<float>(2).value_or(0), stm.getColumn<float>(3).value_or(0)});
-            if (stm.hasColumnValue(4) == HasColumnValueResult::Ok &&
-                stm.hasColumnValue(5) == HasColumnValueResult::Ok) {
-                track.setStartline({stm.getColumn<float>(4).value_or(0), stm.getColumn<float>(5).value_or(0)});
-            }
-
-            // Request sektor
-            constexpr auto sektorQuery =
-                "SELECT PO.Latitude, PO.Longitude FROM Track JOIN Sektor SE ON Track.TrackId = SE.TrackId JOIN "
-                "Position PO ON SE.PositionId = PO.PositionId WHERE Track.TrackId = ? ORDER BY SE.SektorIndex ASC";
-            Statement sektorStm{mDbConnection};
-            auto const bindError = sektorStm.prepare(sektorQuery).bindValue(1, trackId).hasError();
-            if (bindError) {
-                tracksResult.clear();
-                break;
-            }
-
-            auto sections = std::vector<Rapid::Common::PositionData>{};
-            while (sektorStm.execute() == ExecuteResult::Row && sektorStm.getColumnCount() == 2) {
-                sections.emplace_back(sektorStm.getColumn<float>(0).value_or(0),
-                                      sektorStm.getColumn<float>(1).value_or(0));
-            }
-            track.setSections(sections);
-            tracksResult.emplace_back(track);
-        }
+    auto tracks = readTracks();
+    if (tracks.has_value()) {
+        return tracks.value();
     }
-    return tracksResult;
+    return {};
+}
+
+std::shared_ptr<AsyncTrackResult> SqliteTrackDatabase::getTracksAsync()
+{
+    std::lock_guard<std::mutex> const guard{mMutex};
+    auto result = std::make_shared<AsyncTrackResult>();
+    auto context = std::make_shared<GetTrackContext>(result);
+    mStorageCache.insert({context.get(), context});
+    context->done.connect([this](StorageContextBase* ctx) {
+        auto const updateResult = ctx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
+        auto const context = StorageContextBase::getStorageAs<GetTrackContext>(mStorageCache.at(ctx));
+        ctx->getResultAs<AsyncTrackResult>()->setResultValue(context->value);
+        ctx->mResult->setResult(updateResult);
+        if (ctx->mStorageThread.joinable()) {
+            ctx->mStorageThread.join();
+        }
+        mStorageCache.erase(ctx);
+    });
+    context->mStorageThread = std::thread{[this, context]() {
+        getTracksAsync(context);
+    }};
+    return result;
 }
 
 std::shared_ptr<System::AsyncResult> SqliteTrackDatabase::saveTrack(Common::TrackData const& track)
@@ -260,6 +248,17 @@ void SqliteTrackDatabase::getTrackCountAsync(std::shared_ptr<Private::TrackStora
     auto success = false;
     if (trackCount.has_value()) {
         ctx->value = trackCount.value();
+        success = true;
+    }
+    ctx->mStoragePromise.set_value(success);
+}
+
+void SqliteTrackDatabase::getTracksAsync(std::shared_ptr<GetTrackContext> ctx)
+{
+    auto tracks = readTracks();
+    auto success = false;
+    if (tracks.has_value()) {
+        ctx->value = tracks.value();
         success = true;
     }
     ctx->mStoragePromise.set_value(success);
@@ -479,6 +478,51 @@ std::optional<std::size_t> SqliteTrackDatabase::readTrackCount()
         return std::nullopt;
     }
     return stm.getColumn<int>(0).value_or(0);
+}
+
+std::optional<std::vector<Common::TrackData>> SqliteTrackDatabase::readTracks()
+{
+    constexpr auto trackQuery =
+        "SELECT TrackId, Track.Name, FL.Latitude AS FlLat, FL.Longitude AS FlLong, "
+        "SL.Latitude AS SlLat, SL.Longitude AS SlLong from Track LEFT JOIN Position FL ON Track.Finishline = "
+        "FL.PositionId LEFT JOIN Position SL ON Track.Startline = SL.PositionId";
+
+    auto tracksResult = std::vector<Common::TrackData>{};
+    Statement stm{mDbConnection};
+    if (not stm.prepare(trackQuery).hasError()) {
+        while (stm.execute() == ExecuteResult::Row && stm.getColumnCount() == 6) {
+            auto track = Rapid::Common::TrackData{};
+            auto trackId = stm.getColumn<int>(0).value_or(0);
+            track.setTrackName(stm.getColumn<std::string>(1).value_or(""));
+            track.setFinishline({stm.getColumn<float>(2).value_or(0), stm.getColumn<float>(3).value_or(0)});
+            if (stm.hasColumnValue(4) == HasColumnValueResult::Ok &&
+                stm.hasColumnValue(5) == HasColumnValueResult::Ok) {
+                track.setStartline({stm.getColumn<float>(4).value_or(0), stm.getColumn<float>(5).value_or(0)});
+            }
+
+            // Request sektor
+            constexpr auto sektorQuery =
+                "SELECT PO.Latitude, PO.Longitude FROM Track JOIN Sektor SE ON Track.TrackId = SE.TrackId JOIN "
+                "Position PO ON SE.PositionId = PO.PositionId WHERE Track.TrackId = ? ORDER BY SE.SektorIndex ASC";
+            Statement sektorStm{mDbConnection};
+            auto const bindError = sektorStm.prepare(sektorQuery).bindValue(1, trackId).hasError();
+            if (bindError) {
+                tracksResult.clear();
+                break;
+            }
+
+            auto sections = std::vector<Rapid::Common::PositionData>{};
+            while (sektorStm.execute() == ExecuteResult::Row && sektorStm.getColumnCount() == 2) {
+                sections.emplace_back(sektorStm.getColumn<float>(0).value_or(0),
+                                      sektorStm.getColumn<float>(1).value_or(0));
+            }
+            track.setSections(sections);
+            tracksResult.emplace_back(track);
+        }
+    } else {
+        return std::nullopt;
+    }
+    return tracksResult;
 }
 
 } // namespace Rapid::Storage
