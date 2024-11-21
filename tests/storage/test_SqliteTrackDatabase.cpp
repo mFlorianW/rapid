@@ -28,6 +28,21 @@ class SqliteTrackDatabaseEventListener : public SqliteDatabaseTestEventlistener
     }
 };
 
+std::vector<Rapid::Common::TrackData> getDefaultTracks()
+{
+    auto osl = Rapid::Common::TrackData{};
+    osl.setTrackName("Oschersleben");
+    osl.setStartline({52.0271, 11.2804});
+    osl.setFinishline({52.0270889, 11.2803483});
+    osl.setSections({{52.0298205, 11.2741851}, {52.0299681, 11.2772076}});
+
+    auto assen = Rapid::Common::TrackData{};
+    assen.setTrackName("Assen");
+    assen.setFinishline({52.962324, 6.524115});
+    assen.setSections({{52.959453, 6.525305}, {52.955628, 6.512773}});
+    return {std::move(osl), std::move(assen)};
+}
+
 } // namespace
 
 CATCH_REGISTER_LISTENER(SqliteTrackDatabaseEventListener);
@@ -125,4 +140,26 @@ TEST_CASE("Delete all tracks in the SqliteTrackDatabase")
     REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Sektor", resultHandler, nullptr, nullptr) == SQLITE_OK);
     REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Track", resultHandler, nullptr, nullptr) == SQLITE_OK);
     REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Position", resultHandler, nullptr, nullptr) == SQLITE_OK);
+}
+
+TEST_CASE("Read the track count with an asynchronous")
+{
+    auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
+    auto const result = trackDb.getTrackCountAsync();
+
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
+    REQUIRE_COMPARE_WITH_TIMEOUT(result->getResultValue().has_value(), true, std::chrono::milliseconds{10});
+    REQUIRE(result->getResultValue().value());
+    // NOLINTEND(bugprone-unchecked-optional-access)
+}
+
+TEST_CASE("Get all tracks asynchronous")
+{
+    auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
+    auto const result = trackDb.getTracksAsync();
+
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
+    REQUIRE_COMPARE_WITH_TIMEOUT(result->getResultValue().has_value(), true, std::chrono::milliseconds{10});
+    REQUIRE(result->getResultValue().value() == getDefaultTracks());
+    // NOLINTEND(bugprone-unchecked-optional-access)
 }

@@ -92,7 +92,7 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
     auto storageOperationHandler = [this](Private::StorageContextBase* ctx) {
         auto sessionCtx = mStorageCache[ctx];
         auto const updateResult = sessionCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
-        sessionCtx->mResult->setDbResult(updateResult);
+        sessionCtx->mResult->setResult(updateResult);
         if (updateResult == System::Result::Ok) {
             auto const sessionId = getIndexOfSessionId(sessionCtx->mSessionId).value_or(0);
             sessionCtx->mIsUpdateContext ? sessionUpdated.emit(sessionId) : sessionAdded.emit(sessionId);
