@@ -4,11 +4,9 @@
 
 #include "ActiveSessionWorkflow.hpp"
 #include "Laptimer.hpp"
-#include "MemorySessionDatabaseBackend.hpp"
 #include "PositionDateTimeProvider.hpp"
 #include "Positions.hpp"
-#include "SessionDatabase.hpp"
-#include <catch2/catch_all.hpp>
+#include "SessionDatabaseMock.hpp"
 
 using namespace Rapid::Workflow;
 using namespace Rapid::TestHelper;
@@ -19,8 +17,7 @@ TEST_CASE("The ActiveSessionWorkflow shall not do return a session when start is
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
 
     REQUIRE(!actSessWf.getSession());
@@ -30,8 +27,7 @@ TEST_CASE("The ActiveSessionWorkflow shall return a session when start called")
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
 
     actSessWf.startActiveSession();
@@ -43,22 +39,22 @@ TEST_CASE("The ActiveSessionWorkflow shall store a lap in the database when the 
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
+    auto res = std::make_shared<Rapid::System::AsyncResult>();
+    res->setResult(Rapid::System::Result::Ok);
+
+    REQUIRE_CALL(sdb, storeSession(trompeloeil::_)).WITH(_1.getNumberOfLaps() == 1).RETURN(res);
 
     actSessWf.startActiveSession();
     lp.lapFinished.emit();
-
-    REQUIRE(sdb.getSessionCount() == 1);
 }
 
 TEST_CASE("The ActiveSessionWorkflow shall not return a valid session when stop is called.")
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
 
     actSessWf.startActiveSession();
@@ -75,8 +71,7 @@ TEST_CASE("The ActiveSessionWorkflow shall update the round sector time property
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
     auto expectedSectorTime = Timestamp{"00:00:12.123"};
     bool sectorFinishedEmitted = false;
@@ -96,11 +91,12 @@ TEST_CASE("The ActiveSessionWorkflow shall store the laptime when finished.")
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
     auto expectedLap = LapData{Timestamp{"00:23:13.123"}};
     bool lapFinishedEmitted = false;
+
+    ALLOW_CALL(sdb, storeSession(trompeloeil::_)).RETURN(std::make_shared<Rapid::System::AsyncResult>());
 
     actSessWf.startActiveSession();
     actSessWf.lapFinished.connect([&lapFinishedEmitted]() {
@@ -119,10 +115,11 @@ TEST_CASE("The ActiveSessionWorkflow shall update the round laptime property whe
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
     auto expectedLaptime = Timestamp{"00:00:12.123"};
+
+    ALLOW_CALL(sdb, storeSession(trompeloeil::_)).RETURN(std::make_shared<Rapid::System::AsyncResult>());
 
     actSessWf.startActiveSession();
     lp.sectorTimes.emplace_back("00:00:12.123");
@@ -136,8 +133,7 @@ TEST_CASE(
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
 
     actSessWf.startActiveSession();
@@ -157,8 +153,7 @@ TEST_CASE("The ActiveSessionWorkflow shall update the currentSectorTime property
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
 
     actSessWf.startActiveSession();
@@ -177,13 +172,14 @@ TEST_CASE("The ActiveSessionWorkflow shall store the sector times in a lap of a 
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
     auto expectedLap = LapData{{
         Timestamp{"00:23:123.233"},
         Timestamp{"00:23:123.233"},
     }};
+
+    ALLOW_CALL(sdb, storeSession(trompeloeil::_)).RETURN(std::make_shared<Rapid::System::AsyncResult>());
 
     actSessWf.startActiveSession();
 
@@ -202,9 +198,10 @@ TEST_CASE("The ActiveSessionWorkflow shall update the lap counter when a lap is 
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
+
+    ALLOW_CALL(sdb, storeSession(trompeloeil::_)).RETURN(std::make_shared<Rapid::System::AsyncResult>());
 
     actSessWf.startActiveSession();
 
@@ -223,8 +220,7 @@ TEST_CASE("The ActiveSessionWorkflow shall forward all PositionTimeDate Updates 
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
 
     actSessWf.startActiveSession();
@@ -238,8 +234,7 @@ TEST_CASE("The ActiveSessionWorkflow shall not forward all PositionTimeDate upda
 {
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
 
     actSessWf.startActiveSession();
@@ -254,11 +249,12 @@ TEST_CASE("The ActiveSessionWorkflow shall store every GPS position updates to t
 
     auto lp = Laptimer{};
     auto dp = PositionDateTimeProvider{};
-    auto dbb = MemorySessionDatabaseBackend{};
-    auto sdb = SessionDatabase{dbb};
+    auto sdb = SessionDatabaseMock{};
     auto actSessWf = ActiveSessionWorkflow{dp, lp, sdb};
     auto const expectedPos =
         GpsPositionData{PositionData{52.1, 11.3}, Timestamp{"00:00:00.000"}, Date{"01.01.1970"}, VelocityData{100}};
+
+    ALLOW_CALL(sdb, storeSession(trompeloeil::_)).RETURN(std::make_shared<Rapid::System::AsyncResult>());
 
     actSessWf.startActiveSession();
     lp.lapStarted.emit();
