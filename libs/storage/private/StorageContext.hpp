@@ -73,6 +73,21 @@ struct StorageContext : public StorageContextBase
 
 struct SessionStorageContext : public StorageContext<Common::SessionData>
 {
+    SessionStorageContext() = default;
+
+    SessionStorageContext(std::shared_ptr<System::AsyncResult> result)
+        : StorageContext<Common::SessionData>{result}
+    {
+    }
+
+    ~SessionStorageContext() override = default;
+
+    SessionStorageContext(SessionStorageContext const& other) = delete;
+    SessionStorageContext& operator=(SessionStorageContext const& ohter) = delete;
+
+    SessionStorageContext(SessionStorageContext&& other) noexcept = delete;
+    SessionStorageContext& operator=(SessionStorageContext&& ohter) = delete;
+
     bool mIsUpdateContext = false;
     std::size_t mSessionId = std::size_t{0};
 };
@@ -112,6 +127,25 @@ struct TrackStorageContextWithValue : public TrackStorageContext
 
     TrackStorageContextWithValue(TrackStorageContextWithValue&& other) noexcept = delete;
     TrackStorageContextWithValue& operator=(TrackStorageContextWithValue&& ohter) = delete;
+
+    T value;
+};
+
+template <typename T>
+struct SessionStorageContextWithValue : public SessionStorageContext
+{
+    SessionStorageContextWithValue(std::shared_ptr<System::AsyncResult> result)
+        : SessionStorageContext{result}
+    {
+    }
+
+    ~SessionStorageContextWithValue() override = default;
+
+    SessionStorageContextWithValue(SessionStorageContextWithValue const& other) = delete;
+    SessionStorageContextWithValue& operator=(SessionStorageContextWithValue const& ohter) = delete;
+
+    SessionStorageContextWithValue(SessionStorageContextWithValue&& other) noexcept = delete;
+    SessionStorageContextWithValue& operator=(SessionStorageContextWithValue&& ohter) = delete;
 
     T value;
 };
