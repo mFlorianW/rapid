@@ -89,17 +89,17 @@ private:
     void deleteTrack(std::shared_ptr<Private::TrackStorageContext> ctx);
     void saveTrack(std::shared_ptr<Private::TrackStorageContext> ctx);
     void deleteAllTracks(std::shared_ptr<Private::TrackStorageContext> ctx);
-    void getTrackCountAsync(std::shared_ptr<Private::TrackStorageContextWithValue<std::size_t>> ctx);
-    void getTracksAsync(std::shared_ptr<GetTrackContext> ctx);
-    std::vector<std::size_t> getTrackIds() const noexcept;
-    std::optional<std::size_t> getTrackIdOfIndex(std::size_t trackIndex) const noexcept;
+    void readTrackCountAsync(std::shared_ptr<Private::TrackStorageContextWithValue<std::size_t>> ctx);
+    void readTracksAsync(std::shared_ptr<GetTrackContext> ctx);
+    std::vector<std::size_t> readTrackIds() const noexcept;
+    std::optional<std::size_t> readTrackIdOfIndex(std::size_t trackIndex) const noexcept;
     std::optional<std::size_t> savePosition(Common::PositionData const& position) const noexcept;
     std::optional<std::size_t> saveTrack(std::string const& name,
                                          std::size_t finishline,
                                          std::optional<std::size_t> startline) const noexcept;
     bool saveSection(std::size_t trackId, Common::PositionData const& section, std::size_t index);
-    std::optional<std::size_t> getFinishlinePositionId(std::size_t trackId) const noexcept;
-    std::optional<std::size_t> getStartlinePositionId(std::size_t trackId) const noexcept;
+    std::optional<std::size_t> readFinishlinePositionId(std::size_t trackId) const noexcept;
+    std::optional<std::size_t> readStartlinePositionId(std::size_t trackId) const noexcept;
     bool deletePositionId(std::size_t positionId);
     std::vector<std::size_t> getSectionPositionIds(std::size_t trackId);
     std::optional<std::size_t> readTrackCount();

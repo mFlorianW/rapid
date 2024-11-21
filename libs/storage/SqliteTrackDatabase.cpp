@@ -46,7 +46,7 @@ std::shared_ptr<AsyncTrackCountResult> SqliteTrackDatabase::getTrackCountAsync()
         mStorageCache.erase(ctx);
     });
     context->mStorageThread = std::thread{[this, context]() {
-        getTrackCountAsync(context);
+        readTrackCountAsync(context);
     }};
     return result;
 }
@@ -78,7 +78,7 @@ std::shared_ptr<AsyncTrackResult> SqliteTrackDatabase::getTracksAsync()
         mStorageCache.erase(ctx);
     });
     context->mStorageThread = std::thread{[this, context]() {
-        getTracksAsync(context);
+        readTracksAsync(context);
     }};
     return result;
 }
@@ -152,7 +152,7 @@ void SqliteTrackDatabase::deleteTrack(std::shared_ptr<Private::TrackStorageConte
                                      "WHERE "
                                         "Track.TrackId = ?";
     // clang-format on
-    auto const trackId = getTrackIdOfIndex(ctx->mTrackIndex);
+    auto const trackId = readTrackIdOfIndex(ctx->mTrackIndex);
     if (!trackId.has_value()) {
         spdlog::error("Failed to delete Track. Index {} not found", ctx->mTrackIndex);
         ctx->mStoragePromise.set_value(false);
@@ -210,11 +210,11 @@ void SqliteTrackDatabase::deleteAllTracks(std::shared_ptr<Private::TrackStorageC
 {
     constexpr auto deleteAllTrackQuery = "DELETE FROM Track";
 
-    auto const trackIds = getTrackIds();
+    auto const trackIds = readTrackIds();
     auto positionIds = std::vector<std::size_t>{};
     for (auto const& trackId : trackIds) {
-        auto finishlineId = getFinishlinePositionId(trackId);
-        auto startlineId = getStartlinePositionId(trackId);
+        auto finishlineId = readFinishlinePositionId(trackId);
+        auto startlineId = readStartlinePositionId(trackId);
         auto sectionIds = getSectionPositionIds(trackId);
         if (finishlineId.has_value()) {
             positionIds.push_back(finishlineId.value());
@@ -242,7 +242,7 @@ void SqliteTrackDatabase::deleteAllTracks(std::shared_ptr<Private::TrackStorageC
     ctx->mStoragePromise.set_value(true);
 }
 
-void SqliteTrackDatabase::getTrackCountAsync(std::shared_ptr<Private::TrackStorageContextWithValue<std::size_t>> ctx)
+void SqliteTrackDatabase::readTrackCountAsync(std::shared_ptr<Private::TrackStorageContextWithValue<std::size_t>> ctx)
 {
     auto trackCount = readTrackCount();
     auto success = false;
@@ -253,7 +253,7 @@ void SqliteTrackDatabase::getTrackCountAsync(std::shared_ptr<Private::TrackStora
     ctx->mStoragePromise.set_value(success);
 }
 
-void SqliteTrackDatabase::getTracksAsync(std::shared_ptr<GetTrackContext> ctx)
+void SqliteTrackDatabase::readTracksAsync(std::shared_ptr<GetTrackContext> ctx)
 {
     auto tracks = readTracks();
     auto success = false;
@@ -264,7 +264,7 @@ void SqliteTrackDatabase::getTracksAsync(std::shared_ptr<GetTrackContext> ctx)
     ctx->mStoragePromise.set_value(success);
 }
 
-std::vector<std::size_t> SqliteTrackDatabase::getTrackIds() const noexcept
+std::vector<std::size_t> SqliteTrackDatabase::readTrackIds() const noexcept
 {
     // clang-format off
     constexpr auto trackIdQuery = "SELECT "
@@ -292,9 +292,9 @@ std::vector<std::size_t> SqliteTrackDatabase::getTrackIds() const noexcept
     return trackIds;
 }
 
-std::optional<std::size_t> SqliteTrackDatabase::getTrackIdOfIndex(std::size_t trackIndex) const noexcept
+std::optional<std::size_t> SqliteTrackDatabase::readTrackIdOfIndex(std::size_t trackIndex) const noexcept
 {
-    auto const trackIds = getTrackIds();
+    auto const trackIds = readTrackIds();
     if (trackIndex > trackIds.size()) {
         return std::nullopt;
     }
@@ -387,7 +387,7 @@ bool SqliteTrackDatabase::saveSection(std::size_t trackId, Common::PositionData 
     return true;
 }
 
-std::optional<std::size_t> SqliteTrackDatabase::getFinishlinePositionId(std::size_t trackId) const noexcept
+std::optional<std::size_t> SqliteTrackDatabase::readFinishlinePositionId(std::size_t trackId) const noexcept
 {
     // clang-format off
     constexpr auto finishlinePositionIdQuery =
@@ -407,7 +407,7 @@ std::optional<std::size_t> SqliteTrackDatabase::getFinishlinePositionId(std::siz
     return stm.getColumn<int>(0);
 }
 
-std::optional<std::size_t> SqliteTrackDatabase::getStartlinePositionId(std::size_t trackId) const noexcept
+std::optional<std::size_t> SqliteTrackDatabase::readStartlinePositionId(std::size_t trackId) const noexcept
 {
     // clang-format off
     constexpr auto startLinePositionIdQuery =
