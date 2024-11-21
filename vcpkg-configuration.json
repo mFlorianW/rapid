@@ -15,7 +15,13 @@
         "baseline": "34a208248829d3e65df73582c3ed537dd27fb723",
         "repository": "https://github.com/mflorianw/mflorianw-vcpkg-registry",
         "reference": "main",
-        "packages": [ "arduinojson", "lvgl-ssd1322", "lvgl-ssd1322-drivers" ]
+        "packages": [
+          "arduinojson",
+          "lvgl-ssd1322",
+          "lvgl-ssd1322-drivers",
+          "ram",
+          "trompeloeil"
+        ]
     }
   ]
 }

@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "MemorySessionDatabaseBackend.hpp"
 #include "SessionDatabase.hpp"
 #include "SessionEndpoint.hpp"
 #include "Sessions.hpp"
-#include <catch2/catch_all.hpp>
+#include <SessionDatabaseMock.hpp>
 
 using namespace Rapid::Rest;
 using namespace Rapid::TestHelper;
@@ -16,13 +15,9 @@ SCENARIO("Calling the Session endpoint /sessions with GET shall return the sessi
 {
     GIVEN("A session endpoint with two session")
     {
-        auto dbBackend = MemorySessionDatabaseBackend{};
-        auto db = SessionDatabase{dbBackend};
+        auto db = SessionDatabaseMock{};
         auto endpoint = SessionEndpoint{db};
-        auto result = db.storeSession(Sessions::getTestSession());
-        result->waitForFinished();
-        result = db.storeSession(Sessions::getTestSession2());
-        result->waitForFinished();
+        REQUIRE_CALL(db, getSessionCount()).RETURN(2);
 
         WHEN("Requesting the top folder /sessions shall return the session count")
         {
@@ -41,11 +36,10 @@ SCENARIO("Calling the Session endpoint with GET on a specific path under /sessio
 {
     GIVEN("A session endpoint with one session")
     {
-        auto dbBackend = MemorySessionDatabaseBackend{};
-        auto db = SessionDatabase{dbBackend};
+        auto db = SessionDatabaseMock{};
         auto endpoint = SessionEndpoint{db};
-        auto asyncResult = db.storeSession(Sessions::getTestSession());
-        asyncResult->waitForFinished();
+
+        REQUIRE_CALL(db, getSessionByIndex(trompeloeil::_)).WITH(_1 == 0).RETURN(Sessions::getTestSession());
 
         WHEN("Requesting the a specifc under /sessions/0 shall return the session")
         {
@@ -60,24 +54,13 @@ SCENARIO("Calling the Session endpoint with GET on a specific path under /sessio
     }
 }
 
-SCENARIO("Calling the Session endpoint with DELETE on a specific path under /sessions/{n} shall delete the session")
+TEST_CASE("Calling the Session endpoint with DELETE on a specific path under /sessions/{n} shall delete the session")
 {
-    GIVEN("A session endpoint with one session")
-    {
-        auto dbBackend = MemorySessionDatabaseBackend{};
-        auto db = SessionDatabase{dbBackend};
-        auto endpoint = SessionEndpoint{db};
-        auto asyncResult = db.storeSession(Sessions::getTestSession());
-        asyncResult->waitForFinished();
+    auto db = SessionDatabaseMock{};
+    auto endpoint = SessionEndpoint{db};
 
-        WHEN("The endpoint with a DELETE request is called")
-        {
-            auto request = RestRequest{RequestType::Delete, "/sessions/0"};
-            endpoint.handleRestRequest(request);
-            THEN("The session under the index shall be deleted")
-            {
-                REQUIRE(db.getSessionCount() == 0);
-            }
-        }
-    }
+    REQUIRE_CALL(db, deleteSession(trompeloeil::_)).WITH(_1 == 0);
+
+    auto request = RestRequest{RequestType::Delete, "/sessions/0"};
+    endpoint.handleRestRequest(request);
 }

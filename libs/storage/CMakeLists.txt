@@ -7,13 +7,9 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/private/Connection.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/private/Statement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/private/Statement.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/FileSystemSessionDatabaseBackend.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/FileSystemSessionDatabaseBackend.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ISessionDatabase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ISessionDatabaseBackend.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ITrackDatabase.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SessionDatabase.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SessionDatabase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SqliteSessionDatabase.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SqliteSessionDatabase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SqliteTrackDatabase.cpp

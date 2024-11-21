@@ -17,22 +17,6 @@ add_custom_command(OUTPUT test_session.db
 VERBATIM)
 add_custom_target(test_session_db ALL DEPENDS test_session.db)
 
-add_executable(test_storage)
-
-target_sources(test_storage
-PRIVATE
-    test_SessionDatabase.cpp
-    test_FileSystemSessionDatabaseBackend.cpp
-)
-
-target_link_libraries(test_storage
-PRIVATE
-    Catch2::Catch2WithMain
-    Rapid::Storage
-    Rapid::TestHelper
-)
-catch_discover_tests(test_storage)
-
 add_executable(test_storage_sqlitesession_database)
 add_dependencies(test_storage_sqlitesession_database test_session_db)
 
