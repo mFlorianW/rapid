@@ -40,43 +40,34 @@ std::size_t SqliteSessionDatabase::getSessionCount()
 std::optional<Common::SessionData> SqliteSessionDatabase::getSessionByIndex(std::size_t index) const noexcept
 {
     std::lock_guard<std::mutex> const guard{mMutex};
-    // clang-format off
-    constexpr auto sessionQuery = "SELECT "
-                                    "Session.Date, Session.Time, Session.TrackId "
-                                  "FROM "
-                                    "Session "
-                                  "WHERE "
-                                    "Session.SessionId = ?";
-    // clang-format on
-    auto const sessionIndex = mIndexMapper.find(index);
-    if (sessionIndex == mIndexMapper.cend()) {
-        return std::nullopt;
-    }
+    return readSession(index);
+}
 
-    auto sessionStm = Statement{mDbConnection};
-    auto const bindError =
-        sessionStm.prepare(sessionQuery).bindValue(1, static_cast<int>(sessionIndex->second)).hasError();
-    if (bindError or (sessionStm.execute() != ExecuteResult::Row) or (sessionStm.getColumnCount() < 3)) {
-        spdlog::error("Error query session. Error: {}", mDbConnection.getErrorMessage());
-        return std::nullopt;
-    }
-
-    auto const trackId = static_cast<std::size_t>(sessionStm.getColumn<int>(2).value_or(0));
-    auto trackData = getTrack(trackId);
-    if (!trackData.has_value()) {
-        return std::nullopt;
-    }
-
-    auto laps = getLapsOfSession(sessionIndex->second);
-    if (!laps.has_value()) {
-        return std::nullopt;
-    }
-
-    auto session = Common::SessionData{trackData.value_or(Common::TrackData{}),
-                                       Common::Date{sessionStm.getColumn<std::string>(0).value_or("")},
-                                       Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")}};
-    session.addLaps(laps.value_or(std::vector<Common::LapData>{}));
-    return session;
+std::shared_ptr<GetSessionResult> SqliteSessionDatabase::getSessionByIndexAsync(std::size_t index) noexcept
+{
+    std::lock_guard<std::mutex> const guard{mMutex};
+    auto result = std::make_shared<GetSessionResult>();
+    auto context = std::make_shared<Private::SessionStorageContextWithValue<Common::SessionData>>(result);
+    mStorageCache.emplace(context.get(), context);
+    context->mSessionId = index;
+    context->done.connect([this](Private::StorageContextBase* ctx) {
+        auto sessionCtx =
+            StorageContextBase::getStorageAs<SessionStorageContextWithValue<Common::SessionData>>(mStorageCache[ctx]);
+        auto const result = sessionCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
+        if (result == System::Result::Ok) {
+            auto const getResult = sessionCtx->getResultAs<GetSessionResult>();
+            getResult->setResultValue(sessionCtx->value);
+        }
+        sessionCtx->mResult->setResult(result);
+        if (sessionCtx->mStorageThread.joinable()) {
+            sessionCtx->mStorageThread.join();
+        }
+        mStorageCache.erase(ctx);
+    });
+    context->mStorageThread = std::thread{[this, context]() {
+        readSession(context);
+    }};
+    return result;
 }
 
 std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common::SessionData const& session)
@@ -224,6 +215,18 @@ void SqliteSessionDatabase::addSession(Private::SessionStorageContext* ctx)
     updateIndexMapper();
     ctx->mSessionId = sessionId.value();
     ctx->mStoragePromise.set_value(true);
+}
+
+void SqliteSessionDatabase::readSession(
+    std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionData>> ctx) const
+{
+    auto session = readSession(ctx->mSessionId);
+    auto success = false;
+    if (session.has_value()) {
+        ctx->value = session.value();
+        success = true;
+    }
+    ctx->mStoragePromise.set_value(success);
 }
 
 std::optional<std::size_t> SqliteSessionDatabase::getSessionIdOfIndex(std::size_t sessionIndex) const noexcept
@@ -590,6 +593,47 @@ void SqliteSessionDatabase::updateIndexMapper()
         mIndexMapper.clear();
         spdlog::error("Failed to query all session ids. Error: {}", mDbConnection.getErrorMessage());
     }
+}
+
+std::optional<Common::SessionData> SqliteSessionDatabase::readSession(std::size_t index) const
+{
+    // clang-format off
+    constexpr auto sessionQuery = "SELECT "
+                                    "Session.Date, Session.Time, Session.TrackId "
+                                  "FROM "
+                                    "Session "
+                                  "WHERE "
+                                    "Session.SessionId = ?";
+    // clang-format on
+    auto const sessionIndex = mIndexMapper.find(index);
+    if (sessionIndex == mIndexMapper.cend()) {
+        return std::nullopt;
+    }
+
+    auto sessionStm = Statement{mDbConnection};
+    auto const bindError =
+        sessionStm.prepare(sessionQuery).bindValue(1, static_cast<int>(sessionIndex->second)).hasError();
+    if (bindError or (sessionStm.execute() != ExecuteResult::Row) or (sessionStm.getColumnCount() < 3)) {
+        spdlog::error("Error query session. Error: {}", mDbConnection.getErrorMessage());
+        return std::nullopt;
+    }
+
+    auto const trackId = static_cast<std::size_t>(sessionStm.getColumn<int>(2).value_or(0));
+    auto trackData = getTrack(trackId);
+    if (!trackData.has_value()) {
+        return std::nullopt;
+    }
+
+    auto laps = getLapsOfSession(sessionIndex->second);
+    if (!laps.has_value()) {
+        return std::nullopt;
+    }
+
+    auto session = Common::SessionData{trackData.value_or(Common::TrackData{}),
+                                       Common::Date{sessionStm.getColumn<std::string>(0).value_or("")},
+                                       Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")}};
+    session.addLaps(laps.value_or(std::vector<Common::LapData>{}));
+    return session;
 }
 
 } // namespace Rapid::Storage

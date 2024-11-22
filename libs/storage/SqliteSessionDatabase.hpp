@@ -59,6 +59,11 @@ public:
     std::optional<Common::SessionData> getSessionByIndex(std::size_t index) const noexcept override;
 
     /**
+     * @copydoc ISessionDatabase::getSessionByIndexAsync(std::size_t index)
+     */
+    std::shared_ptr<GetSessionResult> getSessionByIndexAsync(std::size_t index) noexcept override;
+
+    /**
      * @copydoc ISessionDatabase::storeSession(Common::SessionData &session)
      */
     std::shared_ptr<System::AsyncResult> storeSession(Common::SessionData const& session) override;
@@ -71,6 +76,7 @@ public:
 private:
     void updateSession(Private::SessionStorageContext* ctx);
     void addSession(Private::SessionStorageContext* ctx);
+    void readSession(std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionData>> ctx) const;
     std::optional<std::size_t> getSessionIdOfIndex(std::size_t sessionIndex) const noexcept;
     std::optional<std::size_t> getSessionId(Common::SessionData const& session) const noexcept;
     std::optional<std::size_t> getIndexOfSessionId(std::size_t sessionId) const noexcept;
@@ -80,6 +86,7 @@ private:
     bool storeLapOfSession(std::size_t sessionId, std::size_t lapIndex, Common::LapData const& lapData) const noexcept;
     bool storeLapLogPoints(std::size_t lapId, Common::LapData const& lapData) const noexcept;
     std::optional<std::size_t> getLapId(std::size_t sessionId, std::size_t lapIndex) const noexcept;
+    std::optional<Common::SessionData> readSession(std::size_t index) const;
 
     static void handleUpdates(void* objPtr, int event, char const* database, char const* table, sqlite3_int64 rowId);
 
