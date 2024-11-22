@@ -75,17 +75,17 @@ public:
 
 private:
     void updateSession(Private::SessionStorageContext* ctx);
-    void addSession(Private::SessionStorageContext* ctx);
+    void saveSession(Private::SessionStorageContext* ctx);
     void readSession(std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionData>> ctx) const;
-    std::optional<std::size_t> getSessionIdOfIndex(std::size_t sessionIndex) const noexcept;
-    std::optional<std::size_t> getSessionId(Common::SessionData const& session) const noexcept;
-    std::optional<std::size_t> getIndexOfSessionId(std::size_t sessionId) const noexcept;
-    std::vector<std::size_t> getSessionIds() const noexcept;
-    std::optional<std::vector<Common::LapData>> getLapsOfSession(std::size_t sessionId) const noexcept;
-    std::optional<Common::TrackData> getTrack(std::size_t trackId) const noexcept;
-    bool storeLapOfSession(std::size_t sessionId, std::size_t lapIndex, Common::LapData const& lapData) const noexcept;
-    bool storeLapLogPoints(std::size_t lapId, Common::LapData const& lapData) const noexcept;
-    std::optional<std::size_t> getLapId(std::size_t sessionId, std::size_t lapIndex) const noexcept;
+    std::optional<std::size_t> readSessionIdOfIndex(std::size_t sessionIndex) const noexcept;
+    std::optional<std::size_t> readSessionId(Common::SessionData const& session) const noexcept;
+    std::optional<std::size_t> readIndexOfSessionId(std::size_t sessionId) const noexcept;
+    std::vector<std::size_t> readSessionIds() const noexcept;
+    std::optional<std::vector<Common::LapData>> readLapsOfSession(std::size_t sessionId) const noexcept;
+    std::optional<Common::TrackData> readTrack(std::size_t trackId) const noexcept;
+    bool saveLapOfSession(std::size_t sessionId, std::size_t lapIndex, Common::LapData const& lapData) const noexcept;
+    bool saveLapLogPoints(std::size_t lapId, Common::LapData const& lapData) const noexcept;
+    std::optional<std::size_t> readLapId(std::size_t sessionId, std::size_t lapIndex) const noexcept;
     std::optional<Common::SessionData> readSession(std::size_t index) const;
 
     static void handleUpdates(void* objPtr, int event, char const* database, char const* table, sqlite3_int64 rowId);
