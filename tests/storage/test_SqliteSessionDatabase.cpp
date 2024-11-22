@@ -5,6 +5,7 @@
 #include "Sessions.hpp"
 #include "SqliteSessionDatabase.hpp"
 #include "private/Connection.hpp"
+#include <CompareHelper.hpp>
 #include <SqliteDatabaseTestHelper.hpp>
 #include <catch2/catch_all.hpp>
 #include <spdlog/spdlog.h>
@@ -76,6 +77,12 @@ TEST_CASE("The SqliteSessionDatabase shall store a session and the session shall
     REQUIRE(readResult.has_value() == true);
     // NOLINTBEGIN(bugprone-unchecked-optional-access)
     REQUIRE(readResult.value() == Sessions::getTestSession3());
+
+    auto const asyncReadResult = db.getSessionByIndexAsync(addedIndex);
+    REQUIRE_COMPARE_WITH_TIMEOUT(asyncReadResult->getResult(), Result::Ok, std::chrono::milliseconds{10});
+    REQUIRE(asyncReadResult->getResult() == Result::Ok);
+    REQUIRE(asyncReadResult->getResultValue().has_value());
+    REQUIRE(asyncReadResult->getResultValue().value() == Sessions::getTestSession3());
     // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
