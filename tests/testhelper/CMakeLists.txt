@@ -32,13 +32,12 @@ PUBLIC
 )
 
 target_link_libraries(TestHelper
-PRIVATE
+PUBLIC
     Rapid::CommonObject
     Rapid::Positioning
     Rapid::AlgorithmObject
     Rapid::Storage
     Rapid::Rest
-PUBLIC
     Catch2::Catch2
     trompeloeil::trompeloeil
 )
@@ -56,4 +55,5 @@ if(ENABLE_QT)
         PRIVATE
             Rapid::CommonQt
     )
+    add_subdirectory(qt)
 endif()
