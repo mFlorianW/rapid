@@ -2,6 +2,7 @@ add_subdirectory(Common)
 add_subdirectory(Shell)
 add_subdirectory(Applications)
 add_subdirectory(Settings)
+add_subdirectory(Storage)
 
 add_executable(rapid_shell)
 
