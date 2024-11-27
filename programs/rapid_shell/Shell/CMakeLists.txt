@@ -22,11 +22,13 @@ target_link_libraries(Rapid
         Qt6::Widgets
         Rapid::ShellSettings
         Rapid::ShellSettingsPlugin
+        Rapid::ShellStorage
     PRIVATE
         Rapid::DatabaseFile
         Rapid::ShellCommon
         Rapid::ShellApplications
         Rapid::ShellApplicationsPlugin
+        Rapid::SystemQt
 )
 
 target_include_directories(Rapid
