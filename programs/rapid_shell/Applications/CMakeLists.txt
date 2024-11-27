@@ -1,3 +1,6 @@
+set(INSTALL_SEARCH_DIR ${CMAKE_INSTALL_PREFIX}/${SHARED_DATADIR}/)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ApplicationSearchDir.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/ApplicationSearchDir.hpp @ONLY)
+
 qt_add_qml_module(Applications
     URI "Rapid.Shell.Applications"
     OUTPUT_DIRECTORY "Rapid/Shell/Applications"
@@ -29,6 +32,7 @@ add_library(Rapid::ShellApplicationsPlugin ALIAS Applicationsplugin)
 
 target_include_directories(Applications
     PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
