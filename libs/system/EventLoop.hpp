@@ -6,6 +6,7 @@
 
 #include "Event.hpp"
 #include "EventHandler.hpp"
+#include <kdbindings/signal.h>
 #include <memory>
 #include <thread>
 
@@ -19,9 +20,9 @@ class EventLoop final
 {
 public:
     /**
-     * Default consturctor
+     * @brief Gives the for the event loop for the calling thread.
      */
-    EventLoop();
+    static EventLoop& instance();
 
     /**
      * Default destructor
@@ -75,8 +76,24 @@ public:
      */
     void quit() noexcept;
 
+    /**
+     * @brief This signal is emitted when for the event loop an event was posted
+     *
+     * @details The main purpose for this signal is integration with other event loops
+     *          e.g. Qt. Here is the signal used to wake up Qt event loop that it process
+     *          the events from the rapid event loop.
+     *          Usually there no need to connect to this signal.
+     */
+    KDBindings::Signal<> eventPosted;
+
 private:
     friend class Rapid::System::EventHandler;
+
+    /**
+     * Default consturctor
+     */
+    EventLoop();
+
     /**
      * Clear all events for a specific event handler
      */

@@ -18,6 +18,7 @@ PRIVATE
     Rapid::ShellApplicationsPlugin
     Rapid::Shell
     Rapid::ShellPlugin
+    Rapid::SystemQt
 )
 
 install(TARGETS rapid_shell DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
     // Load GPS position file
     auto positions = loadPositions("/home/florian/Coding/laptimer_core/laps/Oschersleben.csv");
 
-    auto eventLoop = Rapid::System::EventLoop{};
+    auto& eventLoop = Rapid::System::EventLoop::instance();
     auto gpsInfoProvider = Rapid::Positioning::StaticGpsInformationProvider{};
     auto posDateTimeProvider = Rapid::Positioning::ConstantGpsPositionProvider{positions};
     auto sessionDatabase = Rapid::Storage::SqliteSessionDatabase{LIBRARY_FILE};

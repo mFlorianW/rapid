@@ -15,7 +15,6 @@ struct RestGpsSourcePrivate
     QQmlApplicationEngine mEngine;
     MainWindowViewModel mMainWindowViewModel;
     QTimer mRapidTimer;
-    Rapid::System::EventLoop mEventLoop;
 };
 
 RestGpsSource::RestGpsSource()
@@ -28,8 +27,8 @@ RestGpsSource::RestGpsSource()
 
     // TODO: move this in somehow in the mainloop
     d->mRapidTimer.setInterval(std::chrono::milliseconds(1));
-    QObject::connect(&d->mRapidTimer, &QTimer::timeout, &d->mRapidTimer, [this]() {
-        d->mEventLoop.processEvents();
+    QObject::connect(&d->mRapidTimer, &QTimer::timeout, &d->mRapidTimer, []() {
+        Rapid::System::EventLoop::instance().processEvents();
     });
     d->mRapidTimer.start();
 }

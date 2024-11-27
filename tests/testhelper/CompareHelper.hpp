@@ -48,7 +48,7 @@ IsBetweenMatcher<T> IsBetween(T begin, T end)
 // NOLINTNEXTLINE
 #define REQUIRE_COMPARE_WITH_TIMEOUT(value, expected, timeout) \
 { \
-    auto eventLoop = EventLoop{}; \
+    auto& eventLoop = EventLoop::instance(); \
     auto testSteps = (timeout).count() / 10; \
     \
     if (testSteps == 0) { \

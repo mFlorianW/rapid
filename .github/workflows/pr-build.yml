@@ -55,6 +55,8 @@ jobs:
         echo "###############################################################"
         echo "# Finished Build Commit ${{ matrix.commits }}"
         echo "###############################################################"
+      env:
+        QT_QPA_PLATFORM: offscreen
     - name: Test
       id: tests
       run: |

@@ -24,6 +24,8 @@ jobs:
       run: |
         cmake --preset github-ci-debug
         cmake --build --preset github-ci-debug --target all -- -j
+      env:
+        QT_QPA_PLATFORM: offscreen
     - name: Static Code Analysis
       run: |
         files=$(git diff  --diff-filter=ACMR --name-status --dirstat=files origin/${{ github.base_ref }}..origin/${{ github.head_ref }} | awk -F'\t' '{ if(NF==3){ print $3; }else{print $2; }}'| grep -E "(.*)\.(h|cpp|hpp)$" | grep -v thirdparty) || true

@@ -4,10 +4,11 @@
 
 #include "RestGpsSource.hpp"
 #include <QApplication>
+#include <RapidApplication.hpp>
 
 int main(int argc, char* argv[])
 {
-    QApplication app(argc, argv);
+    auto app = Rapid::System::Qt::RapidApplication(argc, argv);
     app.setApplicationName("lappy");
     app.setOrganizationName("Lappy");
     app.setOrganizationDomain("de.lappy");

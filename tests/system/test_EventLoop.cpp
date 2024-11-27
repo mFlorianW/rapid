@@ -31,7 +31,7 @@ SCENARIO("An EventLoop shall call the receiver of an Event.")
 {
     GIVEN("An Eventloop and EventReceiver")
     {
-        auto eventLoop = EventLoop{};
+        auto& eventLoop = EventLoop::instance();
         auto eventReceiver = TestEventReceiver{};
         WHEN("An event is posted to the loop and process events")
         {
@@ -49,7 +49,7 @@ SCENARIO("Process posted events from a different thread in the receivers EventLo
 {
     GIVEN("An EventLoop and EventReceiver")
     {
-        auto eventLoop = EventLoop{};
+        auto& eventLoop = EventLoop::instance();
         auto eventReceiver = TestEventReceiver{};
         auto const threadId = std::this_thread::get_id();
         WHEN("Posting event from a different thread")
@@ -71,7 +71,7 @@ SCENARIO("Process events when called from the owning thread.")
 {
     GIVEN("An Eventloop and EventReceiver")
     {
-        auto eventLoop = EventLoop{};
+        auto& eventLoop = EventLoop::instance();
         auto eventReceiver = TestEventReceiver{};
         WHEN("Process events from a different thread")
         {
@@ -95,7 +95,7 @@ SCENARIO("Every thread shall have it's own event loop and events for a specific 
         auto tid1 = std::thread::id{0};
         auto tid11 = std::thread::id{0};
         auto thread1 = std::thread{[&tid1, &tid11]() {
-            auto eventLoop = EventLoop{};
+            auto& eventLoop = EventLoop::instance();
             auto eventReceiver = TestEventReceiver();
             eventLoop.postEvent(&eventReceiver, std::make_unique<Event>());
             eventLoop.processEvents();
@@ -111,7 +111,7 @@ SCENARIO("Every thread shall have it's own event loop and events for a specific 
         auto tid2 = std::thread::id{0};
         auto tid22 = std::thread::id{0};
         auto thread2 = std::thread{[&tid2, &tid22]() {
-            auto eventLoop = EventLoop{};
+            auto& eventLoop = EventLoop::instance();
             auto eventReceiver = TestEventReceiver();
             eventLoop.postEvent(&eventReceiver, std::make_unique<Event>());
             eventLoop.processEvents();
@@ -139,7 +139,7 @@ SCENARIO("An Eventloop shall block the running thread until the quit event occur
 {
     GIVEN("An EventLoop")
     {
-        auto eventloop = EventLoop{};
+        auto& eventloop = EventLoop::instance();
         WHEN("The quit event is posted to the EventLoop")
         {
             auto thread = std::thread([&eventloop] {
@@ -161,7 +161,7 @@ SCENARIO("An Eventloop shall be possible to check if a certian event is in the e
 
     GIVEN("An EventLoop")
     {
-        auto eventLoop = EventLoop{};
+        auto& eventLoop = EventLoop::instance();
         auto eventReceiver = TestEventReceiver{};
 
         WHEN("A event is posted for a receiver")

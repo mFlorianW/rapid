@@ -11,6 +11,7 @@
 #include <QSignalSpy>
 #include <QTest>
 #include <QtTestHelper.hpp>
+#include <RapidApplication.hpp>
 #include <SessionDatabaseIpcServer.hpp>
 #include <SessionDatabaseMock.hpp>
 #include <Sessions.hpp>

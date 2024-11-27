@@ -30,7 +30,7 @@ void AsyncResult::waitForFinished() noexcept
     }
 
     while (mResult == Result::NotFinished) {
-        EventLoop{}.processEvents();
+        EventLoop::instance().processEvents();
     }
 }
 

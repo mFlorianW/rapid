@@ -13,8 +13,6 @@ using namespace std::chrono;
 
 TEST_CASE("The timer shall emit the timeout event after the elapsed time set by the interval.")
 {
-    auto eventloop = EventLoop{};
-
     auto timeoutEventEmitted = false;
     auto timer = Timer{};
     timer.setInterval(std::chrono::milliseconds(3));
