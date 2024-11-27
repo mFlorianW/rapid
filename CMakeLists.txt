@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(Rapid)
+project(Rapid
+    VERSION 0.1.0
+)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/configuration/cmake/")
 
 include(FeatureSummary)
@@ -31,7 +33,16 @@ if(ENABLE_QT)
     set(CMAKE_AUTORCC ON)
     set(CMAKE_AUTOUIC ON)
 
-    find_package(Qt6 REQUIRED COMPONENTS Core Qml Gui Quick Widgets Network Location QuickWidgets)
+    find_package(Qt6 REQUIRED COMPONENTS
+        Core
+        Qml
+        Gui
+        Quick
+        Widgets
+        Network
+        Location
+        QuickWidgets
+    )
 
     ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 

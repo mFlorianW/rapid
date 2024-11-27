@@ -30,6 +30,34 @@
     {
       "name": "trompeloeil",
       "version": "49"
+    },
+    {
+      "name": "sdl2",
+      "version": "2.30.6"
+    },
+    {
+      "name": "boost-beast",
+      "version": "1.85.0#2"
+    },
+    {
+      "name": "sqlite3",
+      "version": "3.46.1"
+    },
+    {
+      "name": "arduinojson",
+      "version": "7.2.1"
+    },
+    {
+      "name": "kdbindings",
+      "version": "1.0.3"
+    },
+    {
+      "name":"lvgl-ssd1322",
+      "version": "7.5.0"
+    },
+    {
+      "name": "lvgl-ssd1322-drivers",
+      "version": "7.5.0"
     }
   ]
 }
