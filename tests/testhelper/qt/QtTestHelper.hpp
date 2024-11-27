@@ -9,7 +9,7 @@
 #define QT_CATCH2_TEST_MAIN()  \
 int main(int argc, char** argv) \
 { \
-    QCoreApplication app(argc, argv); \
+    Rapid::System::Qt::RapidApplication app(argc, argv); \
     int result = Catch::Session().run(argc, argv); \
     return result; \
 }

@@ -14,15 +14,25 @@ PRIVATE
 target_link_libraries(test_system
 PRIVATE
     Catch2::Catch2WithMain
-    Rapid::SystemQt
     Rapid::TestHelper
 )
 
 catch_discover_tests(test_system)
 
 if(ENABLE_QT)
-    find_package(Qt6Test REQUIRED)
+    add_executable(test_system_qt)
+    target_sources(test_system_qt
+    PRIVATE
+        test_EventLoopIntegration.cpp
+    )
 
-    add_executable(test_QEventDispatcher test_QEventDispatcher.cpp)
-    target_link_libraries(test_QEventDispatcher PRIVATE Qt6::Test Rapid::SystemQt)
+    target_link_libraries(test_system_qt
+    PRIVATE
+        Catch2::Catch2
+        Rapid::SystemQt
+        Rapid::TestHelper
+        Rapid::TestHelperQt
+        Qt6::Test
+    )
+    add_test(test_system_qt test_system_qt)
 endif()

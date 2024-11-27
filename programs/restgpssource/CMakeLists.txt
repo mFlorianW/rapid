@@ -29,4 +29,5 @@ PRIVATE
     Rapid::Common
     Rapid::Positioning
     Rapid::PositioningQt
+    Rapid::SystemQt
 )

@@ -28,7 +28,7 @@ namespace
 
 void signalHandler(int)
 {
-    EventLoop{}.quit();
+    EventLoop::instance().quit();
 }
 
 std::vector<Rapid::Common::PositionData> loadCsvPositions(std::string const filePath)
@@ -57,7 +57,7 @@ std::vector<Rapid::Common::PositionData> loadCsvPositions(std::string const file
 
 int main(int argc, char** argv)
 {
-    EventLoop eventLoop;
+    auto& eventLoop = EventLoop::instance();
 
     // clang-format off
     struct sigaction action{};

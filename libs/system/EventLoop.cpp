@@ -133,9 +133,16 @@ EventLoop::EventLoop()
 
 EventLoop::~EventLoop() = default;
 
+EventLoop& EventLoop::instance()
+{
+    thread_local EventLoop instance;
+    return instance;
+}
+
 void EventLoop::postEvent(EventHandler* receiver, std::unique_ptr<Event> event)
 {
     EventQueue::getInstance(receiver->getThreadId()).postEvent(receiver, std::move(event), receiver->getThreadId());
+    instance().eventPosted.emit();
 }
 
 bool EventLoop::isEventQueued(EventHandler* receiver, Event::Type type) const noexcept

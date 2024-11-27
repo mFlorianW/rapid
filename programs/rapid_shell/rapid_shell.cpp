@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RapidShell.hpp"
-#include <QApplication>
+#include <GlobalSettingsReader.hpp>
+#include <RapidApplication.hpp>
 
 int main(int argc, char* argv[])
 {
-    QApplication app{argc, argv};
+    auto app = Rapid::System::Qt::RapidApplication{argc, argv};
     app.setApplicationName("rapid");
     app.setOrganizationName("Rapid");
     app.setOrganizationDomain("de.rapid");
