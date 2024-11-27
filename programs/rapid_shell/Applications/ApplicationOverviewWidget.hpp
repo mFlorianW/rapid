@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ApplicationListModel.hpp"
+#include "ApplicationSearchDir.hpp"
 #include "ProcessManager.hpp"
 #include <QProcess>
 #include <QQuickWidget>
@@ -25,7 +26,7 @@ private Q_SLOTS:
     void onQmlError(QQuickWindow::SceneGraphError const& error, QString const& message);
 
 private:
-    ApplicationModel mAppModel = ApplicationModel{{"/home/florian/Coding/laptimer_core/build/debug-install/share/"}};
+    ApplicationModel mAppModel = ApplicationModel{{QString{INSTALL_SEARCH_DIR}}};
     ApplicationListModel mListModel = ApplicationListModel{mAppModel};
     QHash<QProcess*, std::shared_ptr<QProcess>> mProcesses;
     ProcessManager* mProcessManager;
