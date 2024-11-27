@@ -1,4 +1,5 @@
-include(Catch)
+set(TEST_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/RealWorld.session)
+configure_file(TestFile.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/TestFile.hpp)
 
 add_executable(test_common)
 
@@ -22,6 +23,11 @@ PRIVATE
     Rapid::TestHelper
 )
 
+target_include_directories(test_common
+PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
 if(ENABLE_QT)
     add_executable(test_GlobalSettingsReader test_GlobalSettingsReader.cpp)
     target_link_libraries(test_GlobalSettingsReader
@@ -30,6 +36,7 @@ if(ENABLE_QT)
             Rapid::CommonQt
             Rapid::TestHelper
     )
+    catch_discover_tests(test_GlobalSettingsReader)
 endif()
 
 catch_discover_tests(test_common)
