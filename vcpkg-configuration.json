@@ -12,7 +12,7 @@
     },
     {
         "kind": "git",
-        "baseline": "34a208248829d3e65df73582c3ed537dd27fb723",
+        "baseline": "8c55ceb6d15bec025f63738e4ee33f03374cddee",
         "repository": "https://github.com/mflorianw/mflorianw-vcpkg-registry",
         "reference": "main",
         "packages": [

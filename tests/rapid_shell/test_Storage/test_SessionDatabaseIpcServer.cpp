@@ -58,7 +58,7 @@ QString storeSession(SessionData const& session)
                                    QString::fromStdString(session.getSessionTime().asString()));
     auto file = QFile{filePath};
     REQUIRE(file.open(QFile::WriteOnly));
-    auto responsebody = ArduinoJson::DynamicJsonDocument{8192};
+    auto responsebody = ArduinoJson::JsonDocument{};
     auto jsonRoot = responsebody.to<ArduinoJson::JsonObject>();
     Rapid::Common::JsonSerializer::serializeSessionData(session, jsonRoot);
     auto rawJson = std::string{};

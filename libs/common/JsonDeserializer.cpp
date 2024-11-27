@@ -90,8 +90,7 @@ std::vector<LapData> deserializeLapData(ArduinoJson::JsonArray const& lapArray)
 
 std::optional<SessionData> JsonDeserializer::deserializeSessionData(std::string const& rawData)
 {
-    //    auto jsonDoc = ArduinoJson::DynamicJsonDocument{rawData.capacity()};
-    auto jsonDoc = ArduinoJson::StaticJsonDocument<8192>{};
+    auto jsonDoc = ArduinoJson::JsonDocument{};
     ArduinoJson::deserializeJson(jsonDoc, rawData);
     auto sessionDate = Date(jsonDoc["date"].as<std::string>());
     auto sessionTime = Timestamp(jsonDoc["time"].as<std::string>());

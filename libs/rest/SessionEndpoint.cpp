@@ -37,7 +37,7 @@ RequestHandleResult SessionEndpoint::handleRestRequest(RestRequest& request) noe
 RequestHandleResult SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
 {
     if (request.getPath().getDepth() == 1) {
-        auto responsebody = ArduinoJson::DynamicJsonDocument{64};
+        auto responsebody = ArduinoJson::JsonDocument{};
         responsebody["count"] = mDb.getSessionCount();
         auto rawBody = std::string{};
         ArduinoJson::serializeJson(responsebody, rawBody);
@@ -54,7 +54,7 @@ RequestHandleResult SessionEndpoint::handleGetRequest(RestRequest& request) noex
             return RequestHandleResult::Error;
         }
 
-        auto responsebody = ArduinoJson::DynamicJsonDocument{8192};
+        auto responsebody = ArduinoJson::JsonDocument{};
         auto jsonRoot = responsebody.to<ArduinoJson::JsonObject>();
         Common::JsonSerializer::serializeSessionData(session.value(), jsonRoot);
         auto rawBody = std::string{};

@@ -96,7 +96,7 @@ void SessionDatabaseIpcServer::handleGetSessionByIndex(System::AsyncResult* resu
                                            QString::fromStdString(session->getSessionTime().asString()));
             auto file = QFile{filePath};
             if (file.open(QFile::WriteOnly)) {
-                auto responsebody = ArduinoJson::DynamicJsonDocument{std::size_t{100U} * std::size_t{8192U}};
+                auto responsebody = ArduinoJson::JsonDocument{};
                 auto jsonRoot = responsebody.to<ArduinoJson::JsonObject>();
                 Rapid::Common::JsonSerializer::serializeSessionData(session.value(), jsonRoot);
                 auto rawJson = std::string{};

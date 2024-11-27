@@ -17,12 +17,11 @@ GpsEndpoint::~GpsEndpoint() = default;
 RequestHandleResult GpsEndpoint::handleRestRequest(RestRequest& request) noexcept
 {
     try {
-
-        auto jsonDoc = ArduinoJson::DynamicJsonDocument{512};
+        auto jsonDoc = ArduinoJson::JsonDocument{};
         if ((ArduinoJson::deserializeJson(jsonDoc, request.getRequestBody()) !=
              ArduinoJson::DeserializationError::Ok) &&
-            jsonDoc.containsKey("date") && jsonDoc.containsKey("time") && jsonDoc.containsKey("latitude") &&
-            jsonDoc.containsKey("longitude")) {
+            jsonDoc["date"].is<std::string>() && jsonDoc["time"].is<std::string>() &&
+            jsonDoc["latitude"].is<std::string>() && jsonDoc["longitude"].is<std::string>()) {
             return RequestHandleResult::Error;
         }
         auto newPos = GpsPositionData{};

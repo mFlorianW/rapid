@@ -24,7 +24,7 @@ public:
     /**
      * Alias for the generated JSON document.
      */
-    using JsonDocument = ArduinoJson::StaticJsonDocument<1024>;
+    using JsonDocument = ArduinoJson::JsonDocument;
 
     /**
      * Creates an instance of TrackData

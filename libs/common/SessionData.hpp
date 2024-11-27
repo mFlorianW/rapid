@@ -19,7 +19,7 @@ public:
     /**
      * Alias for the JSON document.
      */
-    using JsonDocument = ArduinoJson::StaticJsonDocument<8196>;
+    using JsonDocument = ArduinoJson::JsonDocument;
 
     /**
      * Creates an empty invalid SessionData instance.
