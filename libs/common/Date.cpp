@@ -7,6 +7,7 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::Common
 {
@@ -42,9 +43,15 @@ Date::Date(std::string const& dateString)
         getline(input, splittedString, '.');
     }
 
-    mData->mDay = static_cast<std::uint8_t>(std::stoi(splittedStrings[0]));
-    mData->mMonth = static_cast<std::uint8_t>(std::stoi(splittedStrings[1]));
-    mData->mYear = static_cast<std::uint16_t>(std::stoi(splittedStrings[2]));
+    try {
+        mData->mDay = static_cast<std::uint8_t>(std::stoi(splittedStrings[0]));
+        mData->mMonth = static_cast<std::uint8_t>(std::stoi(splittedStrings[1]));
+        mData->mYear = static_cast<std::uint16_t>(std::stoi(splittedStrings[2]));
+    } catch (std::invalid_argument const& e) {
+        spdlog::error("Invalid argument passed. {}", dateString);
+    } catch (std::out_of_range const& e) {
+        spdlog::error("Out of range during converting.{}", dateString);
+    }
 }
 
 Date::~Date() = default;

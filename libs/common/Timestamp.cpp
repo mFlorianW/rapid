@@ -5,6 +5,7 @@
 #include "Timestamp.hpp"
 #include <chrono>
 #include <iomanip>
+#include <spdlog/spdlog.h>
 #include <sstream>
 
 namespace Rapid::Common
@@ -46,10 +47,16 @@ Timestamp::Timestamp(std::string const& timestampString)
     std::string fractionalOfSecond;
     std::getline(input, fractionalOfSecond);
 
-    mData->hour = static_cast<std::uint8_t>(std::stoi(hour));
-    mData->minute = static_cast<std::uint8_t>(std::stoi(minute));
-    mData->second = static_cast<std::uint8_t>(std::stoi(second));
-    mData->fractionalOfSecond = static_cast<std::uint16_t>(std::stoi(fractionalOfSecond));
+    try {
+        mData->hour = static_cast<std::uint8_t>(std::stoi(hour));
+        mData->minute = static_cast<std::uint8_t>(std::stoi(minute));
+        mData->second = static_cast<std::uint8_t>(std::stoi(second));
+        mData->fractionalOfSecond = static_cast<std::uint16_t>(std::stoi(fractionalOfSecond));
+    } catch (std::invalid_argument const& e) {
+        spdlog::error("Invalid argument passed. {}", timestampString);
+    } catch (std::out_of_range const& e) {
+        spdlog::error("Out of range during converting.{}", timestampString);
+    }
 }
 
 Timestamp::~Timestamp() = default;
