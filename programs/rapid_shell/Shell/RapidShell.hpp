@@ -8,6 +8,8 @@
 #include <GlobalSettingsWindow.hpp>
 #include <GlobalSettingsWriter.hpp>
 #include <QMainWindow>
+#include <QThread>
+#include <SessionDatabaseIpcServer.hpp>
 
 namespace Ui
 {
@@ -17,6 +19,7 @@ class MainWindow;
 namespace Rapid::RapidShell
 {
 
+class DatabaseBackend;
 class RapidShell : public QMainWindow
 {
     Q_OBJECT
@@ -34,6 +37,8 @@ private:
     std::unique_ptr<ProcessManager> mProcessManager;
     std::unique_ptr<Settings::GlobalSettingsWindow> mGlobalSettingsWindow;
     std::unique_ptr<ApplicationOverviewWidget> mApplicationOverviewWidget;
+    QThread mDatabaseEndpoint;
+    std::unique_ptr<DatabaseBackend> mDatabaseBackend;
 };
 
 } // namespace Rapid::RapidShell

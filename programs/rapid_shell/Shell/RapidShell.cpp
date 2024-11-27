@@ -6,14 +6,43 @@
 #include "DatabaseFile.hpp"
 #include "LoggingCategories.hpp"
 #include "ui_MainWindow.h"
+#include <EventLoopIntegration.hpp>
+#include <GlobalSettingsReader.hpp>
+#include <LoggingCategories.hpp>
+#include <QAbstractEventDispatcher>
 #include <QApplication>
 #include <QDir>
 #include <QFile>
 #include <QQmlContext>
 #include <QStandardPaths>
+#include <SqliteSessionDatabase.hpp>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::RapidShell
 {
+
+class DatabaseBackend : public QObject
+{
+    Q_OBJECT
+public:
+    DatabaseBackend() = default;
+    ~DatabaseBackend() override = default;
+    Q_DISABLE_COPY_MOVE(DatabaseBackend);
+
+public Q_SLOTS:
+    void exeucteDatabaseBackend()
+    {
+        if (not Rapid::System::Qt::EventLoopIntegration::makeEventLoopIntegration()) {
+            SPDLOG_CRITICAL("Failed to creat event loop integration don't start database endpoint");
+            return;
+        }
+        auto settingsBackend = Common::QSettingsBackend{};
+        auto dbFile = Rapid::Common::GlobalSettingsReader{&settingsBackend}.getDbFilePath();
+        auto sessionDatabase = std::make_unique<Rapid::Storage::SqliteSessionDatabase>(dbFile.toStdString());
+        auto sessionDatabaseIpcServer = std::make_unique<Storage::SessionDatabaseIpcServer>(*sessionDatabase);
+        QEventLoop{}.exec();
+    }
+};
 
 RapidShell::RapidShell()
     : mMainWindow{std::make_unique<Ui::MainWindow>()}
@@ -21,11 +50,14 @@ RapidShell::RapidShell()
     , mProcessManager{std::make_unique<ProcessManager>()}
     , mGlobalSettingsWindow{std::make_unique<Settings::GlobalSettingsWindow>()}
     , mApplicationOverviewWidget{std::make_unique<ApplicationOverviewWidget>(mProcessManager.get())}
+    , mDatabaseBackend{std::make_unique<DatabaseBackend>()}
 {
     setupDatabase();
-    mMainWindow->setupUi(this);
+    mDatabaseBackend->moveToThread(&mDatabaseEndpoint);
+    connect(&mDatabaseEndpoint, &QThread::started, mDatabaseBackend.get(), &DatabaseBackend::exeucteDatabaseBackend);
+    mDatabaseEndpoint.start();
 
-    // Set Application Overview
+    mMainWindow->setupUi(this);
     mMainWindow->centralwidget->layout()->addWidget(mApplicationOverviewWidget.get());
 
     connect(mMainWindow->actionQuit, &QAction::triggered, this, []() {
@@ -37,7 +69,13 @@ RapidShell::RapidShell()
     });
 }
 
-RapidShell::~RapidShell() = default;
+RapidShell::~RapidShell()
+{
+    if (mDatabaseEndpoint.isRunning()) {
+        mDatabaseEndpoint.quit();
+        mDatabaseEndpoint.wait();
+    }
+}
 
 void RapidShell::setupDatabase() noexcept
 {
@@ -72,3 +110,5 @@ void RapidShell::setupDatabase() noexcept
 }
 
 } // namespace Rapid::RapidShell
+
+#include "RapidShell.moc"
