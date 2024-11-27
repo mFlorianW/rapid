@@ -15,7 +15,7 @@ using namespace Rapid::TestHelper;
 TEST_CASE("JSONSerializer shall serialize PositionData to JSON.")
 {
     constexpr auto expectedJsonObject = R"({"latitude":"52.025833","longitude":"11.279166"})";
-    ArduinoJson::StaticJsonDocument<1024> jsonDoc;
+    ArduinoJson::JsonDocument jsonDoc;
     auto jsonRoot = jsonDoc.to<JsonObject>();
 
     JsonSerializer::serializePositionData(Positions::getOscherslebenPositionCamp(), jsonRoot);
@@ -41,7 +41,7 @@ TEST_CASE("JSONSerializer shall serialize the TrackData without sector to JSON")
     "}";
     // clang-format on
 
-    ArduinoJson::StaticJsonDocument<1024> jsonDoc;
+    ArduinoJson::JsonDocument jsonDoc;
     auto jsonRoot = jsonDoc.to<JsonObject>();
 
     JsonSerializer::serializeTrackData(Tracks::getTrackWithoutSector(), jsonRoot);
@@ -76,7 +76,7 @@ TEST_CASE("JSONSerializer shall serialize the TrackData to JSON")
         "]"
     "}";
     // clang-format on
-    ArduinoJson::StaticJsonDocument<1024> jsonDoc;
+    ArduinoJson::JsonDocument jsonDoc;
     auto jsonRoot = jsonDoc.to<JsonObject>();
 
     JsonSerializer::serializeTrackData(Tracks::getOscherslebenTrack(), jsonRoot);
@@ -132,7 +132,7 @@ TEST_CASE("JSONSerializer shall serialize the LapData to JSON")
     lap.addSectorTime(sectorTime2);
     lap.addPosition(gpsPos);
     lap.addPosition(gpsPos);
-    ArduinoJson::StaticJsonDocument<1024> jsonDoc;
+    ArduinoJson::JsonDocument jsonDoc;
     auto jsonRoot = jsonDoc.to<JsonObject>();
 
     JsonSerializer::serializeLapData(lap, jsonRoot);
@@ -145,7 +145,7 @@ TEST_CASE("JSONSerializer shall serialize the LapData to JSON")
 TEST_CASE("JSONSerializer shall serialize SessionData to JSON")
 {
     auto session = Sessions::getTestSession();
-    ArduinoJson::StaticJsonDocument<8192> jsonDoc;
+    ArduinoJson::JsonDocument jsonDoc;
     auto jsonRoot = jsonDoc.to<JsonObject>();
 
     JsonSerializer::serializeSessionData(session, jsonRoot);

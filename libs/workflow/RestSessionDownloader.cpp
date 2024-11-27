@@ -60,7 +60,7 @@ void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) no
         auto const dlResult =
             call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
         if (dlResult == DownloadResult::Ok) {
-            auto jsonDoc = ArduinoJson::DynamicJsonDocument{256};
+            auto jsonDoc = ArduinoJson::JsonDocument{};
             auto const error = ArduinoJson::deserializeJson(jsonDoc, call->getData());
             if (error != ArduinoJson::DeserializationError::Ok) {
                 spdlog::error("RestSessionDownloader fetchSessionCount Error: DeserializeJson failed: {}",

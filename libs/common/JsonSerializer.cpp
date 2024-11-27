@@ -12,36 +12,35 @@ bool JsonSerializer::serializeTrackData(TrackData const& trackData, JsonObject& 
 {
     jsonObject["name"] = trackData.getTrackName();
 
-    auto startlineObject = jsonObject.createNestedObject("startline");
+    auto startlineObject = jsonObject["startline"].to<JsonObject>();
     JsonSerializer::serializePositionData(trackData.getStartline(), startlineObject);
 
-    auto finishlineObject = jsonObject.createNestedObject("finishline");
+    auto finishlineObject = jsonObject["finishline"].to<JsonObject>();
     JsonSerializer::serializePositionData(trackData.getFinishline(), finishlineObject);
 
     if (trackData.getNumberOfSections() > 0) {
-        auto sectorList = jsonObject.createNestedArray("sectors");
+        auto sectorList = jsonObject["sectors"].to<JsonArray>();
         for (std::size_t i = 0; i < trackData.getNumberOfSections(); ++i) {
-            auto sectorObject = sectorList.createNestedObject();
+            auto sectorObject = sectorList.add<JsonObject>();
             JsonSerializer::serializePositionData(trackData.getSection(i), sectorObject);
         }
     }
-
     return true;
 }
 
 bool JsonSerializer::serializeLapData(LapData const& lapData, JsonObject& jsonObject)
 {
     if (lapData.getSectorTimeCount() > 0) {
-        auto jsonSectorTimes = jsonObject.createNestedArray("sectors");
+        auto jsonSectorTimes = jsonObject["sectors"].to<JsonArray>();
         for (std::size_t i = 0; i < lapData.getSectorTimeCount(); ++i) {
             jsonSectorTimes.add(lapData.getSectorTime(i).value_or(Timestamp{}).asString());
         }
     }
 
     if (lapData.getPositions().size() > 0) {
-        auto jsonLogPoints = jsonObject.createNestedArray("log_points");
+        auto jsonLogPoints = jsonObject["log_points"].to<JsonArray>();
         for (auto const& gpsPos : std::as_const(lapData.getPositions())) {
-            auto pointObj = jsonLogPoints.createNestedObject();
+            auto pointObj = jsonLogPoints.add<JsonObject>();
             pointObj["velocity"] = gpsPos.getVelocity().getVelocity();
             pointObj["longitude"] = gpsPos.getPosition().getLongitude();
             pointObj["latitude"] = gpsPos.getPosition().getLatitude();
@@ -49,7 +48,6 @@ bool JsonSerializer::serializeLapData(LapData const& lapData, JsonObject& jsonOb
             pointObj["date"] = gpsPos.getDate().asString();
         }
     }
-
     return true;
 }
 
@@ -65,16 +63,15 @@ bool JsonSerializer::serializeSessionData(SessionData const& sessionData, JsonOb
 {
     jsonObject["date"] = sessionData.getSessionDate().asString();
     jsonObject["time"] = sessionData.getSessionTime().asString();
-    auto trackObject = jsonObject.createNestedObject("track");
+    auto trackObject = jsonObject["track"].to<JsonObject>();
     JsonSerializer::serializeTrackData(sessionData.getTrack(), trackObject);
     if (sessionData.getNumberOfLaps() > 0) {
-        auto lapArray = jsonObject.createNestedArray("laps");
+        auto lapArray = jsonObject["laps"].to<JsonArray>();
         for (auto const& lap : std::as_const(sessionData.getLaps())) {
-            auto lapObject = lapArray.createNestedObject();
+            auto lapObject = lapArray.add<JsonObject>();
             serializeLapData(lap, lapObject);
         }
     }
-
     return true;
 }
 
