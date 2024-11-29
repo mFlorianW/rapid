@@ -58,11 +58,7 @@ QString storeSession(SessionData const& session)
                                    QString::fromStdString(session.getSessionTime().asString()));
     auto file = QFile{filePath};
     REQUIRE(file.open(QFile::WriteOnly));
-    auto responsebody = ArduinoJson::JsonDocument{};
-    auto jsonRoot = responsebody.to<ArduinoJson::JsonObject>();
-    Rapid::Common::JsonSerializer::serializeSessionData(session, jsonRoot);
-    auto rawJson = std::string{};
-    ArduinoJson::serializeJson(responsebody, rawJson);
+    auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session);
     file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
     return filePath;
 }
@@ -123,7 +119,7 @@ TEST_CASE("the SessionDatabaseIpcServer shall provide read access to the session
         auto file = QFile(filePath);
         CHECK(file.open(QFile::ReadOnly));
         auto content = file.readAll().toStdString();
-        REQUIRE(Rapid::Common::JsonDeserializer::deserializeSessionData(content));
+        REQUIRE(Rapid::Common::JsonDeserializer::Session::deserialize(content));
     }
 
     SECTION("send an error message to the caller when index is not found")

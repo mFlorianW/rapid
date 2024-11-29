@@ -16,10 +16,13 @@ using namespace Rapid::TestHelper;
 TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a SessionData")
 {
     auto expectedSession = Sessions::getTestSession();
-    auto result = JsonDeserializer::deserializeSessionData(Sessions::getTestSessionAsJson());
+    auto result = JsonDeserializer::Session::deserialize(Sessions::getTestSessionAsJson());
     REQUIRE(result.has_value());
     // NOLINTBEGIN(bugprone-unchecked-optional-access)
-    REQUIRE(result.value() == expectedSession);
+    CHECK(result.value().getSessionDate() == expectedSession.getSessionDate());
+    CHECK(result.value().getSessionTime() == expectedSession.getSessionTime());
+    CHECK(result.value().getLaps() == expectedSession.getLaps());
+    REQUIRE(result.value().getTrack() == expectedSession.getTrack());
     // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
@@ -32,7 +35,7 @@ TEST_CASE("The JsonDeserializer shall deserialize a real world json string into 
     std::string fileContent = buffer.str();
     file.close(); // Close the file
     // NOLINTBEGIN(bugprone-unchecked-optional-access)
-    auto result = JsonDeserializer::deserializeSessionData(fileContent);
+    auto result = JsonDeserializer::Session::deserialize(fileContent);
     REQUIRE(result.has_value());
     // NOLINTEND(bugprone-unchecked-optional-access)
 }

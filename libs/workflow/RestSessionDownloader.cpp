@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RestSessionDownloader.hpp"
-#include <ArduinoJson.hpp>
 #include <JsonDeserializer.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <sstream>
 
@@ -60,17 +60,16 @@ void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) no
         auto const dlResult =
             call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
         if (dlResult == DownloadResult::Ok) {
-            auto jsonDoc = ArduinoJson::JsonDocument{};
-            auto const error = ArduinoJson::deserializeJson(jsonDoc, call->getData());
-            if (error != ArduinoJson::DeserializationError::Ok) {
-                spdlog::error("RestSessionDownloader fetchSessionCount Error: DeserializeJson failed: {}",
-                              error.c_str());
+            try {
+                auto jsonDoc = nlohmann::ordered_json{}.parse(call->getData());
+                mSessionCount = jsonDoc["count"];
+            } catch (std::exception const& e) {
+                SPDLOG_ERROR("RestSessionDownloader fetchSessionCount Error: DeserializeJson failed: {}", e.what());
             }
-            mSessionCount = jsonDoc["count"].as<std::size_t>();
         }
         sessionCountFetched.emit(dlResult);
-        mFetchCounterCache.erase(call);
     }
+    mFetchCounterCache.erase(call);
 }
 
 void RestSessionDownloader::onSessionDownloadFinished(Rest::RestCall* call) noexcept
@@ -80,7 +79,7 @@ void RestSessionDownloader::onSessionDownloadFinished(Rest::RestCall* call) noex
             call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
         auto const index = mDownloadSessionCache.at(call).index;
         if (dlResult == DownloadResult::Ok) {
-            auto session = Common::JsonDeserializer::deserializeSessionData(call->getData());
+            auto session = Common::JsonDeserializer::Session::deserialize(call->getData());
             if (!session) {
                 spdlog::error("RestSessionDownloader downloadSessionError: DeserializeJson failed.");
             } else {

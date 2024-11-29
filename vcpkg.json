@@ -1,11 +1,11 @@
 {
   "dependencies": [
-    "arduinojson",
     "boost-beast",
     "catch2",
     "kdbindings",
     "lvgl-ssd1322",
     "lvgl-ssd1322-drivers",
+    "nlohmann-json",
     {
       "name": "sdl2",
       "default-features": false,
@@ -44,20 +44,20 @@
       "version": "3.46.1"
     },
     {
-      "name": "arduinojson",
-      "version": "7.2.1"
-    },
-    {
       "name": "kdbindings",
       "version": "1.0.3"
     },
     {
-      "name":"lvgl-ssd1322",
+      "name": "lvgl-ssd1322",
       "version": "7.5.0"
     },
     {
       "name": "lvgl-ssd1322-drivers",
       "version": "7.5.0"
+    },
+    {
+      "name": "nlohmann-json",
+      "version": "3.11.3"
     }
   ]
 }

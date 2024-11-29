@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "LapData.hpp"
-#include <ArduinoJson.hpp>
 #include <utility>
 
 namespace Rapid::Common

@@ -6,7 +6,6 @@
 
 #include "PositionData.hpp"
 #include "SharedDataPointer.hpp"
-#include <ArduinoJson.hpp>
 #include <string>
 #include <vector>
 
@@ -21,11 +20,6 @@ class SharedTrackData;
 class TrackData final
 {
 public:
-    /**
-     * Alias for the generated JSON document.
-     */
-    using JsonDocument = ArduinoJson::JsonDocument;
-
     /**
      * Creates an instance of TrackData
      */

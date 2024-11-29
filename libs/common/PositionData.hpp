@@ -5,7 +5,6 @@
 #pragma once
 
 #include "SharedDataPointer.hpp"
-#include <ArduinoJson.hpp>
 
 namespace Rapid::Common
 {

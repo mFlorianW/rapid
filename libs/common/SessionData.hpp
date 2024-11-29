@@ -17,11 +17,6 @@ class SessionData final
 {
 public:
     /**
-     * Alias for the JSON document.
-     */
-    using JsonDocument = ArduinoJson::JsonDocument;
-
-    /**
      * Creates an empty invalid SessionData instance.
      */
     SessionData();

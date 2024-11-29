@@ -36,6 +36,7 @@ PRIVATE
 target_link_libraries(CommonObject
 PRIVATE
     spdlog::spdlog
+    nlohmann_json::nlohmann_json
 PUBLIC
     KDAB::KDBindings
 )
