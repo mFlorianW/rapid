@@ -3,8 +3,6 @@
     "boost-beast",
     "catch2",
     "kdbindings",
-    "lvgl-ssd1322",
-    "lvgl-ssd1322-drivers",
     "nlohmann-json",
     {
       "name": "sdl2",
