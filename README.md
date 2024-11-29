@@ -25,6 +25,23 @@ Look at the README.md in that folder to see how to generate the documentation.
 ### .github
 That folder contains specific files for the github.
 
+## Dependencies
+The project needs the dependencies:
+
+### Required
+* KDBindings
+* Sqlite3
+* Boost
+
+### Optional For Tests
+* catch2
+* trompeloeil
+
+### Optional for Desktop Applications
+* Qt6.5
+
+Without the Qt dependency the project builds only the laptimer
+
 ## Build
 There two configure and build presets for CMake.
 Call one the in the project root directory to build the LaptimerCore.
