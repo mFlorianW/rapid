@@ -6,18 +6,13 @@
 #define JSONDESERIALIZER_HPP
 
 #include "SessionData.hpp"
-#include <ArduinoJson.h>
 #include <optional>
 #include <string>
 
-namespace Rapid::Common
+namespace Rapid::Common::JsonDeserializer::Session
 {
-class JsonDeserializer
-{
-public:
-    static std::optional<SessionData> deserializeSessionData(std::string const& rawData);
-};
+std::optional<SessionData> deserialize(std::string const& rawData);
 
-} // namespace Rapid::Common
+} // namespace Rapid::Common::JsonDeserializer::Session
 
 #endif // JSONDESERIALIZER_HPP

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SessionData.hpp"
-#include <ArduinoJson.h>
 
 namespace Rapid::Common
 {

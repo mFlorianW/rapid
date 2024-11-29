@@ -3,76 +3,97 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "JsonSerializer.hpp"
-#include <utility>
+#include <nlohmann/json.hpp>
 
-namespace Rapid::Common
+namespace Rapid::Common::JsonSerializer
 {
 
-bool JsonSerializer::serializeTrackData(TrackData const& trackData, JsonObject& jsonObject)
+namespace Lap
 {
-    jsonObject["name"] = trackData.getTrackName();
 
-    auto startlineObject = jsonObject["startline"].to<JsonObject>();
-    JsonSerializer::serializePositionData(trackData.getStartline(), startlineObject);
-
-    auto finishlineObject = jsonObject["finishline"].to<JsonObject>();
-    JsonSerializer::serializePositionData(trackData.getFinishline(), finishlineObject);
-
-    if (trackData.getNumberOfSections() > 0) {
-        auto sectorList = jsonObject["sectors"].to<JsonArray>();
-        for (std::size_t i = 0; i < trackData.getNumberOfSections(); ++i) {
-            auto sectorObject = sectorList.add<JsonObject>();
-            JsonSerializer::serializePositionData(trackData.getSection(i), sectorObject);
-        }
+nlohmann::ordered_json serialize(LapData const& lap)
+{
+    auto json = nlohmann::ordered_json{};
+    auto sectors = std::vector<nlohmann::ordered_json>{};
+    sectors.reserve(lap.getSectorTimeCount());
+    for (auto const& sector : lap.getSectorTimes()) {
+        sectors.emplace_back(sector.asString());
     }
-    return true;
+    json["sectors"] = sectors;
+
+    auto logPoints = std::vector<nlohmann::ordered_json>{};
+    logPoints.reserve(lap.getPositions().size());
+    for (auto const& gpsPos : lap.getPositions()) {
+        auto pointObj = nlohmann::ordered_json{};
+        pointObj["velocity"] = gpsPos.getVelocity().getVelocity();
+        pointObj["longitude"] = gpsPos.getPosition().getLongitude();
+        pointObj["latitude"] = gpsPos.getPosition().getLatitude();
+        pointObj["time"] = gpsPos.getTime().asString();
+        pointObj["date"] = gpsPos.getDate().asString();
+        logPoints.push_back(pointObj);
+    }
+    json["log_points"] = logPoints;
+
+    return json;
 }
 
-bool JsonSerializer::serializeLapData(LapData const& lapData, JsonObject& jsonObject)
-{
-    if (lapData.getSectorTimeCount() > 0) {
-        auto jsonSectorTimes = jsonObject["sectors"].to<JsonArray>();
-        for (std::size_t i = 0; i < lapData.getSectorTimeCount(); ++i) {
-            jsonSectorTimes.add(lapData.getSectorTime(i).value_or(Timestamp{}).asString());
-        }
-    }
+} // namespace Lap
 
-    if (lapData.getPositions().size() > 0) {
-        auto jsonLogPoints = jsonObject["log_points"].to<JsonArray>();
-        for (auto const& gpsPos : std::as_const(lapData.getPositions())) {
-            auto pointObj = jsonLogPoints.add<JsonObject>();
-            pointObj["velocity"] = gpsPos.getVelocity().getVelocity();
-            pointObj["longitude"] = gpsPos.getPosition().getLongitude();
-            pointObj["latitude"] = gpsPos.getPosition().getLatitude();
-            pointObj["time"] = gpsPos.getTime().asString();
-            pointObj["date"] = gpsPos.getDate().asString();
-        }
-    }
-    return true;
+namespace Position
+{
+
+nlohmann::ordered_json serialize(PositionData const& position)
+{
+    auto json = nlohmann::ordered_json{};
+    json["latitude"] = std::to_string(position.getLatitude());
+    json["longitude"] = std::to_string(position.getLongitude());
+    return json;
 }
 
-bool JsonSerializer::serializePositionData(PositionData const& posData, JsonObject& jsonObject)
-{
-    jsonObject["latitude"] = std::to_string(posData.getLatitude());
-    jsonObject["longitude"] = std::to_string(posData.getLongitude());
+} // namespace Position
 
-    return true;
-}
-
-bool JsonSerializer::serializeSessionData(SessionData const& sessionData, JsonObject& jsonObject)
+namespace Track
 {
-    jsonObject["date"] = sessionData.getSessionDate().asString();
-    jsonObject["time"] = sessionData.getSessionTime().asString();
-    auto trackObject = jsonObject["track"].to<JsonObject>();
-    JsonSerializer::serializeTrackData(sessionData.getTrack(), trackObject);
-    if (sessionData.getNumberOfLaps() > 0) {
-        auto lapArray = jsonObject["laps"].to<JsonArray>();
-        for (auto const& lap : std::as_const(sessionData.getLaps())) {
-            auto lapObject = lapArray.add<JsonObject>();
-            serializeLapData(lap, lapObject);
-        }
+
+nlohmann::ordered_json serialize(TrackData const& track)
+{
+    auto json = nlohmann::ordered_json{};
+    json["name"] = track.getTrackName();
+    json["startline"] = Position::serialize(track.getStartline());
+    json["finishline"] = Position::serialize(track.getFinishline());
+
+    auto jsonSections = std::vector<nlohmann::ordered_json>{};
+    jsonSections.reserve(track.getNumberOfSections());
+    for (auto const& sectorPos : track.getSections()) {
+        jsonSections.emplace_back(Position::serialize(sectorPos));
     }
-    return true;
+    json["sectors"] = jsonSections;
+
+    return json;
 }
 
-} // namespace Rapid::Common
+} // namespace Track
+
+namespace Session
+{
+
+std::string serialize(SessionData const& session)
+{
+    auto json = nlohmann::ordered_json{};
+    json["date"] = session.getSessionDate().asString();
+    json["time"] = session.getSessionTime().asString();
+    json["track"] = Track::serialize(session.getTrack());
+
+    auto laps = std::vector<nlohmann::ordered_json>{};
+    laps.reserve(session.getNumberOfLaps());
+    for (auto const& lap : session.getLaps()) {
+        laps.emplace_back(Lap::serialize(lap));
+    }
+    json["laps"] = laps;
+
+    return json.dump();
+}
+
+} // namespace Session
+
+} // namespace Rapid::Common::JsonSerializer

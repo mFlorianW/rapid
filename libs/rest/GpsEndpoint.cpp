@@ -4,7 +4,7 @@
 
 #include "GpsEndpoint.hpp"
 #include "RestRequest.hpp"
-#include <ArduinoJson.hpp>
+#include "nlohmann/json.hpp"
 #include <spdlog/spdlog.h>
 
 using namespace Rapid::Common;
@@ -17,23 +17,17 @@ GpsEndpoint::~GpsEndpoint() = default;
 RequestHandleResult GpsEndpoint::handleRestRequest(RestRequest& request) noexcept
 {
     try {
-        auto jsonDoc = ArduinoJson::JsonDocument{};
-        if ((ArduinoJson::deserializeJson(jsonDoc, request.getRequestBody()) !=
-             ArduinoJson::DeserializationError::Ok) &&
-            jsonDoc["date"].is<std::string>() && jsonDoc["time"].is<std::string>() &&
-            jsonDoc["latitude"].is<std::string>() && jsonDoc["longitude"].is<std::string>()) {
-            return RequestHandleResult::Error;
-        }
+        auto jsonDoc = nlohmann::ordered_json{}.parse(request.getRequestBody());
         auto newPos = GpsPositionData{};
-        newPos.setDate({jsonDoc["date"].as<std::string>()});
-        newPos.setTime({jsonDoc["time"].as<std::string>()});
-        newPos.setPosition(
-            {std::stof(jsonDoc["latitude"].as<std::string>()), std::stof(jsonDoc["longitude"].as<std::string>())});
-
+        newPos.setDate({jsonDoc["date"]});
+        newPos.setTime({jsonDoc["time"]});
+        std::string latitude = jsonDoc["latitude"];
+        std::string longitude = jsonDoc["longitude"];
+        newPos.setPosition({std::stof(latitude), std::stof(longitude)});
         gpsPosition = newPos;
 
     } catch (std::exception const& e) {
-        spdlog::error("Failed to handle REST request unexpected error during deserialization. Error: {}", e.what());
+        SPDLOG_ERROR("Failed to handle REST request unexpected error during deserialization. Error: {}", e.what());
         return RequestHandleResult::Error;
     }
 

@@ -96,11 +96,7 @@ void SessionDatabaseIpcServer::handleGetSessionByIndex(System::AsyncResult* resu
                                            QString::fromStdString(session->getSessionTime().asString()));
             auto file = QFile{filePath};
             if (file.open(QFile::WriteOnly)) {
-                auto responsebody = ArduinoJson::JsonDocument{};
-                auto jsonRoot = responsebody.to<ArduinoJson::JsonObject>();
-                Rapid::Common::JsonSerializer::serializeSessionData(session.value(), jsonRoot);
-                auto rawJson = std::string{};
-                ArduinoJson::serializeJson(responsebody, rawJson);
+                auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session.value());
                 file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
                 reply = message.createReply();
                 reply << filePath;
@@ -133,7 +129,7 @@ bool SessionDatabaseIpcServer::StoreSession(QString const& sessionPath, QDBusMes
         return false;
     }
     auto const content = QByteArray{file.readAll()}.toStdString();
-    auto const session = Common::JsonDeserializer::deserializeSessionData(content);
+    auto const session = Common::JsonDeserializer::Session::deserialize(content);
     if (not session.has_value()) {
         auto const reply =
             message.createErrorReply(QDBusError::Failed,

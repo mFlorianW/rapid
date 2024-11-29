@@ -5,7 +5,6 @@
 #define CATCH_CONFIG_MAIN
 #include "LapData.hpp"
 #include "Timestamp.hpp"
-#include <ArduinoJson.hpp>
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Common;

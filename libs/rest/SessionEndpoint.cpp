@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SessionEndpoint.hpp"
-#include <ArduinoJson.hpp>
 #include <JsonSerializer.hpp>
 #include <charconv>
+#include <nlohmann/json.hpp>
 
 namespace Rapid::Rest
 {
@@ -37,11 +37,9 @@ RequestHandleResult SessionEndpoint::handleRestRequest(RestRequest& request) noe
 RequestHandleResult SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
 {
     if (request.getPath().getDepth() == 1) {
-        auto responsebody = ArduinoJson::JsonDocument{};
+        auto responsebody = nlohmann::ordered_json{};
         responsebody["count"] = mDb.getSessionCount();
-        auto rawBody = std::string{};
-        ArduinoJson::serializeJson(responsebody, rawBody);
-        request.setReturnBody(rawBody);
+        request.setReturnBody(responsebody.dump());
         return RequestHandleResult::Ok;
     } else if (request.getPath().getDepth() == 2) {
         auto sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
@@ -54,11 +52,7 @@ RequestHandleResult SessionEndpoint::handleGetRequest(RestRequest& request) noex
             return RequestHandleResult::Error;
         }
 
-        auto responsebody = ArduinoJson::JsonDocument{};
-        auto jsonRoot = responsebody.to<ArduinoJson::JsonObject>();
-        Common::JsonSerializer::serializeSessionData(session.value(), jsonRoot);
-        auto rawBody = std::string{};
-        ArduinoJson::serializeJson(responsebody, rawBody);
+        auto rawBody = Common::JsonSerializer::Session::serialize(session.value());
         request.setReturnBody(rawBody);
         return RequestHandleResult::Ok;
     }
