@@ -19,7 +19,7 @@ SCENARIO("The RestSessionDownload shall fetch the stored session count on the la
         auto rDl = RestSessionDownloader{restClient};
         auto fetchSignalEmitted = false;
         auto fetchStatus = DownloadResult::Error;
-        rDl.sessionCountFetched.connect([&](DownloadResult result) {
+        std::ignore = rDl.sessionCountFetched.connect([&](DownloadResult result) {
             fetchSignalEmitted = true;
             fetchStatus = DownloadResult::Ok;
         });
@@ -46,7 +46,7 @@ SCENARIO("The RestSessionDownload shall download a specific session stored on th
         auto rDl = RestSessionDownloader{restClient};
         auto sessionDownloadedEmitted = false;
         auto sessionDownloadEmittedIndex = std::size_t{12};
-        rDl.sessionDownloadFinshed.connect([&](std::size_t index, DownloadResult result) {
+        std::ignore = rDl.sessionDownloadFinshed.connect([&](std::size_t index, DownloadResult result) {
             sessionDownloadEmittedIndex = index;
             sessionDownloadedEmitted = true;
             REQUIRE(result == DownloadResult::Ok);

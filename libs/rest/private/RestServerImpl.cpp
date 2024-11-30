@@ -129,7 +129,7 @@ public:
     void accept()
     {
         auto connection = std::make_unique<ClientConnection>(*mContext);
-        connection->finished.connect([this](auto* client) {
+        std::ignore = connection->finished.connect([this](auto* client) {
             if (mClientConnections.count(client) > 0) {
                 mClientConnections.erase(client);
             }
@@ -147,7 +147,7 @@ public:
     void onIncomingConnection(Beast::error_code errorCode, ClientConnection* connection)
     {
         if (mClientConnections.count(connection) > 0) {
-            connection->requestReceived.connect([this](auto&& request, auto&& conn) {
+            std::ignore = connection->requestReceived.connect([this](auto&& request, auto&& conn) {
                 if (mClientConnections.count(conn) > 0) {
                     std::lock_guard<std::mutex> guard{mMutex};
                     mPendingRequests.insert({conn, conn->getRestRequest()});

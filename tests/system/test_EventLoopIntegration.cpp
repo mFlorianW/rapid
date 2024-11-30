@@ -32,7 +32,7 @@ public Q_SLOTS:
         REQUIRE(EventLoopIntegration::makeEventLoopIntegration());
         auto timer = Rapid::System::Timer{};
         timer.setInterval(std::chrono::milliseconds{1});
-        timer.timeout.connect([this] {
+        std::ignore = timer.timeout.connect([this] {
             timedout = true;
         });
         timer.start();
@@ -50,7 +50,7 @@ TEST_CASE("Event loop integration in Qt main loop")
     auto timedout = false;
     auto timer = Rapid::System::Timer{};
     timer.setInterval(std::chrono::milliseconds{1});
-    timer.timeout.connect([&timedout] {
+    std::ignore = timer.timeout.connect([&timedout] {
         timedout = true;
     });
     timer.start();

@@ -72,7 +72,7 @@ SCENARIO("The AsyncResult shall emit done signal when operation is finshed")
         auto doneSignalEmitted = false;
         auto aResult = TestAsyncResult();
         auto* receivedResultPointer = static_cast<AsyncResult*>(nullptr);
-        aResult.done.connect([&doneSignalEmitted, &receivedResultPointer](AsyncResult* asyncResult) {
+        std::ignore = aResult.done.connect([&doneSignalEmitted, &receivedResultPointer](AsyncResult* asyncResult) {
             receivedResultPointer = asyncResult;
             doneSignalEmitted = true;
         });

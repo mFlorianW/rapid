@@ -18,7 +18,7 @@ struct StorageContextBase
         : mResult{std::move(result)}
     {
         mStorageResult.setFuture(mStoragePromise.get_future());
-        mStorageResult.finished.connect([this] {
+        std::ignore = mStorageResult.finished.connect([this] {
             done.emit(this);
         });
     }

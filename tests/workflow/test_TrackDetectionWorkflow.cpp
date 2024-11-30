@@ -20,7 +20,7 @@ TEST_CASE("TrackDetectionWorkflow shall emit 'trackDetected' when successful det
     auto tdw = TrackDetectionWorkflow{trackDetector, posInfoProvider};
     bool trackDetectedEmitted{false};
 
-    tdw.trackDetected.connect([&] {
+    std::ignore = tdw.trackDetected.connect([&] {
         trackDetectedEmitted = true;
     });
     tdw.setTracks({Tracks::getOscherslebenTrack()});
@@ -52,7 +52,7 @@ TEST_CASE("TrackDetectionWorkflow shall not emit 'trackDetected' when stopped.")
     auto tdw = TrackDetectionWorkflow{trackDetector, posInfoProvider};
     bool trackDetectedEmitted{false};
 
-    tdw.trackDetected.connect([&] {
+    std::ignore = tdw.trackDetected.connect([&] {
         trackDetectedEmitted = true;
     });
     tdw.setTracks({Tracks::getOscherslebenTrack()});

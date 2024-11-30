@@ -16,7 +16,7 @@ ConstantGpsPositionProvider::ConstantGpsPositionProvider(std::vector<Common::Pos
 {
     // setup timer
     mTickTimer.setInterval(std::chrono::milliseconds(100));
-    mTickTimer.timeout.connect(&ConstantGpsPositionProvider::handleGPSPositionTick, this);
+    std::ignore = mTickTimer.timeout.connect(&ConstantGpsPositionProvider::handleGPSPositionTick, this);
 
     convertTrackPoints(gpsPositions);
 }
