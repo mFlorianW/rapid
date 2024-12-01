@@ -29,3 +29,7 @@ target_include_directories(Storage
 PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
+
+if(ENABLE_QT)
+    add_subdirectory(qt)
+endif()

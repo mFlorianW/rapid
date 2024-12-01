@@ -46,3 +46,34 @@ PRIVATE
     Rapid::TestHelper
 )
 catch_discover_tests(test_storage_sqlitetrack_database)
+
+if(ENABLE_QT)
+    qt_add_dbus_adaptor(SESSION_DATABASE_ADAPTOR
+        ${CMAKE_SOURCE_DIR}/libs/storage/qt/SessionDatabase.xml
+        SessionDatabaseServer.hpp
+        SessionDatabaseServer
+        SessionDatabaseAdaptor
+    )
+
+    add_executable(test_storage_qt)
+    target_sources(test_storage_qt
+    PRIVATE
+        ${SESSION_DATABASE_ADAPTOR}
+        SessionDatabaseServer.hpp
+        test_SessionDatabaseIpcClient.cpp
+    )
+    target_link_libraries(test_storage_qt
+    PRIVATE
+        Catch2::Catch2
+        Qt6::Test
+        Rapid::StorageQt
+        Rapid::TestHelper
+        Rapid::TestHelperQt
+    )
+    target_include_directories(test_storage_qt
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    )
+    catch_discover_tests(test_storage_qt)
+endif()
