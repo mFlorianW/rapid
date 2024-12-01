@@ -39,7 +39,7 @@ Connection::Connection(std::string const& database)
         return;
     }
 
-    spdlog::error("Exiting failed to create database connection. Error: {}", getErrorMessage());
+    SPDLOG_ERROR("Exiting failed to create database connection. Error: {}", getErrorMessage());
     std::exit(255);
 }
 
