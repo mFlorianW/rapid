@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#define CATCH_CONFIG_MAIN
 #include "SqliteTrackDatabase.hpp"
 #include <CompareHelper.hpp>
 #include <SqliteDatabaseTestHelper.hpp>
@@ -136,7 +135,7 @@ TEST_CASE("Delete all tracks in the SqliteTrackDatabase")
     };
 
     // Make sure that the tables are realy cleared.
-    auto* dbCon = Private::Connection::connection(getTestDatabaseFile()).getRawHandle();
+    auto* dbCon = Private::Connection::connection(getTestDatabaseFile())->getRawHandle();
     REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Sektor", resultHandler, nullptr, nullptr) == SQLITE_OK);
     REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Track", resultHandler, nullptr, nullptr) == SQLITE_OK);
     REQUIRE(sqlite3_exec(dbCon, "SELECT * FROM Position", resultHandler, nullptr, nullptr) == SQLITE_OK);

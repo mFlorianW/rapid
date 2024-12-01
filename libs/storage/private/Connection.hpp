@@ -5,8 +5,10 @@
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
+#include <memory>
 #include <sqlite3.h>
 #include <string>
+#include <unordered_map>
 
 namespace Rapid::Storage::Private
 {
@@ -18,17 +20,18 @@ class Connection final
 {
 public:
     /**
-     * Create the connection instance for the process it's only possible to have connection
-     * per process. This for the reason to correctly handle changes on the database.
+     * Create the connection instance for the process it's only possible to have connection per process.
+     * The reason for this is to correctly handle changes on the database.
      * @param database The path to the SQLite Database file.
+     * @return The connection for the database.
      */
-    static Connection& connection(std::string const& database);
+    static std::shared_ptr<Connection> connection(std::string const& database);
 
     /**
      * Tries to open the sqlite3 database for the given string.
      * @param database The path to the database.
      */
-    Connection(std::string const& database);
+    Connection(std::string database);
 
     /**
      * Default empty constructor
@@ -70,6 +73,8 @@ public:
 
 private:
     sqlite3* mHandle{nullptr};
+    std::string mDatabase;
+    static std::unordered_map<std::string, std::weak_ptr<Connection>> sConnections;
 };
 
 } // namespace Rapid::Storage::Private

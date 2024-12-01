@@ -105,7 +105,7 @@ private:
     std::optional<std::size_t> readTrackCount();
     std::optional<std::vector<Common::TrackData>> readTracks();
 
-    Private::Connection& mDbConnection;
+    std::shared_ptr<Private::Connection> mDbConnection;
     std::unordered_map<Private::StorageContextBase*, std::shared_ptr<Private::TrackStorageContext>> mStorageCache;
     std::mutex mutable mMutex;
 };

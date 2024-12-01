@@ -181,40 +181,15 @@ TEST_CASE("The SqlieSessionDatabase shall emit session deteled on referential in
 
     auto storeResult = db.storeSession(session1);
     storeResult->waitForFinished();
-    REQUIRE(storeResult->getResult() == Result::Ok);
+    CHECK(storeResult->getResult() == Result::Ok);
     std::ignore = db.sessionDeleted.connect([&deletedIndex](std::size_t index) {
         deletedIndex = index;
     });
 
     // Delete the Oschersleben Track these commands should trigger the referential integrity changes
     // and that should also delete session in the database.
-    auto* dbCon = Connection::connection(getTestDatabaseFile()).getRawHandle();
-    REQUIRE(sqlite3_exec(dbCon, "DELETE FROM Track WHERE Track.Name = 'Oschersleben'", nullptr, nullptr, nullptr) ==
-            SQLITE_OK);
-
+    auto* dbCon = Connection::connection(getTestDatabaseFile())->getRawHandle();
+    CHECK(sqlite3_exec(dbCon, "DELETE FROM Track WHERE Track.Name = 'Oschersleben'", nullptr, nullptr, nullptr) ==
+          SQLITE_OK);
     REQUIRE(deletedIndex == indexToDelete);
-
-    // Restore the deleted track
-    // clang-format off
-    constexpr auto osl = \
-        "-- INSERT OSCHERSLEBEN TRACK\n"
-        "INSERT INTO Position (Latitude, Longitude) VALUES\n"
-        "   (52.0258333, 11.279166666), -- Finishline Position\n"
-        "  (52.0258333, 11.279166666), -- Startline Position\n"
-        "   (52.0258333, 11.279166666), -- Sektor1 Position\n"
-        "   (52.258335, 11.279166666); -- Sektor2 Position\n"
-        "-- INSERT INTO TRACKS (Longitude, Latitude)\n"
-        "INSERT INTO Track (Name, Finishline, Startline) VALUES\n"
-        "    ('Oschersleben', (SELECT PositionId FROM Position WHERE Latitude = 52.0258333 AND Longitude = 11.279166666), (SELECT PositionId FROM Position WHERE Latitude = 52.0258333 AND Longitude = 11.279166666));\n"
-        "-- SECTORS\n"
-        "-- SEKTOR1\n"
-        "INSERT INTO Sektor (TrackId, PositionId, SektorIndex)\n"
-        "    VALUES\n"
-        "    ((SELECT TrackId FROM Track WHERE name = 'Oschersleben'), (SELECT PositionId FROM Position WHERE Latitude = 52.0258333 AND Longitude = 11.279166666), 1);\n"
-        "-- SEKTOR2\n"
-        "INSERT INTO Sektor (TrackId, PositionId, SektorIndex)\n"
-        "    VALUES\n"
-        "    ((SELECT TrackId FROM Track WHERE NAME = 'Oschersleben'), (SELECT PositionId FROM Position WHERE Latitude = 52.258335 AND Longitude = 11.279166666), 2);\n";
-    // clang-format on
-    REQUIRE(sqlite3_exec(dbCon, osl, nullptr, nullptr, nullptr) == SQLITE_OK);
 }
