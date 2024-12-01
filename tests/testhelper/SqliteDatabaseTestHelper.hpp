@@ -29,7 +29,10 @@ public:
 
     [[nodiscard]] virtual std::string getCleanDbFileName() const noexcept = 0;
 
-    void testCaseStarting(Catch::TestCaseInfo const& testInfo) override;
+    void sectionStarting(Catch::SectionInfo const& sectionInfo) override;
+
+protected:
+    void cleanDatabase(std::string const& dbName);
 
 private:
     std::string mCleanDbFileName;

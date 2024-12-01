@@ -40,7 +40,12 @@ std::string getTestDatabaseFile(std::string const& dbFile)
 namespace Rapid::TestHelper
 {
 
-void SqliteDatabaseTestEventlistener::testCaseStarting(Catch::TestCaseInfo const& testInfo)
+void SqliteDatabaseTestEventlistener::sectionStarting(Catch::SectionInfo const& sectionInfo)
+{
+    cleanDatabase(SqliteDatabaseTestHelper::getDbNameForTest());
+}
+
+void SqliteDatabaseTestEventlistener::cleanDatabase(std::string const& dbName)
 {
     if (std::filesystem::exists(SqliteDatabaseTestHelper::getTestDatabseFolder())) {
         REQUIRE(std::filesystem::remove_all(SqliteDatabaseTestHelper::getTestDatabseFolder()));
@@ -50,7 +55,7 @@ void SqliteDatabaseTestEventlistener::testCaseStarting(Catch::TestCaseInfo const
         REQUIRE(std::filesystem::create_directory(SqliteDatabaseTestHelper::getTestDatabseFolder()));
     }
 
-    auto const dbFile = SqliteDatabaseTestHelper::getTestDatabseFolder() + "/" + testInfo.name + ".db";
+    auto const dbFile = SqliteDatabaseTestHelper::getTestDatabseFolder() + "/" + dbName;
     auto const cleanDbFile = SqliteDatabaseTestHelper::getWorkingDir() + "/" + getCleanDbFileName();
     REQUIRE(std::filesystem::copy_file(cleanDbFile, dbFile));
 }
