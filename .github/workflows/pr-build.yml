@@ -33,6 +33,16 @@ jobs:
       fail-fast: false
       matrix:
         commits: ${{ fromJson(needs.Generate_Build_Jobs.outputs.commits) }}
+        compiler: [Clang, GCC]
+        include:
+          - compiler: GCC
+            cxx: g++
+            cc: gcc
+          - compiler: Clang
+            cxx: clang++
+            cc: clang
+    name: ${{matrix.compiler}}-${{matrix.commits}}
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -42,6 +52,18 @@ jobs:
       uses: ./.github/actions/linux-install-qt
     - name: Install Dependencies
       uses: ./.github/actions/linux-install-dep
+    - name: Setup default compiler
+      run: |
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/${{ matrix.cc }} 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/${{ matrix.cxx }} 100
+        echo "###############################################################"
+        echo "Compiler CC"
+        echo "$(cc --version)"
+        echo "###############################################################"
+        echo "###############################################################"
+        echo "Compiler CXX"
+        echo "$(c++ --version)"
+        echo "###############################################################"
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
     - name: Build
