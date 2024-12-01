@@ -50,7 +50,7 @@ std::shared_ptr<GetSessionResult> SqliteSessionDatabase::getSessionByIndexAsync(
     auto context = std::make_shared<Private::SessionStorageContextWithValue<Common::SessionData>>(result);
     mStorageCache.emplace(context.get(), context);
     context->mSessionId = index;
-    context->done.connect([this](Private::StorageContextBase* ctx) {
+    std::ignore = context->done.connect([this](Private::StorageContextBase* ctx) {
         auto sessionCtx =
             StorageContextBase::getStorageAs<SessionStorageContextWithValue<Common::SessionData>>(mStorageCache[ctx]);
         auto const result = sessionCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
@@ -100,7 +100,7 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
     } else {
         storageContext->mStorageThread = std::thread{&SqliteSessionDatabase::saveSession, this, storageContext.get()};
     }
-    storageContext->done.connect(storageOperationHandler);
+    std::ignore = storageContext->done.connect(storageOperationHandler);
     return storageContext->mResult;
 }
 

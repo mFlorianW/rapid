@@ -22,7 +22,7 @@ TEST_CASE("The ConstantGpsPositionProvider shall interpolate the position betwee
     auto lastPosition = GpsPositionData{};
 
     auto source = ConstantGpsPositionProvider{positions};
-    source.gpsPosition.valueChanged().connect([&]() {
+    std::ignore = source.gpsPosition.valueChanged().connect([&]() {
         lastPosition = source.gpsPosition.get();
     });
     source.setVelocityInMeterPerSecond(2.77778);
@@ -47,7 +47,7 @@ TEST_CASE("The ConstantGpsPositionProvider shall provide every 100ms a new posit
     auto positions = std::vector<PositionData>{{52.026649, 11.282535}, {52.026751, 11.282047}, {52.026807, 11.281746}};
     auto source = ConstantGpsPositionProvider{positions};
     source.setVelocityInMeterPerSecond(2.77778);
-    source.gpsPosition.valueChanged().connect([&]() {
+    std::ignore = source.gpsPosition.valueChanged().connect([&]() {
         ++updateCounter;
     });
     // update postion when source is started
@@ -66,7 +66,7 @@ TEST_CASE("The ConstantGpsPositionProvider shall provide the velocity in the rep
     auto lastPosition = GpsPositionData{};
 
     auto source = ConstantGpsPositionProvider{positions};
-    source.gpsPosition.valueChanged().connect([&]() {
+    std::ignore = source.gpsPosition.valueChanged().connect([&]() {
         lastPosition = source.gpsPosition.get();
     });
     source.setVelocityInMeterPerSecond(10);

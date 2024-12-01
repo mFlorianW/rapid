@@ -29,7 +29,7 @@ void RestSessionDownloader::fetchSessionCount() noexcept
     if (call->isFinished()) {
         onFetchSessionCountFinished(call.get());
     } else {
-        call->finished.connect(&RestSessionDownloader::onFetchSessionCountFinished, this);
+        std::ignore = call->finished.connect(&RestSessionDownloader::onFetchSessionCountFinished, this);
     }
 }
 
@@ -50,7 +50,7 @@ void RestSessionDownloader::downloadSession(std::size_t index) noexcept
     if (call->isFinished()) {
         onSessionDownloadFinished(call.get());
     } else {
-        call->finished.connect(&RestSessionDownloader::onSessionDownloadFinished, this);
+        std::ignore = call->finished.connect(&RestSessionDownloader::onSessionDownloadFinished, this);
     }
 }
 

@@ -34,7 +34,7 @@ std::shared_ptr<AsyncTrackCountResult> SqliteTrackDatabase::getTrackCountAsync()
     auto result = std::make_shared<AsyncTrackCountResult>();
     auto context = std::make_shared<TrackStorageContextWithValue<std::size_t>>(result);
     mStorageCache.insert({context.get(), context});
-    context->done.connect([this](StorageContextBase* ctx) {
+    std::ignore = context->done.connect([this](StorageContextBase* ctx) {
         auto const updateResult = ctx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
         auto const context =
             StorageContextBase::getStorageAs<TrackStorageContextWithValue<std::size_t>>(mStorageCache.at(ctx));
@@ -67,7 +67,7 @@ std::shared_ptr<AsyncTrackResult> SqliteTrackDatabase::getTracksAsync()
     auto result = std::make_shared<AsyncTrackResult>();
     auto context = std::make_shared<GetTrackContext>(result);
     mStorageCache.insert({context.get(), context});
-    context->done.connect([this](StorageContextBase* ctx) {
+    std::ignore = context->done.connect([this](StorageContextBase* ctx) {
         auto const updateResult = ctx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
         auto const context = StorageContextBase::getStorageAs<GetTrackContext>(mStorageCache.at(ctx));
         ctx->getResultAs<AsyncTrackResult>()->setResultValue(context->value);
@@ -88,7 +88,7 @@ std::shared_ptr<System::AsyncResult> SqliteTrackDatabase::saveTrack(Common::Trac
     std::lock_guard<std::mutex> const guard{mMutex};
     auto context = std::make_shared<TrackStorageContext>();
     mStorageCache.insert({context.get(), context});
-    context->done.connect([this](StorageContextBase* ctx) {
+    std::ignore = context->done.connect([this](StorageContextBase* ctx) {
         auto const updateResult = ctx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
         ctx->mResult->setResult(updateResult);
         if (ctx->mStorageThread.joinable()) {
@@ -109,7 +109,7 @@ std::shared_ptr<System::AsyncResult> SqliteTrackDatabase::deleteTrack(std::size_
     auto context = std::make_shared<TrackStorageContext>();
     mStorageCache.insert({context.get(), context});
     context->mTrackIndex = trackIndex;
-    context->done.connect([this](StorageContextBase* baseCtx) {
+    std::ignore = context->done.connect([this](StorageContextBase* baseCtx) {
         auto const updateResult = baseCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
         baseCtx->mResult->setResult(updateResult);
         if (baseCtx->mStorageThread.joinable()) {
@@ -129,7 +129,7 @@ std::shared_ptr<System::AsyncResult> SqliteTrackDatabase::deleteAllTracks()
     auto context = std::make_shared<TrackStorageContext>();
     mStorageCache.insert({context.get(), context});
     mStorageCache.insert({context.get(), context});
-    context->done.connect([this](StorageContextBase* baseCtx) {
+    std::ignore = context->done.connect([this](StorageContextBase* baseCtx) {
         auto const updateResult = baseCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
         baseCtx->mResult->setResult(updateResult);
         if (baseCtx->mStorageThread.joinable()) {

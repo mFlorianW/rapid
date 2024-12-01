@@ -22,12 +22,15 @@ ActiveSessionWorkflow::ActiveSessionWorkflow(Positioning::IGpsPositionProvider& 
 void ActiveSessionWorkflow::startActiveSession() noexcept
 {
     try {
-        mLaptimer.lapFinished.connect(&ActiveSessionWorkflow::onLapFinished, this);
-        mLaptimer.sectorFinished.connect(&ActiveSessionWorkflow::onSectorFinished, this);
-        mLaptimer.currentLaptime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentLaptimeChanged, this);
-        mLaptimer.currentSectorTime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentSectorTimeChanged, this);
+        std::ignore = mLaptimer.lapFinished.connect(&ActiveSessionWorkflow::onLapFinished, this);
+        std::ignore = mLaptimer.sectorFinished.connect(&ActiveSessionWorkflow::onSectorFinished, this);
+        std::ignore =
+            mLaptimer.currentLaptime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentLaptimeChanged, this);
+        std::ignore =
+            mLaptimer.currentSectorTime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentSectorTimeChanged,
+                                                               this);
         mLaptimer.setTrack(mTrack);
-        mLaptimer.lapStarted.connect([this]() {
+        std::ignore = mLaptimer.lapStarted.connect([this]() {
             mLapActive = true;
         });
 

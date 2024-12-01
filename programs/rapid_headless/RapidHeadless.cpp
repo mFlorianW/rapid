@@ -15,7 +15,7 @@ LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvid
     , mSessionDatabase{sessionDatabase}
     , mTrackDatabase{trackDatabase}
 {
-    mTrackDetectionWorkflow.trackDetected.connect([this] {
+    std::ignore = mTrackDetectionWorkflow.trackDetected.connect([this] {
         auto const track = mTrackDetectionWorkflow.getDetectedTrack();
         spdlog::info("Track detected: {}", track.getTrackName());
         mTrackDetectionWorkflow.stopDetection();
@@ -23,7 +23,7 @@ LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvid
         mActiveSessionWorkflow.startActiveSession();
     });
 
-    mActiveSessionWorkflow.lapFinished.connect([this] {
+    std::ignore = mActiveSessionWorkflow.lapFinished.connect([this] {
         spdlog::info("Lap finished: {}", mActiveSessionWorkflow.lastLaptime.get().asString());
         spdlog::info("Lap count: {}", mActiveSessionWorkflow.lapCount.get());
     });

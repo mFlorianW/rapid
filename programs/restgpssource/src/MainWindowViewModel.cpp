@@ -24,7 +24,7 @@ struct MainWindowViewModelPrivate
 MainWindowViewModel::MainWindowViewModel()
     : d{std::make_unique<MainWindowViewModelPrivate>()}
 {
-    d->mGpsProvider.gpsPosition.valueChanged().connect(&MainWindowViewModel::handlePositionUpdate, this);
+    std::ignore = d->mGpsProvider.gpsPosition.valueChanged().connect(&MainWindowViewModel::handlePositionUpdate, this);
     d->mGpsProvider.setVelocityInMeterPerSecond(80.6667);
 
     updateUrl();

@@ -33,7 +33,7 @@ SCENARIO("The FutureWatcher shall emit the finish signal when the future finishe
         auto finishSignalEmitted = false;
         auto sleepyPromise = std::promise<void>{};
         auto futureWatcher = FutureWatcher<void>{sleepyPromise.get_future()};
-        futureWatcher.finished.connect([&finishSignalEmitted]() {
+        std::ignore = futureWatcher.finished.connect([&finishSignalEmitted]() {
             finishSignalEmitted = true;
         });
 

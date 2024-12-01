@@ -76,7 +76,7 @@ TEST_CASE("The ActiveSessionWorkflow shall update the round sector time property
     auto expectedSectorTime = Timestamp{"00:00:12.123"};
     bool sectorFinishedEmitted = false;
 
-    actSessWf.sectorFinshed.connect([&sectorFinishedEmitted]() {
+    std::ignore = actSessWf.sectorFinshed.connect([&sectorFinishedEmitted]() {
         sectorFinishedEmitted = true;
     });
     actSessWf.startActiveSession();
@@ -99,7 +99,7 @@ TEST_CASE("The ActiveSessionWorkflow shall store the laptime when finished.")
     ALLOW_CALL(sdb, storeSession(trompeloeil::_)).RETURN(std::make_shared<Rapid::System::AsyncResult>());
 
     actSessWf.startActiveSession();
-    actSessWf.lapFinished.connect([&lapFinishedEmitted]() {
+    std::ignore = std::ignore = actSessWf.lapFinished.connect([&lapFinishedEmitted]() {
         lapFinishedEmitted = true;
     });
     lp.sectorTimes.emplace_back("00:23:13.123");

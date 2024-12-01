@@ -41,7 +41,7 @@ TEST_CASE("The SqliteSessionDatabase shall store as session and shall emit the s
     auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto sessionAddedSignalEmitted = false;
     auto addedIndex = std::size_t{123456};
-    db.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
+    std::ignore = db.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
         sessionAddedSignalEmitted = true;
         addedIndex = index;
     });
@@ -64,7 +64,7 @@ TEST_CASE("The SqliteSessionDatabase shall store a session and the session shall
 {
     auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto addedIndex = std::size_t{123456};
-    db.sessionAdded.connect([&addedIndex](std::size_t index) {
+    std::ignore = db.sessionAdded.connect([&addedIndex](std::size_t index) {
         addedIndex = index;
     });
 
@@ -91,7 +91,7 @@ TEST_CASE("The SqliteSessionDatabase shall store a already stored session under 
 {
     auto db = SqliteSessionDatabase{getTestDatabaseFile()};
     auto updatedIndex = std::size_t{123456};
-    db.sessionUpdated.connect([&updatedIndex](std::size_t index) {
+    std::ignore = db.sessionUpdated.connect([&updatedIndex](std::size_t index) {
         updatedIndex = index;
     });
 
@@ -154,7 +154,7 @@ TEST_CASE("The SqliteSessionDatabase shall delete a session under the index and 
     auto const session2 = Sessions::getTestSession4();
     auto deletedIndex = std::size_t{123456};
     constexpr auto indexToDelete = 1;
-    db.sessionDeleted.connect([&deletedIndex](std::size_t index) {
+    std::ignore = db.sessionDeleted.connect([&deletedIndex](std::size_t index) {
         deletedIndex = index;
     });
 
@@ -182,7 +182,7 @@ TEST_CASE("The SqlieSessionDatabase shall emit session deteled on referential in
     auto storeResult = db.storeSession(session1);
     storeResult->waitForFinished();
     REQUIRE(storeResult->getResult() == Result::Ok);
-    db.sessionDeleted.connect([&deletedIndex](std::size_t index) {
+    std::ignore = db.sessionDeleted.connect([&deletedIndex](std::size_t index) {
         deletedIndex = index;
     });
 

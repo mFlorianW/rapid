@@ -25,15 +25,15 @@ struct SessionDatabaseIpcServerPrivate
             SPDLOG_CRITICAL("Failed create temp folder for data exchange.");
         }
 
-        mDatabase.sessionAdded.connect([this](std::size_t index) {
+        std::ignore = mDatabase.sessionAdded.connect([this](std::size_t index) {
             Q_EMIT q->SessionAdded(static_cast<quint32>(index));
         });
 
-        mDatabase.sessionDeleted.connect([this](std::size_t index) {
+        std::ignore = mDatabase.sessionDeleted.connect([this](std::size_t index) {
             Q_EMIT q->SessionDeleted(static_cast<quint32>(index));
         });
 
-        mDatabase.sessionUpdated.connect([this](std::size_t index) {
+        std::ignore = mDatabase.sessionUpdated.connect([this](std::size_t index) {
             Q_EMIT q->SessionUpdated(static_cast<quint32>(index));
         });
     }
@@ -76,7 +76,7 @@ QString SessionDatabaseIpcServer::GetSessionByIndex(quint32 index, QDBusMessage 
     if (result->getResult() != System::Result::NotFinished) {
         handleGetSessionByIndex(result.get(), message);
     } else {
-        result->done.connect([this, message](System::AsyncResult* result) {
+        std::ignore = result->done.connect([this, message](System::AsyncResult* result) {
             handleGetSessionByIndex(result, message);
         });
     }
@@ -142,7 +142,7 @@ bool SessionDatabaseIpcServer::StoreSession(QString const& sessionPath, QDBusMes
     if (result->getResult() != System::Result::NotFinished) {
         handleSessionStore(result.get(), message);
     } else {
-        result->done.connect([this, message](System::AsyncResult* result) {
+        std::ignore = result->done.connect([this, message](System::AsyncResult* result) {
             handleSessionStore(result, message);
         });
     }

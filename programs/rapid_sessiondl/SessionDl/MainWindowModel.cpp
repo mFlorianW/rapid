@@ -5,10 +5,6 @@
 #include "MainWindowModel.hpp"
 #include <QDateTime>
 
-// todo remove
-#include <QDebug>
-#include <iostream>
-
 namespace Rapid::SessionDl
 {
 
@@ -16,7 +12,7 @@ MainWindowModel::MainWindowModel(Workflow::ISessionDownloader& downloader, Stora
     : mSessionDownloader(downloader)
     , mSessionDatabase(database)
 {
-    mSessionDownloader.sessionCountFetched.connect([this] {
+    std::ignore = mSessionDownloader.sessionCountFetched.connect([this] {
         appendToLog(QString("Found %1 session on the device").arg(mSessionDownloader.getSessionCount()));
         appendToLog(QStringLiteral("Fetched session count from device"));
 
@@ -28,35 +24,36 @@ MainWindowModel::MainWindowModel(Workflow::ISessionDownloader& downloader, Stora
         }
     });
 
-    mSessionDownloader.sessionDownloadFinshed.connect([this](std::size_t index, Workflow::DownloadResult result) {
-        appendToLog(QString{"Downloaded session %1 of %2 from Device"}
-                        .arg(QString::number(index + 1))
-                        .arg(static_cast<qint32>(mSessionDownloader.getSessionCount())));
-
-        if (result == Workflow::DownloadResult::Ok) {
-            appendToLog(QString{"Store Session %1 of %2 in database"}
+    std::ignore =
+        mSessionDownloader.sessionDownloadFinshed.connect([this](std::size_t index, Workflow::DownloadResult result) {
+            appendToLog(QString{"Downloaded session %1 of %2 from Device"}
                             .arg(QString::number(index + 1))
                             .arg(static_cast<qint32>(mSessionDownloader.getSessionCount())));
-            auto session = mSessionDownloader.getSession(index);
-            if (session) {
-                auto asyncResult = mSessionDatabase.storeSession(session.value());
-                auto resultHandler = [this, &index](System::AsyncResult* result) {
-                    auto logString = result->getResult() == System::Result::Ok
-                                         ? QString{"Session stored %1 of %2 in database"}
-                                               .arg(QString::number(index + 1))
-                                               .arg(static_cast<qint32>(mSessionDownloader.getSessionCount()))
-                                         : QString{"Failed to store %1 of %2 in database. Error:%3"}
-                                               .arg(QString::number(index + 1))
-                                               .arg(static_cast<qint32>(mSessionDownloader.getSessionCount()))
-                                               .arg(QString::fromStdString(std::string{result->getErrorMessage()}));
-                    appendToLog(logString);
-                    mStorageCalls.erase(result);
-                };
-                asyncResult->done.connect(resultHandler);
-                mStorageCalls.insert({asyncResult.get(), asyncResult});
+
+            if (result == Workflow::DownloadResult::Ok) {
+                appendToLog(QString{"Store Session %1 of %2 in database"}
+                                .arg(QString::number(index + 1))
+                                .arg(static_cast<qint32>(mSessionDownloader.getSessionCount())));
+                auto session = mSessionDownloader.getSession(index);
+                if (session) {
+                    auto asyncResult = mSessionDatabase.storeSession(session.value());
+                    auto resultHandler = [this, &index](System::AsyncResult* result) {
+                        auto logString = result->getResult() == System::Result::Ok
+                                             ? QString{"Session stored %1 of %2 in database"}
+                                                   .arg(QString::number(index + 1))
+                                                   .arg(static_cast<qint32>(mSessionDownloader.getSessionCount()))
+                                             : QString{"Failed to store %1 of %2 in database. Error:%3"}
+                                                   .arg(QString::number(index + 1))
+                                                   .arg(static_cast<qint32>(mSessionDownloader.getSessionCount()))
+                                                   .arg(QString::fromStdString(std::string{result->getErrorMessage()}));
+                        appendToLog(logString);
+                        mStorageCalls.erase(result);
+                    };
+                    std::ignore = asyncResult->done.connect(resultHandler);
+                    mStorageCalls.insert({asyncResult.get(), asyncResult});
+                }
             }
-        }
-    });
+        });
 }
 
 MainWindowModel::~MainWindowModel() noexcept = default;

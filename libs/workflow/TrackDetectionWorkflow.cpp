@@ -19,8 +19,9 @@ TrackDetectionWorkflow::~TrackDetectionWorkflow() = default;
 void TrackDetectionWorkflow::startDetection()
 {
     mActive = true;
-    mPositionInfoProvider.gpsPosition.valueChanged().connect(&TrackDetectionWorkflow::onPositionInformationReceived,
-                                                             this);
+    std::ignore =
+        mPositionInfoProvider.gpsPosition.valueChanged().connect(&TrackDetectionWorkflow::onPositionInformationReceived,
+                                                                 this);
 }
 
 void TrackDetectionWorkflow::stopDetection()

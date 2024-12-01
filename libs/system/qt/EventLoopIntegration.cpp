@@ -25,7 +25,7 @@ public:
             mIntegrations.erase(eventDispatcher);
         });
 
-        EventLoop::instance().eventPosted.connect([eventDispatcher]() {
+        std::ignore = EventLoop::instance().eventPosted.connect([eventDispatcher]() {
             eventDispatcher->wakeUp();
         });
     }
