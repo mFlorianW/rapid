@@ -100,6 +100,13 @@ public:
      */
     KDBindings::Signal<std::size_t> trackAdded;
 
+    /**
+     * The @ref ITrackDatabase::trackDeleted is emitted when a track is deleted in the database.
+     * If a track is deleted all user of the @ref SqliteTrackDatabase should drop the track under the index.
+     * @param index The index of the deleted track database.
+     */
+    KDBindings::Signal<std::size_t> trackDeleted;
+
 protected:
     /**
      * Default constructor

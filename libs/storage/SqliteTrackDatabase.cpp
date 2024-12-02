@@ -568,9 +568,13 @@ void SqliteTrackDatabase::handleUpdates(void* objPtr,
                                         char const* table,
                                         sqlite3_int64 rowId)
 {
-    constexpr auto sessionTable = "Track";
-    if ((event == SQLITE_INSERT) && (std::strcmp(table, sessionTable) == 0)) {
-        auto* trackDatabase = static_cast<SqliteTrackDatabase*>(objPtr);
+    constexpr auto trackTable = "Track";
+    if (std::strcmp(table, trackTable) != 0) {
+        return;
+    }
+    auto* trackDatabase = static_cast<SqliteTrackDatabase*>(objPtr);
+    switch (event) {
+    case SQLITE_INSERT: {
         trackDatabase->updateIndexMapper();
         auto index = std::find_if(trackDatabase->mIndexMapper.cbegin(),
                                   trackDatabase->mIndexMapper.cend(),
@@ -580,6 +584,22 @@ void SqliteTrackDatabase::handleUpdates(void* objPtr,
         if (index != trackDatabase->mIndexMapper.cend()) {
             trackDatabase->trackAdded.emit(index->first);
         }
+    } break;
+    case SQLITE_DELETE: {
+        auto index = std::find_if(trackDatabase->mIndexMapper.cbegin(),
+                                  trackDatabase->mIndexMapper.cend(),
+                                  [&rowId](auto const& entry) {
+                                      return entry.second == static_cast<std::size_t>(rowId);
+                                  });
+        if (index != trackDatabase->mIndexMapper.cend()) {
+            trackDatabase->trackDeleted.emit(index->first);
+            trackDatabase->mIndexMapper.erase(index);
+        };
+        trackDatabase->updateIndexMapper();
+    } break;
+    default:
+        //do nothing
+        break;
     }
 }
 
