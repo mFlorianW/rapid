@@ -15,6 +15,9 @@ namespace Rapid::Storage
 SqliteTrackDatabase::SqliteTrackDatabase(std::string const& pathToDatabase)
     : mDbConnection{Connection::connection(pathToDatabase)}
 {
+    auto* rawHandle = mDbConnection->getRawHandle();
+    sqlite3_update_hook(rawHandle, &SqliteTrackDatabase::handleUpdates, this);
+    updateIndexMapper();
 }
 
 SqliteTrackDatabase::~SqliteTrackDatabase() = default;
@@ -523,6 +526,61 @@ std::optional<std::vector<Common::TrackData>> SqliteTrackDatabase::readTracks()
         return std::nullopt;
     }
     return tracksResult;
+}
+
+bool SqliteTrackDatabase::updateIndexMapper()
+{
+    // clang-format off
+    constexpr auto trackIdQuery = "SELECT "
+                                          "Track.TrackId "
+                                      "FROM "
+                                          "Track "
+                                      "ORDER BY "
+                                          "Track.TrackId  "
+                                      "ASC";
+    // clang-format on
+    auto trackIdStm = Statement{*mDbConnection};
+    if (trackIdStm.prepare(trackIdQuery).hasError()) {
+        spdlog::error("Failed to query track id count. Error: {}", mDbConnection->getErrorMessage());
+        return false;
+    }
+    mIndexMapper.clear();
+    auto executeResult = ExecuteResult::Error;
+    auto index = std::size_t{0};
+    while (((executeResult = trackIdStm.execute()) == ExecuteResult::Row) && (trackIdStm.getColumnCount() == 1)) {
+        auto const trackId = trackIdStm.getColumn<int>(0);
+        if (trackId.has_value()) {
+            mIndexMapper.emplace(index, *trackId);
+            ++index;
+        }
+    }
+
+    if (executeResult != ExecuteResult::Ok) {
+        mIndexMapper.clear();
+        SPDLOG_ERROR("Failed to query all session ids. Error: {}", mDbConnection->getErrorMessage());
+    }
+    return true;
+}
+
+void SqliteTrackDatabase::handleUpdates(void* objPtr,
+                                        int event,
+                                        char const* database,
+                                        char const* table,
+                                        sqlite3_int64 rowId)
+{
+    constexpr auto sessionTable = "Track";
+    if ((event == SQLITE_INSERT) && (std::strcmp(table, sessionTable) == 0)) {
+        auto* trackDatabase = static_cast<SqliteTrackDatabase*>(objPtr);
+        trackDatabase->updateIndexMapper();
+        auto index = std::find_if(trackDatabase->mIndexMapper.cbegin(),
+                                  trackDatabase->mIndexMapper.cend(),
+                                  [&rowId](auto const& entry) {
+                                      return entry.second == static_cast<std::size_t>(rowId);
+                                  });
+        if (index != trackDatabase->mIndexMapper.cend()) {
+            trackDatabase->trackAdded.emit(index->first);
+        }
+    }
 }
 
 } // namespace Rapid::Storage

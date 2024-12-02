@@ -92,7 +92,13 @@ TEST_CASE("The SqliteTrackDatabase shall delete a specific track.")
 
 TEST_CASE("The SqliteTrackDatabase shall save a track")
 {
-    auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
+    auto trackAdded = false;
+    auto expectedIndex = std ::size_t{2};
+    auto addedIndex = std::size_t{12123213};
+    auto trackAddedHandler = [&addedIndex, &trackAdded](std::size_t index) {
+        trackAdded = true;
+        addedIndex = index;
+    };
 
     auto osl = Rapid::Common::TrackData{};
     osl.setTrackName("Oschersleben");
@@ -111,12 +117,44 @@ TEST_CASE("The SqliteTrackDatabase shall save a track")
     osl2.setFinishline({52, 11});
     osl2.setSections({{52, 11}, {52, 11}});
 
-    auto const saveResult = trackDb.saveTrack(osl2);
-    REQUIRE_COMPARE_WITH_TIMEOUT(saveResult->getResult(), Result::Ok, std::chrono::seconds{1});
+    SECTION("The SqliteTrackDatabase store a track and emits signal for track added")
+    {
+        auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
+        std::ignore = trackDb.trackAdded.connect(trackAddedHandler);
+        auto const saveResult = trackDb.saveTrack(osl2);
+        REQUIRE_COMPARE_WITH_TIMEOUT(saveResult->getResult(), Result::Ok, std::chrono::seconds{1});
+        auto const tracks = trackDb.getTracks();
+        CHECK(tracks.size() == 3);
+        CHECK_THAT(tracks, Catch::Matchers::UnorderedEquals(std::vector<Rapid::Common::TrackData>{osl, assen, osl2}));
+        CHECK(trackAdded);
+        REQUIRE(addedIndex == expectedIndex);
+    }
 
-    auto const tracks = trackDb.getTracks();
-    REQUIRE(tracks.size() == 3);
-    REQUIRE_THAT(tracks, Catch::Matchers::UnorderedEquals(std::vector<Rapid::Common::TrackData>{osl, assen, osl2}));
+    SECTION("The track added signal must be emit from all track database instances")
+    {
+        auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
+        auto trackDb2 = SqliteTrackDatabase{getTestDatabaseFile()};
+        std::ignore = trackDb2.trackAdded.connect(trackAddedHandler);
+        auto const saveResult = trackDb.saveTrack(osl2);
+        REQUIRE_COMPARE_WITH_TIMEOUT(saveResult->getResult(), Result::Ok, std::chrono::seconds{1});
+        CHECK(trackAdded);
+        REQUIRE(addedIndex == expectedIndex);
+        ;
+    }
+
+    SECTION("The track added signal after multiple changes on the database")
+    {
+        auto trackDb = SqliteTrackDatabase{getTestDatabaseFile()};
+        auto const saveResult = trackDb.saveTrack(osl2);
+        REQUIRE_COMPARE_WITH_TIMEOUT(saveResult->getResult(), Result::Ok, std::chrono::seconds{1});
+        auto const deleteResult = trackDb.deleteTrack(2);
+        REQUIRE_COMPARE_WITH_TIMEOUT(deleteResult->getResult(), Result::Ok, std::chrono::seconds{1});
+        std::ignore = trackDb.trackAdded.connect(trackAddedHandler);
+        auto const saveResult2 = trackDb.saveTrack(osl2);
+        REQUIRE_COMPARE_WITH_TIMEOUT(saveResult2->getResult(), Result::Ok, std::chrono::seconds{1});
+        CHECK(trackAdded);
+        REQUIRE(addedIndex == expectedIndex);
+    }
 }
 
 TEST_CASE("Delete all tracks in the SqliteTrackDatabase")
