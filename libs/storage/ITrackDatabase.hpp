@@ -7,12 +7,16 @@
 
 #include <AsyncResult.hpp>
 #include <TrackData.hpp>
+#include <kdbindings/signal.h>
 
 namespace Rapid::Storage
 {
 using AsyncTrackCountResult = System::AsyncResultWithValue<std::size_t>;
 using AsyncTrackResult = System::AsyncResultWithValue<std::vector<Common::TrackData>>;
 
+/**
+ * The @ref ITrackDatabase defines the interface to store persistent @ref Common::TrackData.
+ */
 class ITrackDatabase
 {
 public:
@@ -89,6 +93,19 @@ public:
      * @return false Failed to delete the track data.
      */
     virtual std::shared_ptr<System::AsyncResult> deleteAllTracks() = 0;
+
+    /**
+     * The @ref ITrackDatabase::trackAdded is emitted when a track is added to the database.
+     * @param index The index of the added track to the database.
+     */
+    KDBindings::Signal<std::size_t> trackAdded;
+
+    /**
+     * The @ref ITrackDatabase::trackDeleted is emitted when a track is deleted in the database.
+     * If a track is deleted all user of the @ref SqliteTrackDatabase should drop the track under the index.
+     * @param index The index of the deleted track database.
+     */
+    KDBindings::Signal<std::size_t> trackDeleted;
 
 protected:
     /**

@@ -4,18 +4,25 @@
 
 #include "Connection.hpp"
 #include <spdlog/spdlog.h>
-#include <unordered_map>
+
+#include <utility>
 
 namespace Rapid::Storage::Private
 {
 
-Connection& Connection::connection(std::string const& database)
+std::unordered_map<std::string, std::weak_ptr<Connection>> Connection::sConnections =
+    std::unordered_map<std::string, std::weak_ptr<Connection>>{};
+
+std::shared_ptr<Connection> Connection::connection(std::string const& database)
 {
-    static auto connections = std::unordered_map<std::string, std::unique_ptr<Connection>>{};
-    if (not connections.contains(database)) {
-        connections.insert({database, std::make_unique<Connection>(database)});
+    if (not sConnections.contains(database)) {
+        SPDLOG_INFO("Create database connection for db: {}", database);
+        auto connection = std::make_shared<Connection>(database);
+        sConnections.insert({database, connection});
+        return connection;
     }
-    return *connections[database].get();
+    SPDLOG_INFO("Reuse database connection for db: {}", database);
+    return sConnections[database].lock();
 }
 
 Connection::~Connection()
@@ -23,15 +30,23 @@ Connection::~Connection()
     if (mHandle != nullptr) {
         sqlite3_close(mHandle);
     }
+    if (sConnections.contains(mDatabase)) {
+        auto wConnection = sConnections.at(mDatabase);
+        SPDLOG_INFO("Cleanup database connection for database. {}", mDatabase);
+        if (wConnection.use_count() == 0) {
+            sConnections.erase(mDatabase);
+        }
+    }
 }
 
-Connection::Connection(std::string const& database)
+Connection::Connection(std::string database)
+    : mDatabase{std::move(database)}
 {
     if (mHandle != nullptr) {
         sqlite3_close(mHandle);
     }
 
-    if (sqlite3_open_v2(database.c_str(),
+    if (sqlite3_open_v2(mDatabase.c_str(),
                         &mHandle,
                         SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_PRIVATECACHE,
                         nullptr) == SQLITE_OK) {
@@ -39,7 +54,7 @@ Connection::Connection(std::string const& database)
         return;
     }
 
-    spdlog::error("Exiting failed to create database connection. Error: {}", getErrorMessage());
+    SPDLOG_ERROR("Exiting failed to create database connection. Error: {}", getErrorMessage());
     std::exit(255);
 }
 

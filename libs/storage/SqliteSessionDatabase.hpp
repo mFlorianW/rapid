@@ -92,7 +92,7 @@ private:
 
     void updateIndexMapper();
 
-    Private::Connection& mDbConnection;
+    std::shared_ptr<Private::Connection> mDbConnection;
     std::map<std::size_t, std::size_t> mIndexMapper;
 
     std::unordered_map<Private::StorageContextBase*, std::shared_ptr<Private::SessionStorageContext>> mStorageCache;

@@ -9,6 +9,7 @@
 #include "private/Connection.hpp"
 #include "private/StorageContext.hpp"
 #include <LapData.hpp>
+#include <map>
 #include <optional>
 
 namespace Rapid::Storage
@@ -105,9 +106,15 @@ private:
     std::optional<std::size_t> readTrackCount();
     std::optional<std::vector<Common::TrackData>> readTracks();
 
-    Private::Connection& mDbConnection;
+    bool updateIndexMapper();
+    void updateIndexMapperAsync(std::shared_ptr<Private::TrackStorageContext> ctx);
+
+    static void handleUpdates(void* objPtr, int event, char const* database, char const* table, sqlite3_int64 rowId);
+
+    std::shared_ptr<Private::Connection> mDbConnection;
     std::unordered_map<Private::StorageContextBase*, std::shared_ptr<Private::TrackStorageContext>> mStorageCache;
     std::mutex mutable mMutex;
+    std::map<std::size_t, std::size_t> mIndexMapper;
 };
 
 } // namespace Rapid::Storage

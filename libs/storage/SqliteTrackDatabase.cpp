@@ -15,6 +15,9 @@ namespace Rapid::Storage
 SqliteTrackDatabase::SqliteTrackDatabase(std::string const& pathToDatabase)
     : mDbConnection{Connection::connection(pathToDatabase)}
 {
+    auto* rawHandle = mDbConnection->getRawHandle();
+    sqlite3_update_hook(rawHandle, &SqliteTrackDatabase::handleUpdates, this);
+    updateIndexMapper();
 }
 
 SqliteTrackDatabase::~SqliteTrackDatabase() = default;
@@ -159,10 +162,10 @@ void SqliteTrackDatabase::deleteTrack(std::shared_ptr<Private::TrackStorageConte
         return;
     }
 
-    auto deleteTrackStm = Statement{mDbConnection};
+    auto deleteTrackStm = Statement{*mDbConnection};
     auto const bindError = deleteTrackStm.prepare(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
     if (bindError or (deleteTrackStm.execute() != ExecuteResult::Ok)) {
-        spdlog::error("Failed to delete track. Error: {}", mDbConnection.getErrorMessage());
+        spdlog::error("Failed to delete track. Error: {}", mDbConnection->getErrorMessage());
         ctx->mStoragePromise.set_value(false);
         return;
     }
@@ -174,7 +177,7 @@ void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext
     auto const track = ctx->mStorageObject;
     auto const finishlineId = savePosition(track.getFinishline());
     if (not finishlineId.has_value()) {
-        spdlog::error("Failed to save track finish line.");
+        SPDLOG_ERROR("Failed to save track finish line. Error: {}", mDbConnection->getErrorMessage());
         ctx->mStoragePromise.set_value(false);
         return;
     }
@@ -184,7 +187,7 @@ void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext
     if (startlinePos.getLongitude() > 0 && startlinePos.getLatitude() > 0) {
         startlineId = savePosition(startlinePos);
         if (not startlineId.has_value()) {
-            spdlog::error("Failed to save track start line. Error: {}", mDbConnection.getErrorMessage());
+            spdlog::error("Failed to save track start line. Error: {}", mDbConnection->getErrorMessage());
             ctx->mStoragePromise.set_value(false);
             return;
         }
@@ -192,7 +195,7 @@ void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext
 
     auto const trackId = saveTrack(track.getTrackName(), finishlineId.value(), startlineId);
     if (not trackId.has_value()) {
-        spdlog::error("Failed to save track. Error: {}", mDbConnection.getErrorMessage());
+        spdlog::error("Failed to save track. Error: {}", mDbConnection->getErrorMessage());
         ctx->mStoragePromise.set_value(false);
         return;
     }
@@ -200,7 +203,7 @@ void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext
     auto const sections = track.getSections();
     for (std::size_t index = 0; index < sections.size(); ++index) {
         if (not saveSection(trackId.value(), sections.at(index), index)) {
-            spdlog::error("Failed to save section of track. Error {}", mDbConnection.getErrorMessage());
+            spdlog::error("Failed to save section of track. Error {}", mDbConnection->getErrorMessage());
         }
     }
     ctx->mStoragePromise.set_value(true);
@@ -235,7 +238,7 @@ void SqliteTrackDatabase::deleteAllTracks(std::shared_ptr<Private::TrackStorageC
         }
     }
 
-    auto stm = Statement{mDbConnection};
+    auto stm = Statement{*mDbConnection};
     if (stm.prepare(deleteAllTrackQuery).hasError() or stm.execute() != ExecuteResult::Ok) {
         ctx->mStoragePromise.set_value(false);
     }
@@ -272,9 +275,9 @@ std::vector<std::size_t> SqliteTrackDatabase::readTrackIds() const noexcept
                                   "FROM "
                                     "Track";
     // clang-format on
-    auto trackIdStm = Statement{mDbConnection};
+    auto trackIdStm = Statement{*mDbConnection};
     if (trackIdStm.prepare(trackIdQuery).hasError()) {
-        spdlog::error("Failed to prepare track id query. Error: {}", mDbConnection.getErrorMessage());
+        spdlog::error("Failed to prepare track id query. Error: {}", mDbConnection->getErrorMessage());
         return {};
     }
 
@@ -313,7 +316,7 @@ std::optional<std::size_t> SqliteTrackDatabase::savePosition(Common::PositionDat
                                             "PositionId";
 
     // clang-format on
-    auto positionStm = Statement{mDbConnection};
+    auto positionStm = Statement{*mDbConnection};
     auto bindError = positionStm.prepare(storePositionQuery)
                          .bindValue(1, position.getLongitude())
                          .bindValue(2, position.getLatitude())
@@ -343,7 +346,7 @@ std::optional<std::size_t> SqliteTrackDatabase::saveTrack(std::string const& nam
                                                             "TrackId";
     // clang-format on
 
-    auto stm = Statement{mDbConnection};
+    auto stm = Statement{*mDbConnection};
     auto bindError = false;
     if (startline.has_value()) {
         bindError = stm.prepare(insertTrackWithStartlineQuery)
@@ -375,7 +378,7 @@ bool SqliteTrackDatabase::saveSection(std::size_t trackId, Common::PositionData 
         return false;
     }
 
-    auto stm = Statement{mDbConnection};
+    auto stm = Statement{*mDbConnection};
     auto bindError = stm.prepare(insertSectionQuery)
                          .bindValue(1, positionId.value())
                          .bindValue(2, trackId)
@@ -399,7 +402,7 @@ std::optional<std::size_t> SqliteTrackDatabase::readFinishlinePositionId(std::si
                                         "PositionId = "
                                             "(SELECT Track.Finishline FROM Track WHERE TrackId = ?)";
     // clang-format on
-    auto stm = Statement{mDbConnection};
+    auto stm = Statement{*mDbConnection};
     auto const bindError = stm.prepare(finishlinePositionIdQuery).bindValue(1, trackId).hasError();
     if (bindError or stm.execute() != ExecuteResult::Row) {
         return std::nullopt;
@@ -419,7 +422,7 @@ std::optional<std::size_t> SqliteTrackDatabase::readStartlinePositionId(std::siz
                                             "PositionId = "
                                                 "(SELECT Track.Startline FROM Track WHERE TrackId = ?)";
     // clang-format on
-    auto stm = Statement{mDbConnection};
+    auto stm = Statement{*mDbConnection};
     auto const bindError = stm.prepare(startLinePositionIdQuery).bindValue(1, trackId).hasError();
     if (bindError or stm.execute() != ExecuteResult::Row) {
         return std::nullopt;
@@ -438,7 +441,7 @@ bool SqliteTrackDatabase::deletePositionId(std::size_t positionId)
                                         "PositionId = ?";
     // clang-format onn
 
-    auto stm = Statement{mDbConnection};
+    auto stm = Statement{*mDbConnection};
     auto const bindError = stm.prepare(deletePositionQuery).bindValue(1, positionId).hasError();
     if (bindError or stm.execute() != ExecuteResult::Ok) {
         return true;
@@ -452,7 +455,7 @@ std::vector<std::size_t> SqliteTrackDatabase::getSectionPositionIds(std::size_t 
     constexpr auto sectionIdsQuery =
         "SELECT PositionId FROM Sektor WHERE TrackId = ?";
     // clang-format on
-    auto stm = Statement{mDbConnection};
+    auto stm = Statement{*mDbConnection};
     auto const bindError = stm.prepare(sectionIdsQuery).bindValue(1, trackId).hasError();
     if (bindError or stm.execute() != ExecuteResult::Row) {
         return {};
@@ -472,9 +475,9 @@ std::optional<std::size_t> SqliteTrackDatabase::readTrackCount()
 {
     std::lock_guard<std::mutex> const guard{mMutex};
     constexpr auto statementStr = "SELECT COUNT(TrackId) FROM Track";
-    Statement stm{mDbConnection};
+    Statement stm{*mDbConnection};
     if (stm.prepare(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
-        spdlog::error("Database Error: {}", mDbConnection.getErrorMessage());
+        spdlog::error("Database Error: {}", mDbConnection->getErrorMessage());
         return std::nullopt;
     }
     return stm.getColumn<int>(0).value_or(0);
@@ -488,7 +491,7 @@ std::optional<std::vector<Common::TrackData>> SqliteTrackDatabase::readTracks()
         "FL.PositionId LEFT JOIN Position SL ON Track.Startline = SL.PositionId";
 
     auto tracksResult = std::vector<Common::TrackData>{};
-    Statement stm{mDbConnection};
+    Statement stm{*mDbConnection};
     if (not stm.prepare(trackQuery).hasError()) {
         while (stm.execute() == ExecuteResult::Row && stm.getColumnCount() == 6) {
             auto track = Rapid::Common::TrackData{};
@@ -504,7 +507,7 @@ std::optional<std::vector<Common::TrackData>> SqliteTrackDatabase::readTracks()
             constexpr auto sektorQuery =
                 "SELECT PO.Latitude, PO.Longitude FROM Track JOIN Sektor SE ON Track.TrackId = SE.TrackId JOIN "
                 "Position PO ON SE.PositionId = PO.PositionId WHERE Track.TrackId = ? ORDER BY SE.SektorIndex ASC";
-            Statement sektorStm{mDbConnection};
+            Statement sektorStm{*mDbConnection};
             auto const bindError = sektorStm.prepare(sektorQuery).bindValue(1, trackId).hasError();
             if (bindError) {
                 tracksResult.clear();
@@ -523,6 +526,81 @@ std::optional<std::vector<Common::TrackData>> SqliteTrackDatabase::readTracks()
         return std::nullopt;
     }
     return tracksResult;
+}
+
+bool SqliteTrackDatabase::updateIndexMapper()
+{
+    // clang-format off
+    constexpr auto trackIdQuery = "SELECT "
+                                          "Track.TrackId "
+                                      "FROM "
+                                          "Track "
+                                      "ORDER BY "
+                                          "Track.TrackId  "
+                                      "ASC";
+    // clang-format on
+    auto trackIdStm = Statement{*mDbConnection};
+    if (trackIdStm.prepare(trackIdQuery).hasError()) {
+        spdlog::error("Failed to query track id count. Error: {}", mDbConnection->getErrorMessage());
+        return false;
+    }
+    mIndexMapper.clear();
+    auto executeResult = ExecuteResult::Error;
+    auto index = std::size_t{0};
+    while (((executeResult = trackIdStm.execute()) == ExecuteResult::Row) && (trackIdStm.getColumnCount() == 1)) {
+        auto const trackId = trackIdStm.getColumn<int>(0);
+        if (trackId.has_value()) {
+            mIndexMapper.emplace(index, *trackId);
+            ++index;
+        }
+    }
+
+    if (executeResult != ExecuteResult::Ok) {
+        mIndexMapper.clear();
+        SPDLOG_ERROR("Failed to query all session ids. Error: {}", mDbConnection->getErrorMessage());
+    }
+    return true;
+}
+
+void SqliteTrackDatabase::handleUpdates(void* objPtr,
+                                        int event,
+                                        char const* database,
+                                        char const* table,
+                                        sqlite3_int64 rowId)
+{
+    constexpr auto trackTable = "Track";
+    if (std::strcmp(table, trackTable) != 0) {
+        return;
+    }
+    auto* trackDatabase = static_cast<SqliteTrackDatabase*>(objPtr);
+    switch (event) {
+    case SQLITE_INSERT: {
+        trackDatabase->updateIndexMapper();
+        auto index = std::find_if(trackDatabase->mIndexMapper.cbegin(),
+                                  trackDatabase->mIndexMapper.cend(),
+                                  [&rowId](auto const& entry) {
+                                      return entry.second == static_cast<std::size_t>(rowId);
+                                  });
+        if (index != trackDatabase->mIndexMapper.cend()) {
+            trackDatabase->trackAdded.emit(index->first);
+        }
+    } break;
+    case SQLITE_DELETE: {
+        auto index = std::find_if(trackDatabase->mIndexMapper.cbegin(),
+                                  trackDatabase->mIndexMapper.cend(),
+                                  [&rowId](auto const& entry) {
+                                      return entry.second == static_cast<std::size_t>(rowId);
+                                  });
+        if (index != trackDatabase->mIndexMapper.cend()) {
+            trackDatabase->trackDeleted.emit(index->first);
+            trackDatabase->mIndexMapper.erase(index);
+        };
+        trackDatabase->updateIndexMapper();
+    } break;
+    default:
+        //do nothing
+        break;
+    }
 }
 
 } // namespace Rapid::Storage
