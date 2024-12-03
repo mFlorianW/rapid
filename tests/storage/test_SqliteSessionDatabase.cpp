@@ -17,6 +17,7 @@ using namespace Rapid::TestHelper;
 using namespace Rapid::TestHelper::SqliteDatabaseTestHelper;
 using namespace Rapid::Storage::Private;
 using namespace Rapid::Common;
+using namespace std::chrono_literals;
 
 namespace
 {
@@ -38,26 +39,51 @@ CATCH_REGISTER_LISTENER(SqliteSessionDatabaseEventListener)
 
 TEST_CASE("The SqliteSessionDatabase shall store as session and shall emit the session added signal.")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
-    auto sessionAddedSignalEmitted = false;
-    auto addedIndex = std::size_t{123456};
-    std::ignore = db.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
-        sessionAddedSignalEmitted = true;
-        addedIndex = index;
-    });
 
-    auto insertResult = db.storeSession(Sessions::getTestSession3());
-    insertResult->waitForFinished();
-    REQUIRE(insertResult->getResult() == Result::Ok);
-    REQUIRE(addedIndex == 0);
-    REQUIRE(sessionAddedSignalEmitted == true);
+    SECTION("Store session and emit signal")
+    {
 
-    sessionAddedSignalEmitted = false;
-    insertResult = db.storeSession(Sessions::getTestSession4());
-    insertResult->waitForFinished();
-    REQUIRE(insertResult->getResult() == Result::Ok);
-    REQUIRE(addedIndex == 1);
-    REQUIRE(sessionAddedSignalEmitted == true);
+        auto db = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto sessionAddedSignalEmitted = false;
+        auto addedIndex = std::size_t{123456};
+        std::ignore = db.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
+            sessionAddedSignalEmitted = true;
+            addedIndex = index;
+        });
+
+        auto insertResult = db.storeSession(Sessions::getTestSession3());
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        REQUIRE(addedIndex == 0);
+        REQUIRE(sessionAddedSignalEmitted == true);
+
+        sessionAddedSignalEmitted = false;
+        insertResult = db.storeSession(Sessions::getTestSession4());
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        REQUIRE(addedIndex == 1);
+        REQUIRE(sessionAddedSignalEmitted == true);
+    }
+
+    SECTION("Store session and all instances shall emit the signal")
+    {
+
+        auto db = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto db2 = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto sessionAddedSignalEmitted = false;
+        auto addedIndex = std::size_t{123456};
+        std::ignore = db2.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
+            sessionAddedSignalEmitted = true;
+            addedIndex = index;
+        });
+
+        auto insertResult = db.storeSession(Sessions::getTestSession3());
+        REQUIRE_COMPARE_WITH_TIMEOUT(insertResult->getResult(), Result::Ok, 1s);
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        REQUIRE(addedIndex == 0);
+        REQUIRE(sessionAddedSignalEmitted == true);
+    }
 }
 
 TEST_CASE("The SqliteSessionDatabase shall store a session and the session shall be directly read again.")

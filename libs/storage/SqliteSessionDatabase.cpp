@@ -86,7 +86,9 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
         sessionCtx->mResult->setResult(updateResult);
         if (updateResult == System::Result::Ok) {
             auto const sessionId = readIndexOfSessionId(sessionCtx->mSessionId).value_or(0);
-            sessionCtx->mIsUpdateContext ? sessionUpdated.emit(sessionId) : sessionAdded.emit(sessionId);
+            if (sessionCtx->mIsUpdateContext) {
+                sessionUpdated.emit(sessionId);
+            }
         };
         if (sessionCtx->mStorageThread.joinable()) {
             sessionCtx->mStorageThread.join();
@@ -549,8 +551,23 @@ void SqliteSessionDatabase::handleUpdates(void* objPtr,
                                           sqlite3_int64 rowId)
 {
     constexpr auto sessionTable = "Session";
-    if ((event == SQLITE_DELETE) && (std::strcmp(table, sessionTable) == 0)) {
-        auto sessionDatabase = static_cast<SqliteSessionDatabase*>(objPtr);
+    if (std::strcmp(table, sessionTable) != 0) {
+        return;
+    }
+    auto sessionDatabase = static_cast<SqliteSessionDatabase*>(objPtr);
+    switch (event) {
+    case SQLITE_INSERT: {
+        sessionDatabase->updateIndexMapper();
+        auto index = std::find_if(sessionDatabase->mIndexMapper.cbegin(),
+                                  sessionDatabase->mIndexMapper.cend(),
+                                  [&rowId](auto const& entry) {
+                                      return entry.second == static_cast<std::size_t>(rowId);
+                                  });
+        if (index != sessionDatabase->mIndexMapper.cend()) {
+            sessionDatabase->sessionAdded.emit(index->first);
+        }
+    } break;
+    case SQLITE_DELETE: {
         for (auto const& [index, sessionId] : sessionDatabase->mIndexMapper) {
             if (sessionId == static_cast<std::size_t>(rowId)) {
                 sessionDatabase->sessionDeleted.emit(index);
@@ -558,6 +575,10 @@ void SqliteSessionDatabase::handleUpdates(void* objPtr,
                 break;
             }
         }
+    } break;
+    default:
+        // do nothing
+        break;
     }
 }
 
