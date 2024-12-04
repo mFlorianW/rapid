@@ -17,6 +17,7 @@ using namespace Rapid::TestHelper;
 using namespace Rapid::TestHelper::SqliteDatabaseTestHelper;
 using namespace Rapid::Storage::Private;
 using namespace Rapid::Common;
+using namespace std::chrono_literals;
 
 namespace
 {
@@ -38,26 +39,51 @@ CATCH_REGISTER_LISTENER(SqliteSessionDatabaseEventListener)
 
 TEST_CASE("The SqliteSessionDatabase shall store as session and shall emit the session added signal.")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
-    auto sessionAddedSignalEmitted = false;
-    auto addedIndex = std::size_t{123456};
-    std::ignore = db.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
-        sessionAddedSignalEmitted = true;
-        addedIndex = index;
-    });
 
-    auto insertResult = db.storeSession(Sessions::getTestSession3());
-    insertResult->waitForFinished();
-    REQUIRE(insertResult->getResult() == Result::Ok);
-    REQUIRE(addedIndex == 0);
-    REQUIRE(sessionAddedSignalEmitted == true);
+    SECTION("Store session and emit signal")
+    {
 
-    sessionAddedSignalEmitted = false;
-    insertResult = db.storeSession(Sessions::getTestSession4());
-    insertResult->waitForFinished();
-    REQUIRE(insertResult->getResult() == Result::Ok);
-    REQUIRE(addedIndex == 1);
-    REQUIRE(sessionAddedSignalEmitted == true);
+        auto db = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto sessionAddedSignalEmitted = false;
+        auto addedIndex = std::size_t{123456};
+        std::ignore = db.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
+            sessionAddedSignalEmitted = true;
+            addedIndex = index;
+        });
+
+        auto insertResult = db.storeSession(Sessions::getTestSession3());
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        REQUIRE(addedIndex == 0);
+        REQUIRE(sessionAddedSignalEmitted == true);
+
+        sessionAddedSignalEmitted = false;
+        insertResult = db.storeSession(Sessions::getTestSession4());
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        REQUIRE(addedIndex == 1);
+        REQUIRE(sessionAddedSignalEmitted == true);
+    }
+
+    SECTION("Store session and all instances shall emit the signal")
+    {
+
+        auto db = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto db2 = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto sessionAddedSignalEmitted = false;
+        auto addedIndex = std::size_t{123456};
+        std::ignore = db2.sessionAdded.connect([&sessionAddedSignalEmitted, &addedIndex](std::size_t index) {
+            sessionAddedSignalEmitted = true;
+            addedIndex = index;
+        });
+
+        auto insertResult = db.storeSession(Sessions::getTestSession3());
+        REQUIRE_COMPARE_WITH_TIMEOUT(insertResult->getResult(), Result::Ok, 1s);
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        REQUIRE(addedIndex == 0);
+        REQUIRE(sessionAddedSignalEmitted == true);
+    }
 }
 
 TEST_CASE("The SqliteSessionDatabase shall store a session and the session shall be directly read again.")
@@ -89,37 +115,66 @@ TEST_CASE("The SqliteSessionDatabase shall store a session and the session shall
 TEST_CASE("The SqliteSessionDatabase shall store a already stored session under the same index and shall emit session "
           "updated.")
 {
-    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
-    auto updatedIndex = std::size_t{123456};
-    std::ignore = db.sessionUpdated.connect([&updatedIndex](std::size_t index) {
-        updatedIndex = index;
-    });
+    SECTION("Update session and emit the signal")
+    {
+        auto db = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto updatedIndex = std::size_t{123456};
+        std::ignore = db.sessionUpdated.connect([&updatedIndex](std::size_t index) {
+            updatedIndex = index;
+        });
 
-    auto insertResult = db.storeSession(Sessions::getTestSession3());
-    insertResult->waitForFinished();
-    REQUIRE(insertResult->getResult() == Result::Ok);
-    insertResult = db.storeSession(Sessions::getTestSession4());
-    insertResult->waitForFinished();
-    REQUIRE(insertResult->getResult() == Result::Ok);
+        auto insertResult = db.storeSession(Sessions::getTestSession3());
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        insertResult = db.storeSession(Sessions::getTestSession4());
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
 
-    auto lapData = Rapid::Common::LapData{};
-    lapData.addSectorTimes({{"00:23:32.003"}, {"00:23:32.004"}, {"00:23:32.005"}});
-    auto session1 = Sessions::getTestSession3();
-    session1.addLap(lapData);
-    auto session2 = Sessions::getTestSession4();
-    session2.addLap(lapData);
+        auto lapData = Rapid::Common::LapData{};
+        lapData.addSectorTimes({{"00:23:32.003"}, {"00:23:32.004"}, {"00:23:32.005"}});
+        auto session1 = Sessions::getTestSession3();
+        session1.addLap(lapData);
+        auto session2 = Sessions::getTestSession4();
+        session2.addLap(lapData);
 
-    insertResult = db.storeSession(session1);
-    insertResult->waitForFinished();
-    REQUIRE(insertResult->getResult() == Result::Ok);
-    REQUIRE(updatedIndex == 0);
-    REQUIRE(db.getSessionByIndex(0) == session1);
+        insertResult = db.storeSession(session1);
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        REQUIRE(updatedIndex == 0);
+        REQUIRE(db.getSessionByIndex(0) == session1);
 
-    insertResult = db.storeSession(session2);
-    insertResult->waitForFinished();
-    REQUIRE(insertResult->getResult() == Result::Ok);
-    REQUIRE(updatedIndex == 1);
-    REQUIRE(db.getSessionByIndex(1) == session2);
+        insertResult = db.storeSession(session2);
+        insertResult->waitForFinished();
+        REQUIRE(insertResult->getResult() == Result::Ok);
+        REQUIRE(updatedIndex == 1);
+        REQUIRE(db.getSessionByIndex(1) == session2);
+    }
+
+    SECTION("The updated signal is emitted from every database instance")
+    {
+        auto db = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto db2 = SqliteSessionDatabase{getTestDatabaseFile()};
+        auto updatedIndex = std::size_t{123456};
+        std::ignore = db2.sessionUpdated.connect([&updatedIndex](std::size_t index) {
+            updatedIndex = index;
+        });
+
+        auto insertResult = db.storeSession(Sessions::getTestSession3());
+        REQUIRE_COMPARE_WITH_TIMEOUT(insertResult->getResult(), Result::Ok, 1s);
+        insertResult = db.storeSession(Sessions::getTestSession4());
+        REQUIRE_COMPARE_WITH_TIMEOUT(insertResult->getResult(), Result::Ok, 1s);
+
+        auto lapData = Rapid::Common::LapData{};
+        lapData.addSectorTimes({{"00:23:32.003"}, {"00:23:32.004"}, {"00:23:32.005"}});
+        auto session1 = Sessions::getTestSession3();
+        session1.addLap(lapData);
+
+        insertResult = db.storeSession(session1);
+        REQUIRE_COMPARE_WITH_TIMEOUT(insertResult->getResult(), Result::Ok, 1s);
+        CHECK(insertResult->getResult() == Result::Ok);
+        CHECK(updatedIndex == 0);
+        REQUIRE(db.getSessionByIndex(0) == session1);
+    }
 }
 
 TEST_CASE("The SqliteSessionDatabase shall gives the number of stored sessions and should return the correct session"

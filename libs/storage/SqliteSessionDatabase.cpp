@@ -86,7 +86,9 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
         sessionCtx->mResult->setResult(updateResult);
         if (updateResult == System::Result::Ok) {
             auto const sessionId = readIndexOfSessionId(sessionCtx->mSessionId).value_or(0);
-            sessionCtx->mIsUpdateContext ? sessionUpdated.emit(sessionId) : sessionAdded.emit(sessionId);
+            if (sessionCtx->mIsUpdateContext) {
+                sessionUpdated.emit(sessionId);
+            }
         };
         if (sessionCtx->mStorageThread.joinable()) {
             sessionCtx->mStorageThread.join();
@@ -548,15 +550,69 @@ void SqliteSessionDatabase::handleUpdates(void* objPtr,
                                           char const* table,
                                           sqlite3_int64 rowId)
 {
+    auto sessionDatabase = static_cast<SqliteSessionDatabase*>(objPtr);
     constexpr auto sessionTable = "Session";
-    if ((event == SQLITE_DELETE) && (std::strcmp(table, sessionTable) == 0)) {
-        auto sessionDatabase = static_cast<SqliteSessionDatabase*>(objPtr);
-        for (auto const& [index, sessionId] : sessionDatabase->mIndexMapper) {
-            if (sessionId == static_cast<std::size_t>(rowId)) {
-                sessionDatabase->sessionDeleted.emit(index);
-                sessionDatabase->mIndexMapper.erase(index);
-                break;
+    constexpr auto lapTable = "Lap";
+    if (std::strcmp(table, sessionTable) == 0) {
+        switch (event) {
+        case SQLITE_INSERT: {
+            sessionDatabase->updateIndexMapper();
+            auto index = std::find_if(sessionDatabase->mIndexMapper.cbegin(),
+                                      sessionDatabase->mIndexMapper.cend(),
+                                      [&rowId](auto const& entry) {
+                                          return entry.second == static_cast<std::size_t>(rowId);
+                                      });
+            if (index != sessionDatabase->mIndexMapper.cend()) {
+                sessionDatabase->sessionAdded.emit(index->first);
             }
+        } break;
+        case SQLITE_DELETE: {
+            for (auto const& [index, sessionId] : sessionDatabase->mIndexMapper) {
+                if (sessionId == static_cast<std::size_t>(rowId)) {
+                    sessionDatabase->sessionDeleted.emit(index);
+                    sessionDatabase->mIndexMapper.erase(index);
+                    break;
+                }
+            }
+        } break;
+        default:
+            // do nothing
+            break;
+        }
+    } else if (std::strcmp(table, lapTable) == 0) {
+        switch (event) {
+        case SQLITE_INSERT: {
+            // clang-format off
+        constexpr auto sessionIdQuery = "SELECT "
+                                                                "Lap.SessionId "
+                                                            "FROM "
+                                                                "Lap "
+                                                            "WHERE "
+                                                                "rowid = ?";
+            // clang-format on
+            auto stm = Statement{*sessionDatabase->mDbConnection};
+            auto bindError = stm.prepare(sessionIdQuery).bindValue(1, static_cast<int>(rowId)).hasError();
+            if (bindError) {
+                SPDLOG_ERROR("Failed to bind query for session update detection. Error: {}",
+                             sessionDatabase->mDbConnection->getErrorMessage());
+                return;
+            }
+            if (stm.execute() != ExecuteResult::Row) {
+                return;
+            }
+            auto const sessionId = stm.getColumn<int>(0);
+            auto index = std::find_if(sessionDatabase->mIndexMapper.cbegin(),
+                                      sessionDatabase->mIndexMapper.cend(),
+                                      [&sessionId](auto const& entry) {
+                                          return entry.second == static_cast<std::size_t>(sessionId.value());
+                                      });
+            if (index != sessionDatabase->mIndexMapper.cend()) {
+                sessionDatabase->sessionUpdated.emit(index->first);
+            }
+        } break;
+        default:
+            // do nothing
+            break;
         }
     }
 }
