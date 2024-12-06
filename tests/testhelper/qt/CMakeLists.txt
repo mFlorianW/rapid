@@ -1,17 +1,25 @@
-add_library(TestHelperQt INTERFACE)
+add_library(TestHelperQt STATIC)
 add_library(Rapid::TestHelperQt ALIAS TestHelperQt)
 
 target_sources(TestHelperQt
-INTERFACE
-    QtTestHelper.hpp
+PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/SettingsMemoryBackend.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SettingsMemoryBackend.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ProcessStatusChecker.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ProcessStatusChecker.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ProcessStopper.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ProcessStopper.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/QtTestHelper.hpp
 )
 
 target_link_libraries(TestHelperQt
-INTERFACE
+PUBLIC
+    Rapid::TestHelper
     Rapid::SystemQt
+    Rapid::CommonQt
 )
 
 target_include_directories(TestHelperQt
-INTERFACE
+PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

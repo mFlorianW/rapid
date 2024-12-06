@@ -11,7 +11,7 @@ target_link_libraries(test_rapid_shell_settings
 PRIVATE
     Catch2::Catch2WithMain
     Rapid::ShellSettings
-    Rapid::TestHelper
+    Rapid::TestHelperQt
 )
 
 catch_discover_tests(test_rapid_shell_settings)

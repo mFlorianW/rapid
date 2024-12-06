@@ -37,6 +37,8 @@ target_include_directories(Applications
 )
 
 target_link_libraries(Applications
+    PRIVATE
+        spdlog::spdlog
     PUBLIC
         Rapid::ShellCommon
         Qt6::QuickWidgets
