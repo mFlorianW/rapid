@@ -4,6 +4,7 @@
 
 #include "ProcessManager.hpp"
 #include <QFileInfo>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::RapidShell
 {
@@ -14,6 +15,7 @@ ProcessManager::~ProcessManager()
 {
     for (auto const& [key, process] : mProcesses) {
         process->terminate();
+        process->disconnect();
         process->waitForFinished(std::chrono::seconds{1}.count());
     }
 }
@@ -28,8 +30,14 @@ void ProcessManager::startProcess(QString const& processBinaryPath)
             Q_EMIT processError(process->program(), error);
         }
     });
+    connect(pro.get(), &QProcess::finished, this, [this](int exitCode) {
+        auto process = qobject_cast<QProcess*>(sender());
+        SPDLOG_INFO("Process {} stopped. With exit code: {}", process->program().toStdString(), exitCode);
+        mProcesses.erase(QFileInfo{process->program()}.fileName());
+    });
     pro->setProgram(processBinaryPath);
     pro->start();
+    SPDLOG_INFO("Process application {} started", pro->program().toStdString());
     mProcesses.insert({QFileInfo{processBinaryPath}.fileName(), std::move(pro)});
 }
 

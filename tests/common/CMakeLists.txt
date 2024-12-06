@@ -34,7 +34,7 @@ if(ENABLE_QT)
         PRIVATE
             Catch2::Catch2WithMain
             Rapid::CommonQt
-            Rapid::TestHelper
+            Rapid::TestHelperQt
     )
     catch_discover_tests(test_GlobalSettingsReader)
 endif()

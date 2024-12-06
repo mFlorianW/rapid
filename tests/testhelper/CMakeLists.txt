@@ -43,17 +43,5 @@ PUBLIC
 )
 
 if(ENABLE_QT)
-    target_sources(TestHelper
-        PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/SettingsMemoryBackend.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/SettingsMemoryBackend.hpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/ProcessStatusChecker.cpp
-            ${CMAKE_CURRENT_SOURCE_DIR}/ProcessStatusChecker.hpp
-
-    )
-    target_link_libraries(TestHelper
-        PRIVATE
-            Rapid::CommonQt
-    )
     add_subdirectory(qt)
 endif()

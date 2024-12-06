@@ -3,10 +3,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "DummyProcessPath.hpp"
+#include <CompareHelper.hpp>
 #include <ProcessManager.hpp>
 #include <ProcessStatusChecker.hpp>
+#include <ProcessStopper.hpp>
 #include <QSignalSpy>
 #include <QTest>
+#include <QtTestHelper.hpp>
+#include <RapidApplication.hpp>
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::RapidShell;
@@ -74,12 +78,28 @@ SCENARIO("The ProcessManager shall check for running processes")
     }
 }
 
-int main(int argc, char* argv[])
+SCENARIO("The process manager shall restart a stopped application")
 {
-    QCoreApplication a(argc, argv);
-
-    QTEST_SET_MAIN_SOURCE_PATH
-    int result = Catch::Session().run(argc, argv);
-
-    return result;
+    GIVEN("An initialzed ProcessManager")
+    {
+        auto processMgr = ProcessManager{};
+        WHEN("A running process is stopped and started again")
+        {
+            processMgr.startProcess(DUMMY_PROCESS_BINARY_PATH);
+            REQUIRE(Rapid::TestHelper::ProcessStopper::stopProcess(DUMMY_PROCESS_BINARY_NAME));
+            REQUIRE(QTest::qWaitFor(
+                [] {
+                    return Rapid::TestHelper::ProcessStatusChecker{}.isProcessRunning(DUMMY_PROCESS_BINARY_NAME) ==
+                           false;
+                },
+                std::chrono::milliseconds{10000}.count()));
+            processMgr.startProcess(DUMMY_PROCESS_BINARY_PATH);
+            THEN("The process shall be restarted again")
+            {
+                REQUIRE(Rapid::TestHelper::ProcessStatusChecker{}.isProcessRunning(DUMMY_PROCESS_BINARY_NAME));
+            }
+        }
+    }
 }
+
+QT_CATCH2_TEST_MAIN()

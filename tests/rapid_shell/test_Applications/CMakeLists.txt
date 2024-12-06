@@ -32,7 +32,7 @@ PRIVATE
     Qt6::Test
     Rapid::ShellApplications
     Rapid::ShellSettings
-    Rapid::TestHelper
+    Rapid::TestHelperQt
 )
 
 catch_discover_tests(test_rapid_shell_application)
