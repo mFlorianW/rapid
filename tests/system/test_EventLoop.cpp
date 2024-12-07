@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "Event.hpp"
 #include "EventLoop.hpp"
+#include <CompareHelper.hpp>
 #include <catch2/catch_all.hpp>
 #include <thread>
 
@@ -173,4 +174,21 @@ SCENARIO("An Eventloop shall be possible to check if a certian event is in the e
             }
         }
     }
+}
+
+TEST_CASE("An Eventloop shall be deliver deferred connections in the correct thread")
+{
+    auto& eventLoop = EventLoop::instance();
+    auto doneSignal = KDBindings::Signal<>{};
+    auto tid = std::this_thread ::get_id();
+    auto callerTid = std::thread::id{};
+    std::ignore = doneSignal.connectDeferred(eventLoop.getConnectionEvaluator(), [&callerTid]() {
+        callerTid = std::this_thread::get_id();
+    });
+    std::thread thread = std::thread{[&doneSignal] {
+        std::this_thread::sleep_for(std::chrono::milliseconds{1});
+        doneSignal.emit();
+    }};
+    REQUIRE_COMPARE_WITH_TIMEOUT(callerTid, tid, std::chrono::milliseconds{10});
+    thread.join();
 }

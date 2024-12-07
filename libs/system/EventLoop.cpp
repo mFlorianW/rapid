@@ -5,6 +5,7 @@
 #include "EventLoop.hpp"
 #include <condition_variable>
 #include <deque>
+#include <kdbindings/connection_evaluator.h>
 #include <memory>
 #include <mutex>
 #include <spdlog/spdlog.h>
@@ -13,6 +14,27 @@
 
 namespace Rapid::System
 {
+class EventQueue;
+
+class ConnectionEvaluator : public KDBindings::ConnectionEvaluator
+{
+public:
+    ConnectionEvaluator(EventQueue& eventQueue)
+        : mEventQueue(eventQueue)
+    {
+    }
+    ~ConnectionEvaluator() override = default;
+    ConnectionEvaluator& operator=(ConnectionEvaluator const&) = delete;
+    ConnectionEvaluator(ConnectionEvaluator const&) = delete;
+    ConnectionEvaluator& operator=(ConnectionEvaluator&&) noexcept = delete;
+    ConnectionEvaluator(ConnectionEvaluator&&) noexcept = delete;
+
+protected:
+    void onInvocationAdded() override;
+
+private:
+    EventQueue& mEventQueue;
+};
 
 namespace
 {
@@ -58,6 +80,7 @@ public:
     void processEvents()
     {
         auto iter = mEventQueue.begin();
+        mConnectionEvaluator->evaluateDeferredConnections();
         while (iter != mEventQueue.end()) {
             auto event = std::move(iter->event);
             auto* receiver = iter->receiver;
@@ -116,6 +139,13 @@ public:
         }
     }
 
+    std::shared_ptr<KDBindings::ConnectionEvaluator> getConnectEvaluator()
+    {
+        return mConnectionEvaluator;
+    }
+
+    KDBindings::Signal<> wakeUp;
+
 private:
     struct EventQueueEntry
     {
@@ -126,11 +156,22 @@ private:
     mutable std::mutex mMutex;
     std::condition_variable mBlocker;
     bool mRunning = false;
+    std::shared_ptr<KDBindings::ConnectionEvaluator> mConnectionEvaluator =
+        std::make_shared<ConnectionEvaluator>(*this);
 };
 
-EventLoop::EventLoop()
-    : mOwningThread{std::this_thread::get_id()}
+void ConnectionEvaluator::onInvocationAdded()
 {
+    mEventQueue.wakeUp.emit();
+}
+
+EventLoop::EventLoop(EventQueue& queue)
+    : mOwningThread{std::this_thread::get_id()}
+    , mEventQueue{queue}
+{
+    std::ignore = queue.wakeUp.connect([this] {
+        eventPosted.emit();
+    });
 }
 
 EventLoop::~EventLoop() = default;
@@ -141,7 +182,9 @@ EventLoop& EventLoop::instance() noexcept
     auto const id = std::this_thread::get_id();
     if (mEventLoops.count(id) == 0) {
         std::lock_guard<std::mutex> guard{mutex};
-        mEventLoops.emplace(id, std::unique_ptr<Rapid::System::EventLoop>(new (std::nothrow) EventLoop()));
+        mEventLoops.emplace(
+            id,
+            std::unique_ptr<Rapid::System::EventLoop>(new (std::nothrow) EventLoop(EventQueue::getInstance(id))));
     }
     return *mEventLoops[id];
 }
@@ -192,6 +235,16 @@ void EventLoop::quit() noexcept
 void EventLoop::clearEvents(EventHandler* eventHandler) noexcept
 {
     EventQueue::getInstance(eventHandler->getThreadId()).clearEvents(eventHandler);
+}
+
+std::shared_ptr<KDBindings::ConnectionEvaluator> EventLoop::getConnectionEvaluator()
+{
+    auto const tid = std::this_thread::get_id();
+    if (mEventLoops.count(tid) == 0) {
+        SPDLOG_ERROR("ConnectionEvaluator request for thread {} without event loop", getThreadIdAsString(tid));
+        return EventLoop::instance().getConnectionEvaluator();
+    }
+    return mEventLoops[tid]->mEventQueue.getConnectEvaluator();
 }
 
 } // namespace Rapid::System
