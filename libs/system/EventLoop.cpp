@@ -5,6 +5,7 @@
 #include "EventLoop.hpp"
 #include <condition_variable>
 #include <deque>
+#include <memory>
 #include <mutex>
 #include <spdlog/spdlog.h>
 #include <sstream>
@@ -15,10 +16,11 @@ namespace Rapid::System
 
 namespace
 {
+
 inline std::string getThreadIdAsString(std::thread::id const& id)
 {
     auto tid = std::stringstream{};
-    tid << id;
+    tid << std::hex << id;
     return tid.str();
 }
 } // namespace
@@ -133,16 +135,25 @@ EventLoop::EventLoop()
 
 EventLoop::~EventLoop() = default;
 
-EventLoop& EventLoop::instance()
+EventLoop& EventLoop::instance() noexcept
 {
-    thread_local EventLoop instance;
-    return instance;
+    static std::mutex mutex;
+    auto const id = std::this_thread::get_id();
+    if (mEventLoops.count(id) == 0) {
+        std::lock_guard<std::mutex> guard{mutex};
+        mEventLoops.emplace(id, std::unique_ptr<Rapid::System::EventLoop>(new (std::nothrow) EventLoop()));
+    }
+    return *mEventLoops[id];
 }
+
+std::unordered_map<std::thread::id, std::unique_ptr<EventLoop>> EventLoop::mEventLoops;
 
 void EventLoop::postEvent(EventHandler* receiver, std::unique_ptr<Event> event)
 {
     EventQueue::getInstance(receiver->getThreadId()).postEvent(receiver, std::move(event), receiver->getThreadId());
-    instance().eventPosted.emit();
+    if (mEventLoops.count(receiver->getThreadId()) > 0) {
+        mEventLoops[receiver->getThreadId()]->eventPosted.emit();
+    }
 }
 
 bool EventLoop::isEventQueued(EventHandler* receiver, Event::Type type) const noexcept

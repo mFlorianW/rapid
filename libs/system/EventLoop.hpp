@@ -7,7 +7,6 @@
 #include "Event.hpp"
 #include "EventHandler.hpp"
 #include <kdbindings/signal.h>
-#include <memory>
 #include <thread>
 
 namespace Rapid::System
@@ -22,7 +21,7 @@ public:
     /**
      * @brief Gives the for the event loop for the calling thread.
      */
-    static EventLoop& instance();
+    static EventLoop& instance() noexcept;
 
     /**
      * Default destructor
@@ -86,18 +85,22 @@ public:
      */
     KDBindings::Signal<> eventPosted;
 
-private:
-    friend class Rapid::System::EventHandler;
-
+protected:
     /**
      * Default consturctor
      */
     EventLoop();
 
+private:
+    friend class Rapid::System::EventHandler;
+    friend std::unique_ptr<Rapid::System::EventLoop>;
+
     /**
      * Clear all events for a specific event handler
      */
     static void clearEvents(EventHandler* eventHandler) noexcept;
+
+    static std::unordered_map<std::thread::id, std::unique_ptr<EventLoop>> mEventLoops;
 
     std::thread::id mOwningThread;
 };
