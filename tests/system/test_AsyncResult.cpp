@@ -168,7 +168,7 @@ SCENARIO("The AsyncResultWithValue shall return the value when the operation is 
             {
                 CHECK(aResult->getResult() == Result::Ok);
                 CHECK(aResult->getResultValue().has_value());
-                CHECK(aResult->getResultValue() == 123);
+                REQUIRE(aResult->getResultValue() == 123);
             }
             thread.join();
         }
@@ -180,7 +180,7 @@ SCENARIO("The AsyncResultWithValue shall return the value when the operation is 
             THEN("The AsyncResultWithValue returns the error code and optional message")
             {
                 CHECK_FALSE(aResult->getResultValue().has_value());
-                CHECK(aResult->getErrorMessage() == std::string_view{"Error occured!"});
+                REQUIRE(aResult->getErrorMessage() == std::string_view{"Error occured!"});
             }
             thread.join();
         }

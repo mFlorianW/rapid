@@ -7,6 +7,7 @@
 #include "SystemTypes.hpp"
 #include <expected>
 #include <kdbindings/signal.h>
+#include <thread>
 
 namespace Rapid::System
 {
@@ -40,14 +41,14 @@ public:
     AsyncResult& operator=(AsyncResult const& other) = delete;
 
     /**
-     * Move constructor
+     * Disable Move constructor
      */
-    AsyncResult(AsyncResult&& ohter) noexcept;
+    AsyncResult(AsyncResult&& ohter) noexcept = delete;
 
     /**
-     * Move assignemnt operator
+     * Disable assignemnt operator
      */
-    AsyncResult& operator=(AsyncResult&& other) noexcept;
+    AsyncResult& operator=(AsyncResult&& other) noexcept = delete;
 
     /**
      * Gives the result. The result is not valid (@Result::NotFinshed) as long as the or the
@@ -66,6 +67,10 @@ public:
     /**
      * Blocks until the async result is there and suspends the current running thread.
      * The function periodically calls the SignalDispatcher for the thread.
+     *
+     * @note
+     * This function should only be called from the threads that owns the @ref AsyncResult.
+     * The owning thread is the thread in which the @ref AsyncResult was created.
      */
     void waitForFinished() noexcept;
 
@@ -73,19 +78,32 @@ public:
      * The done signal is emitted when the async operation is finished.
      * @param The signal contains a pointer to Async instance for directly requesting the
      * result in the slot.
+     *
+     * @note
+     * Use a deferredConnect when the @ref AsyncResult::setResult is called from another thread.
+     * The deffreedConnect makes sure that the slot is called in the thread in which the connect happened.
      */
     KDBindings::Signal<AsyncResult*> done;
 
     /**
-     * Set the result of the AsyncResult and emits the @AsyncResult::finished signal
+     * Set the result of the AsyncResult and emits the @AsyncResult::finished signal.
+     *
+     * @note
+     * The @ref Async::setResult can be called from any thread.
+     * Attention when calling @ref AsyncResult::setResult from a different thread use a deferredConnect for the done signal.
+     *
      * @result The result state of the AsyncResult
      * @errorMessage Sets an optional error message
      */
     void setResult(Result result, std::string const& errorMessage = {}) noexcept;
 
+protected:
+    std::mutex mutable mMutex;
+
 private:
     Result mResult{Result::NotFinished};
-    std::string mErrorMsg{};
+    std::string mErrorMsg;
+    std::thread::id mThreadId = std::this_thread::get_id();
 };
 
 /**
@@ -105,6 +123,7 @@ public:
         if (getResult() != Result::Ok) {
             return std::nullopt;
         }
+        std::lock_guard<std::mutex> guard{mMutex};
         return mValue;
     }
 
@@ -115,6 +134,7 @@ public:
      */
     void setResultValue(T const& value)
     {
+        std::lock_guard<std::mutex> guard{mMutex};
         mValue = value;
     }
 
