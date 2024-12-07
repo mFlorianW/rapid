@@ -11,12 +11,14 @@
 
 namespace Rapid::System
 {
+class EventQueue;
 
 /**
  * Provides functions to post, process events and can start an event loop.
  */
 class EventLoop final
 {
+
 public:
     /**
      * @brief Gives the for the event loop for the calling thread.
@@ -46,7 +48,7 @@ public:
     /**
      * Disabled copy assignment operator
      */
-    EventLoop& operator=(EventLoop&&) noexcept = default;
+    EventLoop& operator=(EventLoop&&) noexcept = delete;
 
     /**
      * Post an event for the receiver
@@ -76,6 +78,16 @@ public:
     void quit() noexcept;
 
     /**
+     * @brief Gives the ConnectionEvaluator for the calling thread.
+     *
+     * @details With the help of the ConnectionEvaluator the slots are executed in the correct thread from signals that are emitted in a different thread.
+     *          The ConnectionEvaluator must be used when a connection to a signal is done with "connectDeferred".
+     *          The "connectDeferred" defers the slot execution until the @ref EventLoop of the slot is executed.
+     *          For that reason the thread of the slot must have an @ref EventLoop and @ref EventLoop::ProcessEvents must be called.
+     */
+    static std::shared_ptr<KDBindings::ConnectionEvaluator> getConnectionEvaluator();
+
+    /**
      * @brief This signal is emitted when for the event loop an event was posted
      *
      * @details The main purpose for this signal is integration with other event loops
@@ -89,7 +101,7 @@ protected:
     /**
      * Default consturctor
      */
-    EventLoop();
+    EventLoop(EventQueue& queue);
 
 private:
     friend class Rapid::System::EventHandler;
@@ -103,6 +115,7 @@ private:
     static std::unordered_map<std::thread::id, std::unique_ptr<EventLoop>> mEventLoops;
 
     std::thread::id mOwningThread;
+    EventQueue& mEventQueue;
 };
 
 } // namespace Rapid::System
