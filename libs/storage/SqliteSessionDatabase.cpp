@@ -84,25 +84,33 @@ std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common:
         auto sessionCtx = mStorageCache[ctx];
         auto const updateResult = sessionCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
         sessionCtx->mResult->setResult(updateResult);
-        if (updateResult == System::Result::Ok) {
-            auto const sessionId = readIndexOfSessionId(sessionCtx->mSessionId).value_or(0);
-            if (sessionCtx->mIsUpdateContext) {
-                sessionUpdated.emit(sessionId);
-            }
+        if (updateResult == System::Result::Error) {
+            SPDLOG_ERROR("Failed to store session with index {}. Error: {}",
+                         sessionCtx->mSessionId,
+                         mDbConnection->getErrorMessage());
         };
+
         if (sessionCtx->mStorageThread.joinable()) {
             sessionCtx->mStorageThread.join();
         }
         mStorageCache.erase(ctx);
+        SPDLOG_INFO("Finished to store session {} from {} at {}",
+                    sessionCtx->mStorageObject.getTrack().getTrackName(),
+                    sessionCtx->mStorageObject.getSessionDate().asString(),
+                    sessionCtx->mStorageObject.getSessionTime().asString());
     };
 
+    std::ignore = storageContext->done.connect(storageOperationHandler);
     if (sessionId.has_value()) {
         storageContext->mIsUpdateContext = true;
         storageContext->mStorageThread = std::thread{&SqliteSessionDatabase::updateSession, this, storageContext.get()};
     } else {
         storageContext->mStorageThread = std::thread{&SqliteSessionDatabase::saveSession, this, storageContext.get()};
     }
-    std::ignore = storageContext->done.connect(storageOperationHandler);
+    SPDLOG_INFO("Store session {} from {} at {}",
+                session.getTrack().getTrackName(),
+                session.getSessionDate().asString(),
+                session.getSessionTime().asString());
     return storageContext->mResult;
 }
 
@@ -135,7 +143,7 @@ void SqliteSessionDatabase::deleteSession(std::size_t index)
 void SqliteSessionDatabase::updateSession(Private::SessionStorageContext* ctx)
 {
     if (ctx == nullptr or mStorageCache.count(ctx) == 0) {
-        spdlog::error("Update session called with an invalid context.");
+        SPDLOG_ERROR("Update session called with an invalid context.");
         return;
     }
 
@@ -166,7 +174,6 @@ void SqliteSessionDatabase::updateSession(Private::SessionStorageContext* ctx)
         ctx->mStoragePromise.set_value(false);
         return;
     }
-
     ctx->mStoragePromise.set_value(true);
 }
 
