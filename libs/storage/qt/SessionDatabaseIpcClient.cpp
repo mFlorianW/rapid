@@ -114,6 +114,8 @@ std::shared_ptr<System::AsyncResult> SessionDatabaseIpcClient::storeSession(Comm
         auto call = QDBusPendingReply<bool>{*self};
         if (not call.isError() && call.argumentAt<0>()) {
             resultStatus = System::Result::Ok;
+        } else {
+            SPDLOG_ERROR("Store operation failed. Error: {}", call.error().message().toStdString());
         }
         result->setResult(resultStatus);
         mPendingCalls.erase(self);
