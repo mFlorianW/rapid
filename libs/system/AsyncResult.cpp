@@ -41,9 +41,11 @@ void AsyncResult::waitForFinished() noexcept
 void AsyncResult::setResult(Result result, std::string const& errorMessage) noexcept
 {
     try {
-        std::lock_guard<std::mutex> guard{mMutex};
-        mResult = result;
-        mErrorMsg = errorMessage;
+        {
+            std::lock_guard<std::mutex> guard{mMutex};
+            mResult = result;
+            mErrorMsg = errorMessage;
+        }
         done.emit(this);
     } catch (std::exception const& e) {
         SPDLOG_ERROR("Faild to emit done signal. Error. {}", e.what());
