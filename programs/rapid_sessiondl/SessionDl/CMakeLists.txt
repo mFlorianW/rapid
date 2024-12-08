@@ -25,11 +25,11 @@ target_link_libraries(SessionDl
         Qt6::Quick
         Qt6::Network
         Qt6::Widgets
+        spdlog::spdlog
         Rapid::RestQt
         Rapid::SystemQt
         Rapid::Workflow
-        Rapid::Storage
-        Rapid::LibraryPath
+        Rapid::StorageQt
     PRIVATE
         Rapid::CommonQt
         Rapid::SessionDlCommon

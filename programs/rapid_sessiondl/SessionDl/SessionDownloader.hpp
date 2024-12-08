@@ -5,12 +5,10 @@
 #pragma once
 
 #include "MainWindowModel.hpp"
-#include <LibraryPath.hpp>
+#include <ISessionDatabase.hpp>
 #include <QHostAddress>
 #include <QQmlApplicationEngine>
 #include <RestCall.hpp>
-#include <SqliteSessionDatabase.hpp>
-#include <memory>
 
 namespace Rapid::SessionDl
 {
@@ -29,7 +27,7 @@ private:
     QQmlApplicationEngine mEngine{};
     Rest::QRestClient mClient{};
     Workflow::RestSessionDownloader mSessionDownloader{mClient};
-    std::unique_ptr<Storage::SqliteSessionDatabase> mDatabase;
+    std::unique_ptr<Storage::ISessionDatabase> mDatabase;
     std::unique_ptr<MainWindowModel> mMainWindowModel;
 };
 

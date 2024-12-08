@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <QQmlContext>
 #include <QQuickWindow>
+#include <SessionDatabaseIpcClient.hpp>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::SessionDl
 {
@@ -16,14 +18,8 @@ SessionDownloader::SessionDownloader(QHostAddress const& address, quint16 port) 
 {
     auto settingsBackend = Common::QSettingsBackend{};
     auto const settings = Common::GlobalSettingsReader{&settingsBackend};
-    auto const dbFilePath = settings.getDbFilePath();
-    if (dbFilePath.isEmpty()) {
-        qCCritical(sessiondl) << "No database found please! Start session download from LappyShell.";
-    } else {
-        qCInfo(sessiondl) << "Sessions will be stored in database:" << dbFilePath;
-    }
 
-    mDatabase = std::make_unique<Storage::SqliteSessionDatabase>(dbFilePath.toStdString());
+    mDatabase = std::make_unique<Storage::Qt::SessionDatabaseIpcClient>();
     mMainWindowModel = std::make_unique<MainWindowModel>(mSessionDownloader, *mDatabase);
 
     auto qmlContext = mEngine.rootContext();
