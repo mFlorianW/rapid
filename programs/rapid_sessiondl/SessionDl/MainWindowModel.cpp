@@ -37,7 +37,7 @@ MainWindowModel::MainWindowModel(Workflow::ISessionDownloader& downloader, Stora
                 auto session = mSessionDownloader.getSession(index);
                 if (session) {
                     auto asyncResult = mSessionDatabase.storeSession(session.value());
-                    auto resultHandler = [this, &index](System::AsyncResult* result) {
+                    auto resultHandler = [this, index](System::AsyncResult* result) {
                         auto logString = result->getResult() == System::Result::Ok
                                              ? QString{"Session stored %1 of %2 in database"}
                                                    .arg(QString::number(index + 1))
@@ -48,6 +48,9 @@ MainWindowModel::MainWindowModel(Workflow::ISessionDownloader& downloader, Stora
                                                    .arg(QString::fromStdString(std::string{result->getErrorMessage()}));
                         appendToLog(logString);
                         mStorageCalls.erase(result);
+                        if (mStorageCalls.empty()) {
+                            appendToLog("All sessions downloaded!");
+                        }
                     };
                     std::ignore = asyncResult->done.connect(resultHandler);
                     mStorageCalls.insert({asyncResult.get(), asyncResult});

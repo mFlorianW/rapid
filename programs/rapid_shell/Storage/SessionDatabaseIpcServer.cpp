@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SessionDatabaseIpcServer.hpp"
+#include <EventLoop.hpp>
 #include <ISessionDatabase.hpp>
 #include <JsonDeserializer.hpp>
 #include <JsonSerializer.hpp>
@@ -25,15 +26,16 @@ struct SessionDatabaseIpcServerPrivate
             SPDLOG_CRITICAL("Failed create temp folder for data exchange.");
         }
 
-        std::ignore = mDatabase.sessionAdded.connect([this](std::size_t index) {
+        auto eval = System::EventLoop::instance().getConnectionEvaluator();
+        std::ignore = mDatabase.sessionAdded.connectDeferred(eval, [this](std::size_t index) {
             Q_EMIT q->SessionAdded(static_cast<quint32>(index));
         });
 
-        std::ignore = mDatabase.sessionDeleted.connect([this](std::size_t index) {
+        std::ignore = mDatabase.sessionDeleted.connectDeferred(eval, [this](std::size_t index) {
             Q_EMIT q->SessionDeleted(static_cast<quint32>(index));
         });
 
-        std::ignore = mDatabase.sessionUpdated.connect([this](std::size_t index) {
+        std::ignore = mDatabase.sessionUpdated.connectDeferred(eval, [this](std::size_t index) {
             Q_EMIT q->SessionUpdated(static_cast<quint32>(index));
         });
     }
