@@ -48,6 +48,9 @@ MainWindowModel::MainWindowModel(Workflow::ISessionDownloader& downloader, Stora
                                                    .arg(QString::fromStdString(std::string{result->getErrorMessage()}));
                         appendToLog(logString);
                         mStorageCalls.erase(result);
+                        if (mStorageCalls.empty()) {
+                            appendToLog("All sessions downloaded!");
+                        }
                     };
                     std::ignore = asyncResult->done.connect(resultHandler);
                     mStorageCalls.insert({asyncResult.get(), asyncResult});
