@@ -88,14 +88,15 @@ public:
     static std::shared_ptr<KDBindings::ConnectionEvaluator> getConnectionEvaluator();
 
     /**
-     * @brief This signal is emitted when for the event loop an event was posted
+     * @brief This signal is emitted when for the event loop an something to do.
      *
      * @details The main purpose for this signal is integration with other event loops
      *          e.g. Qt. Here is the signal used to wake up Qt event loop that it process
      *          the events from the rapid event loop.
      *          Usually there no need to connect to this signal.
+     *          The signal is only emitted when the event loop is not started with @ref EventLoop::exec.
      */
-    KDBindings::Signal<> eventPosted;
+    KDBindings::Signal<> wakeUp;
 
 protected:
     /**

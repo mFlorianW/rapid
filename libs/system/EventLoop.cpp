@@ -144,6 +144,12 @@ public:
         return mConnectionEvaluator;
     }
 
+    bool isRunning()
+    {
+        std::lock_guard<std::mutex> guard{mMutex};
+        return mRunning;
+    }
+
     KDBindings::Signal<> wakeUp;
 
 private:
@@ -170,7 +176,7 @@ EventLoop::EventLoop(EventQueue& queue)
     , mEventQueue{queue}
 {
     std::ignore = queue.wakeUp.connect([this] {
-        eventPosted.emit();
+        wakeUp.emit();
     });
 }
 
@@ -193,9 +199,10 @@ std::unordered_map<std::thread::id, std::unique_ptr<EventLoop>> EventLoop::mEven
 
 void EventLoop::postEvent(EventHandler* receiver, std::unique_ptr<Event> event)
 {
-    EventQueue::getInstance(receiver->getThreadId()).postEvent(receiver, std::move(event), receiver->getThreadId());
-    if (mEventLoops.count(receiver->getThreadId()) > 0) {
-        mEventLoops[receiver->getThreadId()]->eventPosted.emit();
+    auto& queue = EventQueue::getInstance(receiver->getThreadId());
+    queue.postEvent(receiver, std::move(event), receiver->getThreadId());
+    if (mEventLoops.count(receiver->getThreadId()) > 0 and not queue.isRunning()) {
+        mEventLoops[receiver->getThreadId()]->wakeUp.emit();
     }
 }
 
