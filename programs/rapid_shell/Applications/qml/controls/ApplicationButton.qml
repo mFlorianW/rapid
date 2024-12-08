@@ -6,7 +6,7 @@ import QtQuick
 
 Item {
     id: root
-    implicitHeight: applicationIconContainer.implicitHeight + applicationNameContainer.implicitHeight
+    implicitHeight: 100
     implicitWidth: 100
 
     property alias iconSource: applicationIcon.source
