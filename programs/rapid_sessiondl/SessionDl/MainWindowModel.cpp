@@ -37,7 +37,7 @@ MainWindowModel::MainWindowModel(Workflow::ISessionDownloader& downloader, Stora
                 auto session = mSessionDownloader.getSession(index);
                 if (session) {
                     auto asyncResult = mSessionDatabase.storeSession(session.value());
-                    auto resultHandler = [this, &index](System::AsyncResult* result) {
+                    auto resultHandler = [this, index](System::AsyncResult* result) {
                         auto logString = result->getResult() == System::Result::Ok
                                              ? QString{"Session stored %1 of %2 in database"}
                                                    .arg(QString::number(index + 1))
