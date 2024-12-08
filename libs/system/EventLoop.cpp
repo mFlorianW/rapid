@@ -150,6 +150,11 @@ public:
         return mRunning;
     }
 
+    void unblock()
+    {
+        mBlocker.notify_all();
+    }
+
     KDBindings::Signal<> wakeUp;
 
 private:
@@ -168,7 +173,11 @@ private:
 
 void ConnectionEvaluator::onInvocationAdded()
 {
-    mEventQueue.wakeUp.emit();
+    if (mEventQueue.isRunning()) {
+        mEventQueue.unblock();
+    } else {
+        mEventQueue.wakeUp.emit();
+    }
 }
 
 EventLoop::EventLoop(EventQueue& queue)
