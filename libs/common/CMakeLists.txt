@@ -24,6 +24,8 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/GpsPositionData.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/VelocityData.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/VelocityData.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetaData.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetaData.hpp
 )
 
 target_include_directories(CommonObject
