@@ -14,9 +14,14 @@ namespace Rapid::Storage
 {
 
 /**
- * Alias for the @ref ISessionDatabase::getSessionCountAsync result.
+ * Alias for the @ref ISessionDatabase::getSessionByIndexAsync result.
  */
 using GetSessionResult = System::AsyncResultWithValue<Common::SessionData>;
+
+/**
+ * Alias for the @ref ISessionDatabase::getSessionMetaDataByIndexAsync result.
+ */
+using GetSessionMetaDataResult = System::AsyncResultWithValue<Common::SessionMetaData>;
 
 /**
  * The SessionDatabase provides an index based access to the stored session data.
@@ -70,6 +75,14 @@ public:
      * @return The session by the given index or an error.
      */
     virtual std::shared_ptr<GetSessionResult> getSessionByIndexAsync(std::size_t index) noexcept = 0;
+
+    /**
+     * Gives the session meta data by the index in async manner, so the call doesn't block the calling thread.
+     * If index doesn't exists a the result is marked as error.
+     * @param index The index of the request session.
+     * @return The session by the given index or an error.
+     */
+    virtual std::shared_ptr<GetSessionMetaDataResult> getSessionMetaDataByIndexAsync(std::size_t index) noexcept = 0;
 
     /**
      * Stores the given session.

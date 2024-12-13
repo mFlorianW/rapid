@@ -84,6 +84,11 @@ public:
     std::shared_ptr<GetSessionResult> getSessionByIndexAsync(std::size_t index) noexcept override;
 
     /**
+     * @copydoc @ref ISessionDatabase::getSessionMetaDataByIndexAsync
+     */
+    std::shared_ptr<GetSessionMetaDataResult> getSessionMetaDataByIndexAsync(std::size_t index) noexcept override;
+
+    /**
      * @copydoc @ref ISessionDatabase::storeSession
      */
     std::shared_ptr<System::AsyncResult> storeSession(Common::SessionData const& session) override;

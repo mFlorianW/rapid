@@ -24,6 +24,7 @@ public:
     MAKE_MOCK(GetSessionCount, auto()->uint);
     MAKE_MOCK(DeleteSessionByIndex, auto(uint)->void);
     MAKE_MOCK(GetSessionByIndex, auto(uint)->QString);
+    MAKE_MOCK(GetSessionMetaDataByIndex, auto(uint)->QString);
     MAKE_MOCK(StoreSession, auto(QString)->bool);
 
 private:

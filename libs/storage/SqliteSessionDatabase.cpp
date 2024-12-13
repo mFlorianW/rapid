@@ -70,6 +70,30 @@ std::shared_ptr<GetSessionResult> SqliteSessionDatabase::getSessionByIndexAsync(
     return result;
 }
 
+std::shared_ptr<GetSessionMetaDataResult> SqliteSessionDatabase::getSessionMetaDataByIndexAsync(
+    std::size_t index) noexcept
+{
+    std::lock_guard<std::mutex> const guard{mMutex};
+    auto result = std::make_shared<GetSessionMetaDataResult>();
+    auto context = std::make_shared<Private::SessionStorageContextWithValue<Common::SessionMetaData>>(result);
+    mStorageCache.emplace(context.get(), context);
+    std::ignore = context->done.connect([this](Private::StorageContextBase* ctx) {
+        auto sessionCtx = StorageContextBase::getStorageAs<SessionStorageContextWithValue<Common::SessionMetaData>>(
+            mStorageCache[ctx]);
+        auto const result = sessionCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
+        if (result == System::Result::Ok) {
+            auto const getResult = sessionCtx->getResultAs<GetSessionMetaDataResult>();
+            getResult->setResultValue(sessionCtx->value);
+        }
+        sessionCtx->mResult->setResult(result);
+        mStorageCache.erase(ctx);
+    });
+    context->mStorageThread = std::thread{[this, context] {
+        readSessionMetaData(context);
+    }};
+    return result;
+}
+
 std::shared_ptr<System::AsyncResult> SqliteSessionDatabase::storeSession(Common::SessionData const& session)
 {
     std::lock_guard<std::mutex> const guard{mMutex};
@@ -233,6 +257,18 @@ void SqliteSessionDatabase::readSession(
     auto success = false;
     if (session.has_value()) {
         ctx->value = session.value();
+        success = true;
+    }
+    ctx->mStoragePromise.set_value(success);
+}
+
+void SqliteSessionDatabase::readSessionMetaData(
+    std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionMetaData>> ctx) const
+{
+    auto maybeSessionMetaData = readSessionMetaData(ctx->mSessionId);
+    auto success = false;
+    if (maybeSessionMetaData.has_value()) {
+        ctx->value = maybeSessionMetaData.value();
         success = true;
     }
     ctx->mStoragePromise.set_value(success);
@@ -660,6 +696,27 @@ void SqliteSessionDatabase::updateIndexMapper()
 
 std::optional<Common::SessionData> SqliteSessionDatabase::readSession(std::size_t index) const
 {
+    auto const sessionIndex = mIndexMapper.find(index);
+    auto maybeSessionMetaData = readSessionMetaData(index);
+    if (not maybeSessionMetaData.has_value()) {
+        return std::nullopt;
+    }
+
+    auto laps = readLapsOfSession(sessionIndex->second);
+    if (!laps.has_value()) {
+        return std::nullopt;
+    }
+
+    auto sessionMetaData = maybeSessionMetaData.value();
+    auto session = Common::SessionData{sessionMetaData.getTrack(),
+                                       sessionMetaData.getSessionDate(),
+                                       sessionMetaData.getSessionTime()};
+    session.addLaps(laps.value_or(std::vector<Common::LapData>{}));
+    return session;
+}
+
+std::optional<Common::SessionMetaData> SqliteSessionDatabase::readSessionMetaData(std::size_t index) const
+{
     // clang-format off
     constexpr auto sessionQuery = "SELECT "
                                     "Session.Date, Session.Time, Session.TrackId "
@@ -687,16 +744,9 @@ std::optional<Common::SessionData> SqliteSessionDatabase::readSession(std::size_
         return std::nullopt;
     }
 
-    auto laps = readLapsOfSession(sessionIndex->second);
-    if (!laps.has_value()) {
-        return std::nullopt;
-    }
-
-    auto session = Common::SessionData{trackData.value_or(Common::TrackData{}),
-                                       Common::Date{sessionStm.getColumn<std::string>(0).value_or("")},
-                                       Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")}};
-    session.addLaps(laps.value_or(std::vector<Common::LapData>{}));
-    return session;
+    return Common::SessionMetaData{trackData.value_or(Common::TrackData{}),
+                                   Common::Date{sessionStm.getColumn<std::string>(0).value_or("")},
+                                   Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")}};
 }
 
 } // namespace Rapid::Storage

@@ -206,4 +206,48 @@ SessionData getTestSession4()
     return createSession4();
 }
 
+Common::SessionMetaData getTestSessionMetaData()
+{
+    Date sessionDate;
+    sessionDate.setYear(1970);
+    sessionDate.setMonth(1);
+    sessionDate.setDay(1);
+    Timestamp sessionTime;
+    sessionTime.setHour(13);
+    return SessionMetaData{Tracks::getOscherslebenTrack(), sessionDate, sessionTime};
+}
+
+char const* getTestSessionMetaAsJson()
+{
+    // clang-format off
+    static constexpr const char* TestSessionAsJson = {
+        "{"
+            "\"date\":\"01.01.1970\","
+            "\"time\":\"13:00:00.000\","
+            "\"track\":{"
+                "\"name\":\"Oschersleben\","
+                "\"startline\":{"
+                    "\"latitude\":\"52.025833\","
+                    "\"longitude\":\"11.279166\""
+                "},"
+                "\"finishline\":{"
+                    "\"latitude\":\"52.025833\","
+                    "\"longitude\":\"11.279166\""
+                "},"
+                "\"sectors\":["
+                    "{"
+                        "\"latitude\":\"52.025833\","
+                        "\"longitude\":\"11.279166\""
+                    "},"
+                    "{"
+                        "\"latitude\":\"52.025833\","
+                        "\"longitude\":\"11.279166\""
+                    "}"
+                "]"
+            "}"
+        "}"
+    };
+    return TestSessionAsJson;
+}
+
 } // namespace Rapid::TestHelper::Sessions

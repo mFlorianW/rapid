@@ -42,6 +42,8 @@ struct SessionDatabaseIpcServerPrivate
 
     QDBusConnection mConnection = QDBusConnection::sessionBus();
     std::unordered_map<System::AsyncResult*, std::shared_ptr<Rapid::Storage::GetSessionResult>> mGetSessionRequests;
+    std::unordered_map<System::AsyncResult*, std::shared_ptr<Rapid::Storage::GetSessionMetaDataResult>>
+        mGetSessionMetaDataRequests;
     std::unordered_map<System::AsyncResult*, std::shared_ptr<System::AsyncResult>> mStoreSessionRequests;
     Rapid::Storage::ISessionDatabase& mDatabase;
     QString mTempFolder;
@@ -85,6 +87,21 @@ QString SessionDatabaseIpcServer::GetSessionByIndex(quint32 index, QDBusMessage 
     return {};
 }
 
+QString SessionDatabaseIpcServer::GetSessionMetaDataByIndex(quint32 index, QDBusMessage const& message) noexcept
+{
+    message.setDelayedReply(true);
+    auto result = mD->mDatabase.getSessionMetaDataByIndexAsync(index);
+    mD->mGetSessionMetaDataRequests.insert({result.get(), result});
+    if (result->getResult() != System::Result::NotFinished) {
+        handleGetSessionMetaDataByIndex(result.get(), message);
+    } else {
+        std::ignore = result->done.connect([this, message](System::AsyncResult* result) {
+            handleGetSessionMetaDataByIndex(result, message);
+        });
+    }
+    return {};
+}
+
 void SessionDatabaseIpcServer::handleGetSessionByIndex(System::AsyncResult* result, QDBusMessage const& message)
 {
     auto reply = QDBusMessage{};
@@ -96,10 +113,8 @@ void SessionDatabaseIpcServer::handleGetSessionByIndex(System::AsyncResult* resu
                                       .append("%1_%2.session")
                                       .arg(QString::fromStdString(session->getSessionDate().asString()),
                                            QString::fromStdString(session->getSessionTime().asString()));
-            auto file = QFile{filePath};
-            if (file.open(QFile::WriteOnly)) {
-                auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session.value());
-                file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
+            auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session.value());
+            if (writeJsonFile(filePath, rawJson)) {
                 reply = message.createReply();
                 reply << filePath;
             } else {
@@ -108,6 +123,32 @@ void SessionDatabaseIpcServer::handleGetSessionByIndex(System::AsyncResult* resu
         }
     } else {
         reply = message.createErrorReply(QDBusError::InvalidArgs, "No session found for passed index.");
+    }
+    mD->mGetSessionRequests.erase(result);
+    mD->mConnection.send(reply);
+}
+
+void SessionDatabaseIpcServer::handleGetSessionMetaDataByIndex(System::AsyncResult* result, QDBusMessage const& msg)
+{
+    auto reply = QDBusMessage{};
+    if (result->getResult() == System::Result::Ok) {
+        auto const valueResult = mD->mGetSessionMetaDataRequests.at(result);
+        auto const sessionMetaData = valueResult->getResultValue();
+        if (sessionMetaData.has_value()) {
+            auto const filePath = mD->mTempFolder.append(QDir::separator())
+                                      .append("%1_%2.sessionMetaData")
+                                      .arg(QString::fromStdString(sessionMetaData->getSessionDate().asString()),
+                                           QString::fromStdString(sessionMetaData->getSessionTime().asString()));
+            auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(sessionMetaData.value());
+            if (writeJsonFile(filePath, rawJson)) {
+                reply = msg.createReply();
+                reply << filePath;
+            } else {
+                reply = msg.createErrorReply(QDBusError::Failed, "Failed to write session meta data informations");
+            }
+        }
+    } else {
+        reply = msg.createErrorReply(QDBusError::InvalidArgs, "No session found for passed index.");
     }
     mD->mGetSessionRequests.erase(result);
     mD->mConnection.send(reply);
@@ -167,6 +208,19 @@ void SessionDatabaseIpcServer::handleSessionStore(System::AsyncResult* result, Q
         reply = message.createErrorReply(QDBusError::Failed, "Failed to store session. Internal database error.");
     }
     mD->mConnection.send(reply);
+}
+
+bool SessionDatabaseIpcServer::writeJsonFile(QString const& path, std::string const& rawJson)
+{
+    auto file = QFile{path};
+    if (not file.open(QFile::WriteOnly)) {
+        return false;
+    }
+    auto size = file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
+    if (size < static_cast<qint64>(rawJson.size())) {
+        return false;
+    }
+    return true;
 }
 
 } // namespace Rapid::RapidShell::Storage

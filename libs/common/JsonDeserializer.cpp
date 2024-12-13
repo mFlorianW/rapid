@@ -6,7 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
-namespace Rapid::Common::JsonDeserializer::Session
+namespace Rapid::Common::JsonDeserializer
 {
 
 namespace
@@ -117,18 +117,27 @@ std::vector<LapData> parseLaps(nlohmann::ordered_json const& jsonLaps)
     return laps;
 }
 
+Common::SessionMetaData deserializeSessionMetaData(nlohmann::ordered_json const& jsonSession)
+{
+    auto sessionDate = Date(jsonSession["date"]);
+    auto sessionTime = Timestamp(jsonSession["time"]);
+    auto track = parseTrack(jsonSession["track"]);
+    return Common::SessionMetaData{track.value_or(TrackData{}), sessionDate, sessionTime};
+}
+
 } // namespace
+
+namespace Session
+{
 
 std::optional<SessionData> deserialize(std::string const& rawData)
 {
     auto json = nlohmann::ordered_json{};
     try {
         auto jsonSession = json.parse(rawData);
-        auto sessionDate = Date(jsonSession["date"]);
-        auto sessionTime = Timestamp(jsonSession["time"]);
-        auto track = parseTrack(jsonSession["track"]);
+        auto metaData = deserializeSessionMetaData(jsonSession);
         auto laps = parseLaps(jsonSession["laps"]);
-        auto session = SessionData{track.value_or(TrackData{}), sessionDate, sessionTime};
+        auto session = SessionData{metaData.getTrack(), metaData.getSessionDate(), metaData.getSessionTime()};
         session.addLaps(laps);
         return session;
     } catch (nlohmann::json::exception const& e) {
@@ -137,4 +146,22 @@ std::optional<SessionData> deserialize(std::string const& rawData)
     }
 }
 
-} // namespace Rapid::Common::JsonDeserializer::Session
+} // namespace Session
+
+namespace SessionMetaData
+{
+std::optional<Common::SessionMetaData> deserialize(std::string const& rawData)
+{
+    auto json = nlohmann::ordered_json{};
+    try {
+        auto jsonSessionMetaData = json.parse(rawData);
+        return deserializeSessionMetaData(jsonSessionMetaData);
+    } catch (nlohmann::json::exception const& e) {
+        SPDLOG_CRITICAL("Failed to deserialize session. {}", e.what());
+        return std::nullopt;
+    }
+}
+
+} // namespace SessionMetaData
+
+} // namespace Rapid::Common::JsonDeserializer

@@ -39,3 +39,15 @@ TEST_CASE("The JsonDeserializer shall deserialize a real world json string into 
     REQUIRE(result.has_value());
     // NOLINTEND(bugprone-unchecked-optional-access)
 }
+
+TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a SessionMetaData")
+{
+    auto expectedSession = Sessions::getTestSessionMetaData();
+    auto result = JsonDeserializer::SessionMetaData::deserialize(Sessions::getTestSessionMetaAsJson());
+    REQUIRE(result.has_value());
+    // NOLINTBEGIN(bugprone-unchecked-optional-access)
+    CHECK(result.value().getSessionDate() == expectedSession.getSessionDate());
+    CHECK(result.value().getSessionTime() == expectedSession.getSessionTime());
+    REQUIRE(result.value().getTrack() == expectedSession.getTrack());
+    // NOLINTEND(bugprone-unchecked-optional-access)
+}

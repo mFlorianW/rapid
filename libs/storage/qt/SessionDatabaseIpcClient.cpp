@@ -9,8 +9,6 @@
 #include <spdlog/spdlog.h>
 
 using namespace Rapid::Common;
-using namespace Rapid::Common::JsonDeserializer::Session;
-using namespace Rapid::Common::JsonSerializer::Session;
 
 namespace Rapid::Storage::Qt
 {
@@ -72,9 +70,38 @@ std::shared_ptr<GetSessionResult> SessionDatabaseIpcClient::getSessionByIndexAsy
             auto resultStatus = Rapid::System::Result::Error;
             if (sessionFile.exists() && sessionFile.open(QFile::ReadOnly)) {
                 auto content = sessionFile.readAll().toStdString();
-                auto session = deserialize(content);
+                auto session = JsonDeserializer::Session::deserialize(content);
                 if (session.has_value()) {
                     result->setResultValue(session.value());
+                    resultStatus = System::Result::Ok;
+                }
+            } else {
+                SPDLOG_ERROR("Failed to open/read session file {}", sessionPath.toStdString());
+            }
+            result->setResult(resultStatus);
+            mPendingCalls.erase(self);
+        }
+    });
+    mPendingCalls.insert({call.get(), call});
+    return result;
+}
+
+std::shared_ptr<GetSessionMetaDataResult> SessionDatabaseIpcClient::getSessionMetaDataByIndexAsync(
+    std::size_t index) noexcept
+{
+    auto call = std::make_shared<QDBusPendingCallWatcher>(mInterface->GetSessionMetaDataByIndex(index));
+    auto result = std::make_shared<GetSessionMetaDataResult>();
+    connect(call.get(), &QDBusPendingCallWatcher::finished, this, [this, result](QDBusPendingCallWatcher* self) {
+        QDBusPendingReply<QString> call = *self;
+        if (not call.isError()) {
+            auto sessionPath = QString{call.argumentAt<0>()};
+            auto sessionFile = QFile(sessionPath);
+            auto resultStatus = Rapid::System::Result::Error;
+            if (sessionFile.exists() && sessionFile.open(QFile::ReadOnly)) {
+                auto content = sessionFile.readAll().toStdString();
+                auto sessionMetaData = JsonDeserializer::SessionMetaData::deserialize(content);
+                if (sessionMetaData.has_value()) {
+                    result->setResultValue(sessionMetaData.value());
                     resultStatus = System::Result::Ok;
                 }
             } else {
@@ -106,7 +133,7 @@ std::shared_ptr<System::AsyncResult> SessionDatabaseIpcClient::storeSession(Comm
         result->setResult(System::Result::Error);
         return result;
     }
-    auto content = serialize(session);
+    auto content = JsonSerializer::Session::serialize(session);
     sessionFile.write(content.c_str(), static_cast<qint64>(content.size()));
     auto call = std::make_shared<QDBusPendingCallWatcher>(mInterface->StoreSession(filePath));
     connect(call.get(), &QDBusPendingCallWatcher::finished, this, [this, result](QDBusPendingCallWatcher* self) {

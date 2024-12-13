@@ -75,6 +75,18 @@ public:
      */
     TrackData const& getTrack() const noexcept;
 
+    /**
+     * Default compare operator
+     * @param rhs The SessionMetaData to compare with.
+     */
+    bool operator==(SessionMetaData const& rhs) const noexcept = default;
+
+    /**
+     * Default compare operator
+     * @param rhs The SessionMetaData to compare with.
+     */
+    bool operator!=(SessionMetaData const& rhs) const noexcept = default;
+
 private:
     SharedDataPointer<SharedSessionMetaData> mData;
 };

@@ -11,6 +11,12 @@ namespace Rapid::Common::JsonSerializer::Session
 {
 
 /**
+ * Serialize the passed session meta data into a JSON string.
+ * return string with JSON content.
+ */
+std::string serialize(SessionMetaData const& sessionMetaData);
+
+/**
  * Serialize the passed session into a JSON string.
  * return string with JSON content.
  */

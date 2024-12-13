@@ -46,12 +46,15 @@ Q_SIGNALS:
 public Q_SLOTS:
     quint32 GetSessionCount() noexcept;
     QString GetSessionByIndex(quint32 index, QDBusMessage const& message) noexcept;
+    QString GetSessionMetaDataByIndex(quint32 index, QDBusMessage const& message) noexcept;
     void DeleteSessionByIndex(quint32 index);
     bool StoreSession(QString const& sessionPath, QDBusMessage const& message) noexcept;
 
 private:
     void handleGetSessionByIndex(System::AsyncResult* result, QDBusMessage const& msg);
+    void handleGetSessionMetaDataByIndex(System::AsyncResult* result, QDBusMessage const& msg);
     void handleSessionStore(System::AsyncResult* result, QDBusMessage const& message);
+    bool writeJsonFile(QString const& path, std::string const& rawJson);
 
 private:
     std::unique_ptr<SessionDatabaseIpcServerPrivate> mD;

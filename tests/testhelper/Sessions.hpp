@@ -15,6 +15,9 @@ Common::SessionData getTestSession3();
 Common::SessionData getTestSession4();
 char const* getTestSessionAsJson();
 
+Common::SessionMetaData getTestSessionMetaData();
+char const* getTestSessionMetaAsJson();
+
 } // namespace Rapid::TestHelper::Sessions
 
 #endif // SESSION_HPP
