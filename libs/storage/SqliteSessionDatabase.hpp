@@ -13,7 +13,6 @@
 
 namespace Rapid::Storage
 {
-class AsyncResultDb;
 class SqliteSessionDatabase : public ISessionDatabase
 {
 public:
@@ -64,6 +63,11 @@ public:
     std::shared_ptr<GetSessionResult> getSessionByIndexAsync(std::size_t index) noexcept override;
 
     /**
+     * @copydoc ISessionDatabase::getSessionMetaDataByIndexAsync(std::size_t index)
+     */
+    std::shared_ptr<GetSessionMetaDataResult> getSessionMetaDataByIndexAsync(std::size_t index) noexcept override;
+
+    /**
      * @copydoc ISessionDatabase::storeSession(Common::SessionData &session)
      */
     std::shared_ptr<System::AsyncResult> storeSession(Common::SessionData const& session) override;
@@ -77,6 +81,8 @@ private:
     void updateSession(Private::SessionStorageContext* ctx);
     void saveSession(Private::SessionStorageContext* ctx);
     void readSession(std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionData>> ctx) const;
+    void readSessionMetaData(
+        std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionMetaData>> ctx) const;
     std::optional<std::size_t> readSessionIdOfIndex(std::size_t sessionIndex) const noexcept;
     std::optional<std::size_t> readSessionId(Common::SessionData const& session) const noexcept;
     std::optional<std::size_t> readIndexOfSessionId(std::size_t sessionId) const noexcept;
@@ -87,6 +93,7 @@ private:
     bool saveLapLogPoints(std::size_t lapId, Common::LapData const& lapData) const noexcept;
     std::optional<std::size_t> readLapId(std::size_t sessionId, std::size_t lapIndex) const noexcept;
     std::optional<Common::SessionData> readSession(std::size_t index) const;
+    std::optional<Common::SessionMetaData> readSessionMetaData(std::size_t index) const;
 
     static void handleUpdates(void* objPtr, int event, char const* database, char const* table, sqlite3_int64 rowId);
 

@@ -10,33 +10,24 @@ namespace Rapid::Common
 class SharedSessionData : public SharedData
 {
 public:
-    Date mSessionDate;
-    Timestamp mSessionTime;
-    TrackData mSessionTrack;
     std::vector<LapData> mLaps;
 
     friend bool operator==(SharedSessionData const& lhs, SharedSessionData const& rhs)
     {
-        // clang-format off
-        return ((lhs.mSessionDate) == (rhs.mSessionDate) &&
-                (lhs.mSessionTime) == (rhs.mSessionTime) &&
-                (lhs.mSessionTrack) == (rhs.mSessionTrack) &&
-                (lhs.mLaps) == (rhs.mLaps));
-        // clang-format on
+        return lhs.mLaps == rhs.mLaps;
     }
 };
 
 SessionData::SessionData()
-    : mData{new SharedSessionData}
+    : SessionMetaData{}
+    , mData{new SharedSessionData}
 {
 }
 
 SessionData::SessionData(TrackData const& track, Date const& sessionDate, Timestamp const& sessionTime)
-    : mData{new SharedSessionData}
+    : SessionMetaData{track, sessionDate, sessionTime}
+    , mData{new SharedSessionData}
 {
-    mData->mSessionTrack = track;
-    mData->mSessionTime = sessionTime;
-    mData->mSessionDate = sessionDate;
 }
 
 SessionData::~SessionData() = default;
@@ -44,21 +35,6 @@ SessionData::SessionData(SessionData const& other) = default;
 SessionData& SessionData::operator=(SessionData const& other) = default;
 SessionData::SessionData(SessionData&& other) = default;
 SessionData& SessionData::operator=(SessionData&& other) = default;
-
-Date SessionData::getSessionDate() const noexcept
-{
-    return mData->mSessionDate;
-}
-
-Timestamp SessionData::getSessionTime() const noexcept
-{
-    return mData->mSessionTime;
-}
-
-TrackData const& SessionData::getTrack() const noexcept
-{
-    return mData->mSessionTrack;
-}
 
 std::size_t SessionData::getNumberOfLaps() const noexcept
 {

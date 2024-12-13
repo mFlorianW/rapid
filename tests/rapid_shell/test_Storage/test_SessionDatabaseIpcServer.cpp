@@ -25,6 +25,9 @@ using namespace Rapid::System;
 using namespace Rapid::Common;
 using namespace Rapid::System;
 
+namespace
+{
+
 class SessionDatabaseIpcServerTestEventListener : public Catch::EventListenerBase
 {
 public:
@@ -42,37 +45,36 @@ private:
     std::string mCleanDbFileName;
 };
 
-namespace
+struct TestFixture
 {
-
-QString storeSession(SessionData const& session)
-{
-    auto dir = QDir{QDir::tempPath().append(QDir::separator()).append("rapid_shell")};
-    if (not dir.exists()) {
-        REQUIRE(dir.mkpath(dir.path()));
+    SessionDatabaseMock db;
+    SessionDatabaseIpcServer server = SessionDatabaseIpcServer{db};
+    SessionDatabase client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
+    QString storeSession(SessionData const& session)
+    {
+        auto dir = QDir{QDir::tempPath().append(QDir::separator()).append("rapid_shell")};
+        if (not dir.exists()) {
+            REQUIRE(dir.mkpath(dir.path()));
+        }
+        auto const filePath = dir.path()
+                                  .append(QDir::separator())
+                                  .append("%1_%2.session")
+                                  .arg(QString::fromStdString(session.getSessionDate().asString()),
+                                       QString::fromStdString(session.getSessionTime().asString()));
+        auto file = QFile{filePath};
+        REQUIRE(file.open(QFile::WriteOnly));
+        auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session);
+        file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
+        return filePath;
     }
-    auto const filePath = dir.path()
-                              .append(QDir::separator())
-                              .append("%1_%2.session")
-                              .arg(QString::fromStdString(session.getSessionDate().asString()),
-                                   QString::fromStdString(session.getSessionTime().asString()));
-    auto file = QFile{filePath};
-    REQUIRE(file.open(QFile::WriteOnly));
-    auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session);
-    file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
-    return filePath;
-}
+};
 
 } // namespace
 
 // CATCH_REGISTER_LISTENER(SessionDatabaseIpcServerTestEventListener)
 
-TEST_CASE("the SessionDatabaseIpcServer shall provide the session count")
+TEST_CASE_METHOD(TestFixture, "the SessionDatabaseIpcServer shall provide the session count")
 {
-    auto db = SessionDatabaseMock{};
-    auto server = SessionDatabaseIpcServer{db};
-    auto client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
-
     REQUIRE_CALL(db, getSessionCount()).RETURN(2);
     auto request = client.GetSessionCount();
     CHECK(QTest::qWaitFor([&request] {
@@ -104,7 +106,7 @@ TEST_CASE("the SessionDatabaseIpcServer shall provide read access to the session
         REQUIRE(result == QStringLiteral("/tmp/rapid_shell/01.01.1970_13:00:00.000.session"));
     }
 
-    SECTION("create the file with the send to the client and the session in json format")
+    SECTION("create the file with the session data in json format")
     {
         auto const asyncResult = std::make_shared<Rapid::Storage::GetSessionResult>();
         asyncResult->setResultValue(Sessions::getTestSession());
@@ -137,12 +139,8 @@ TEST_CASE("the SessionDatabaseIpcServer shall provide read access to the session
     }
 }
 
-TEST_CASE("The SessionDatabaseIpcServerPrivate shall delete sessions")
+TEST_CASE_METHOD(TestFixture, "The SessionDatabaseIpcServerPrivate shall delete sessions")
 {
-    auto db = SessionDatabaseMock{};
-    auto server = SessionDatabaseIpcServer{db};
-    auto client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
-
     REQUIRE_CALL(db, deleteSession(2)).LR_SIDE_EFFECT(db.sessionDeleted.emit(_1));
     auto sessionDeletedSpy = QSignalSpy{&client, &SessionDatabase::SessionDeleted};
     auto request = client.DeleteSessionByIndex(2);
@@ -151,12 +149,8 @@ TEST_CASE("The SessionDatabaseIpcServerPrivate shall delete sessions")
     REQUIRE(sessionDeletedSpy.at(0).first().value<quint32>() == 2);
 }
 
-TEST_CASE("the SessionDatabaseIpcServer shall store sessions")
+TEST_CASE_METHOD(TestFixture, "the SessionDatabaseIpcServer shall store sessions")
 {
-    auto db = SessionDatabaseMock{};
-    auto server = SessionDatabaseIpcServer{db};
-    auto client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
-
     auto const filePath = storeSession(Sessions::getTestSession());
     auto const asyncResult = std::make_shared<AsyncResult>();
     asyncResult->setResult(Result::Ok);
@@ -171,12 +165,8 @@ TEST_CASE("the SessionDatabaseIpcServer shall store sessions")
     REQUIRE(sessionAddedSpy.at(0).first().value<quint32>() == 2);
 }
 
-TEST_CASE("the SessionDatabaseIpcServer shall emit update session when the same session is stored")
+TEST_CASE_METHOD(TestFixture, "the SessionDatabaseIpcServer shall emit update session when the same session is stored")
 {
-    auto db = SessionDatabaseMock{};
-    auto server = SessionDatabaseIpcServer{db};
-    auto client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
-
     auto const filePath = storeSession(Sessions::getTestSession());
     auto const asyncResult = std::make_shared<AsyncResult>();
     asyncResult->setResult(Result::Ok);
@@ -189,6 +179,61 @@ TEST_CASE("the SessionDatabaseIpcServer shall emit update session when the same 
     CHECK(request.isFinished());
     CHECK(request.value());
     REQUIRE(sessionUpdated.at(0).first().value<quint32>() == 3);
+}
+
+TEST_CASE("the SessionDatabaseIpcServer shall provide read access to the session meta data")
+{
+    auto db = SessionDatabaseMock{};
+    auto server = SessionDatabaseIpcServer{db};
+    auto client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
+
+    SECTION("give the json path for the IPC client to read the session from the requested index")
+    {
+        auto const asyncResult = std::make_shared<Rapid::Storage::GetSessionMetaDataResult>();
+        asyncResult->setResultValue(Sessions::getTestSessionMetaData());
+        asyncResult->setResult(Result::Ok);
+        REQUIRE_CALL(db, getSessionMetaDataByIndexAsync(2)).RETURN(asyncResult);
+        auto request = client.GetSessionMetaDataByIndex(2);
+        CHECK(QTest::qWaitFor([&request] {
+            return request.isFinished();
+        }));
+        CHECK_FALSE(request.isError());
+        auto result = request.value();
+        CHECK_FALSE(result.isEmpty());
+        REQUIRE(result == QStringLiteral("/tmp/rapid_shell/01.01.1970_13:00:00.000.sessionMetaData"));
+    }
+
+    SECTION("create the file with the session meta data in json format")
+    {
+        auto const asyncResult = std::make_shared<Rapid::Storage::GetSessionMetaDataResult>();
+        asyncResult->setResultValue(Sessions::getTestSession());
+        asyncResult->setResult(Result::Ok);
+        REQUIRE_CALL(db, getSessionMetaDataByIndexAsync(2)).RETURN(asyncResult);
+        auto request = client.GetSessionMetaDataByIndex(2);
+        CHECK(QTest::qWaitFor([&request] {
+            return request.isFinished();
+        }));
+        auto filePath = request.value();
+        CHECK(QFile::exists(filePath));
+        auto file = QFile(filePath);
+        CHECK(file.open(QFile::ReadOnly));
+        auto content = file.readAll().toStdString();
+        REQUIRE(Rapid::Common::JsonDeserializer::SessionMetaData::deserialize(content));
+    }
+
+    SECTION("send an error message to the caller when index is not found")
+    {
+        auto const asyncResult = std::make_shared<Rapid::Storage::GetSessionMetaDataResult>();
+        asyncResult->setResult(Result::Error);
+        REQUIRE_CALL(db, getSessionMetaDataByIndexAsync(2)).RETURN(asyncResult);
+        auto request = client.GetSessionMetaDataByIndex(2);
+        CHECK(QTest::qWaitFor([&request] {
+            return request.isFinished();
+        }));
+        CHECK(request.isError());
+        CHECK(request.error().type() == QDBusError::InvalidArgs);
+        REQUIRE_FALSE(request.error().errorString(QDBusError::InvalidArgs).isEmpty());
+    }
 }
 
 QT_CATCH2_TEST_MAIN()

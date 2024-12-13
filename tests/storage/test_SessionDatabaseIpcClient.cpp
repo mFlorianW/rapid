@@ -56,10 +56,29 @@ struct TestFixture
                                   .arg(QString::fromStdString(session.getSessionDate().asString()),
                                        QString::fromStdString(session.getSessionTime().asString()));
         auto file = QFile{filePath};
-        REQUIRE(file.open(QFile::WriteOnly));
         auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session);
-        file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
+        createFile(filePath, rawJson);
         return filePath;
+    }
+
+    QString createSessionMetaDataRequest(SessionMetaData const& session)
+    {
+        REQUIRE(dir.mkpath(dir.path()));
+        auto const filePath = dir.path()
+                                  .append(QDir::separator())
+                                  .append("%1_%2.session")
+                                  .arg(QString::fromStdString(session.getSessionDate().asString()),
+                                       QString::fromStdString(session.getSessionTime().asString()));
+        auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session);
+        createFile(filePath, rawJson);
+        return filePath;
+    }
+
+    void createFile(QString const& filePath, std::string const& rawJson)
+    {
+        auto file = QFile{filePath};
+        REQUIRE(file.open(QFile::WriteOnly));
+        file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
     }
 };
 
@@ -190,6 +209,27 @@ TEST_CASE_METHOD(TestFixture,
             return result->getResult() == Result::Ok;
         }));
     }
+}
+
+TEST_CASE_METHOD(TestFixture, "The SessionDatabaseIpcClient shall give the requested session meta data")
+{
+    constexpr auto expectedSessionCount = std::size_t{1};
+    ALLOW_CALL(server, GetSessionCount()).RETURN(2);
+    REQUIRE_CALL(server, GetSessionMetaDataByIndex(trompeloeil::_))
+        .WITH(_1 == expectedSessionCount)
+        .LR_RETURN(createSessionMetaDataRequest(Sessions::getTestSessionMetaData()));
+    SessionDatabaseIpcClient ipcClient = SessionDatabaseIpcClient{};
+    waitForInit(ipcClient);
+    auto result = ipcClient.getSessionMetaDataByIndexAsync(expectedSessionCount);
+    REQUIRE(QTest::qWaitFor([&result] {
+        return result->getResult() == Result::Ok;
+    }));
+    auto const maybeResult = result->getResultValue();
+    auto const sessionMetdaData = maybeResult.value_or(SessionMetaData{});
+    auto const expectedMetaData = Sessions::getTestSessionMetaData();
+    CHECK(sessionMetdaData.getSessionDate() == expectedMetaData.getSessionDate());
+    CHECK(sessionMetdaData.getSessionTime() == expectedMetaData.getSessionTime());
+    REQUIRE(sessionMetdaData.getTrack() == expectedMetaData.getTrack());
 }
 
 QT_CATCH2_TEST_MAIN()

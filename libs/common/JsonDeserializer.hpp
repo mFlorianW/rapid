@@ -9,10 +9,19 @@
 #include <optional>
 #include <string>
 
-namespace Rapid::Common::JsonDeserializer::Session
+namespace Rapid::Common::JsonDeserializer
+{
+
+namespace Session
 {
 std::optional<SessionData> deserialize(std::string const& rawData);
+} // namespace Session
 
-} // namespace Rapid::Common::JsonDeserializer::Session
+namespace SessionMetaData
+{
+std::optional<Common::SessionMetaData> deserialize(std::string const& rawData);
+}
+
+} // namespace Rapid::Common::JsonDeserializer
 
 #endif // JSONDESERIALIZER_HPP

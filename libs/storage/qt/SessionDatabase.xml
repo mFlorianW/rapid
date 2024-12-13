@@ -8,6 +8,10 @@
             <arg name="index" type="u" direction="in"/>
             <arg name="sessionPath" type="s" direction="out"/>
         </method>
+		<method name="GetSessionMetaDataByIndex">
+            <arg name="index" type="u" direction="in"/>
+            <arg name="sessionMetaDataPath" type="s" direction="out"/>
+        </method>
 		<method name="DeleteSessionByIndex">
             <arg name="index" type="u" direction="in"/>
         </method>

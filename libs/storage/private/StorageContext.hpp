@@ -22,7 +22,13 @@ struct StorageContextBase
             done.emit(this);
         });
     }
-    virtual ~StorageContextBase() = default;
+
+    virtual ~StorageContextBase()
+    {
+        if (mStorageThread.joinable()) {
+            mStorageThread.join();
+        }
+    }
 
     StorageContextBase(StorageContextBase const& other) = delete;
     StorageContextBase& operator=(StorageContextBase const& ohter) = delete;

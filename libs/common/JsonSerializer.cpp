@@ -77,13 +77,24 @@ nlohmann::ordered_json serialize(TrackData const& track)
 namespace Session
 {
 
-std::string serialize(SessionData const& session)
+nlohmann::ordered_json serializeSessionMetaData(SessionMetaData const& session)
 {
     auto json = nlohmann::ordered_json{};
     json["date"] = session.getSessionDate().asString();
     json["time"] = session.getSessionTime().asString();
     json["track"] = Track::serialize(session.getTrack());
 
+    return json;
+}
+
+std::string serialize(SessionMetaData const& sessionMetaData)
+{
+    return serializeSessionMetaData(sessionMetaData).dump();
+}
+
+std::string serialize(SessionData const& session)
+{
+    auto json = serializeSessionMetaData(session);
     auto laps = std::vector<nlohmann::ordered_json>{};
     laps.reserve(session.getNumberOfLaps());
     for (auto const& lap : session.getLaps()) {

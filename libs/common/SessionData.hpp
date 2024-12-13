@@ -4,16 +4,15 @@
 
 #pragma once
 
-#include "Date.hpp"
 #include "LapData.hpp"
+#include "SessionMetaData.hpp"
 #include "SharedDataPointer.hpp"
-#include "TrackData.hpp"
 
 namespace Rapid::Common
 {
 
 class SharedSessionData;
-class SessionData final
+class SessionData final : public SessionMetaData
 {
 public:
     /**
@@ -56,24 +55,6 @@ public:
      * @return SessionData& A reference to the moved track data.
      */
     SessionData& operator=(SessionData&& other);
-
-    /**
-     * Gives the date of the session.
-     * @return  The date of the session.
-     */
-    Date getSessionDate() const noexcept;
-
-    /**
-     * Gives the time of the session.
-     * @return The date of the session.
-     */
-    Timestamp getSessionTime() const noexcept;
-
-    /**
-     * Gives the track of the session.
-     * @return The track of the session.
-     */
-    TrackData const& getTrack() const noexcept;
 
     /**
      * Gives the number of recored laps of the session.
