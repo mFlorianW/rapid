@@ -3,8 +3,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
+#include <QMainWindow>
 
-#include <QQmlApplicationEngine>
+namespace Ui
+{
+class SessionAnalyzer;
+}
 
 namespace Rapid::SessionAnalyzer
 {
@@ -13,9 +17,12 @@ namespace Rapid::SessionAnalyzer
  * @brief SessionAnalyzer application claas.
  * @details Brings up the main window make it possible to show and brings up the whole back-end.
  */
-class SessionAnalyzer final
+class SessionAnalyzer final : public QMainWindow
 {
+    Q_OBJECT
 public:
+    Q_DISABLE_COPY_MOVE(SessionAnalyzer)
+
     /**
      * @brief Creates an instance of @ref SessionAnalyzer
      *
@@ -27,19 +34,10 @@ public:
     /**
      * Default destructor
      */
-    ~SessionAnalyzer() = default;
-
-    Q_DISABLE_COPY_MOVE(SessionAnalyzer)
-
-    /**
-     * @brief Shows the main window of the session analyzer.
-     *
-     * @details Requests the top level window from the QML engine and shows it.
-     */
-    void show() const noexcept;
+    ~SessionAnalyzer() override;
 
 private:
-    QQmlApplicationEngine mEngine{};
+    std::unique_ptr<Ui::SessionAnalyzer> mMainWindow;
 };
 
 } // namespace Rapid::SessionAnalyzer

@@ -3,21 +3,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SessionAnalyzer.hpp"
+#include "ui_SessionAnalyzer.h"
 #include <QQuickWindow>
 
 namespace Rapid::SessionAnalyzer
 {
 
 SessionAnalyzer::SessionAnalyzer()
+    : QMainWindow{}
+    , mMainWindow{std::make_unique<Ui::SessionAnalyzer>()}
 {
-    mEngine.load(QUrl{"qrc:/qt/qml/Rapid/SessionAnalyzer/qml/MainWindow.qml"});
+    mMainWindow->setupUi(this);
+    connect(mMainWindow->actionQuit, &QAction::triggered, this, []() {
+        QApplication::exit();
+    });
 }
 
-void SessionAnalyzer::show() const noexcept
-{
-    auto* topLevel = mEngine.rootObjects().value(0);
-    auto* window = qobject_cast<QQuickWindow*>(topLevel);
-    window->show();
-}
+SessionAnalyzer::~SessionAnalyzer() = default;
 
 } // namespace Rapid::SessionAnalyzer
