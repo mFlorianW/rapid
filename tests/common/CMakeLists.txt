@@ -29,14 +29,21 @@ PRIVATE
 )
 
 if(ENABLE_QT)
-    add_executable(test_GlobalSettingsReader test_GlobalSettingsReader.cpp)
-    target_link_libraries(test_GlobalSettingsReader
+    add_executable(test_common_qt)
+    target_sources(test_common_qt
+        PRIVATE
+            test_GlobalSettingsReader.cpp
+            test_TableModelDataProvider.cpp
+            test_GenericTableModel.cpp
+    )
+    target_link_libraries(test_common_qt
         PRIVATE
             Catch2::Catch2WithMain
+            Qt6::Test
             Rapid::CommonQt
             Rapid::TestHelperQt
     )
-    catch_discover_tests(test_GlobalSettingsReader)
+    catch_discover_tests(test_common_qt)
 endif()
 
 catch_discover_tests(test_common)
