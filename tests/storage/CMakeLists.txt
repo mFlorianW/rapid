@@ -61,6 +61,7 @@ if(ENABLE_QT)
         ${SESSION_DATABASE_ADAPTOR}
         SessionDatabaseServer.hpp
         test_SessionDatabaseIpcClient.cpp
+        test_SessionMetaDataProvider.cpp
     )
     target_link_libraries(test_storage_qt
     PRIVATE

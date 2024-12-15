@@ -11,12 +11,17 @@ PRIVATE
     ${SESSION_DBUS_INTERFACE}
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionDatabaseIpcClient.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionDatabaseIpcClient.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetaDataProvider.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetaDataProvider.hpp
 )
 
 target_link_libraries(StorageQt
+PRIVATE
+    spdlog::spdlog
 PUBLIC
     Qt6::DBus
     Rapid::Storage
+    Rapid::CommonQt
 )
 
 target_include_directories(StorageQt
