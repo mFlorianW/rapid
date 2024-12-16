@@ -76,6 +76,7 @@ std::shared_ptr<GetSessionMetaDataResult> SqliteSessionDatabase::getSessionMetaD
     std::lock_guard<std::mutex> const guard{mMutex};
     auto result = std::make_shared<GetSessionMetaDataResult>();
     auto context = std::make_shared<Private::SessionStorageContextWithValue<Common::SessionMetaData>>(result);
+    context->mSessionId = index;
     mStorageCache.emplace(context.get(), context);
     std::ignore = context->done.connect([this](Private::StorageContextBase* ctx) {
         auto sessionCtx = StorageContextBase::getStorageAs<SessionStorageContextWithValue<Common::SessionMetaData>>(
@@ -87,6 +88,7 @@ std::shared_ptr<GetSessionMetaDataResult> SqliteSessionDatabase::getSessionMetaD
         }
         sessionCtx->mResult->setResult(result);
         mStorageCache.erase(ctx);
+        SPDLOG_INFO("SessionMetaData for session {} requested", sessionCtx->mSessionId);
     });
     context->mStorageThread = std::thread{[this, context] {
         readSessionMetaData(context);

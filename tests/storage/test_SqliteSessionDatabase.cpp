@@ -248,15 +248,27 @@ TEST_CASE("The SqlieSessionDatabase shall emit session deteled on referential in
           SQLITE_OK);
     REQUIRE(deletedIndex == indexToDelete);
 }
-TEST_CASE("The SqliteSessionDatabase shall give the session meta for a specific index.")
+TEST_CASE("The SqliteSessionDatabase shall give the session meta data for a index.")
 {
     auto db = SqliteSessionDatabase{getTestDatabaseFile()};
-    auto const session = Sessions::getTestSession3();
-    auto storeResult = db.storeSession(session);
+
+    auto const session0 = Sessions::getTestSession3();
+    auto storeResult = db.storeSession(Sessions::getTestSession3());
     REQUIRE_COMPARE_WITH_TIMEOUT(storeResult->getResult(), Rapid::System::Result::Ok, std::chrono::seconds{1});
-    auto loadReasult = db.getSessionMetaDataByIndexAsync(0);
-    REQUIRE_COMPARE_WITH_TIMEOUT(loadReasult->getResult(), Rapid::System::Result::Ok, std::chrono::seconds{1});
-    CHECK(loadReasult->getResultValue().value_or(SessionMetaData{}).getSessionDate() == session.getSessionDate());
-    CHECK(loadReasult->getResultValue().value_or(SessionMetaData{}).getSessionTime() == session.getSessionTime());
-    REQUIRE(loadReasult->getResultValue().value_or(SessionMetaData{}).getTrack() == session.getTrack());
+
+    auto const session1 = Sessions::getTestSession4();
+    storeResult = db.storeSession(session1);
+    REQUIRE_COMPARE_WITH_TIMEOUT(storeResult->getResult(), Rapid::System::Result::Ok, std::chrono::seconds{1});
+
+    auto loadResult = db.getSessionMetaDataByIndexAsync(0);
+    REQUIRE_COMPARE_WITH_TIMEOUT(loadResult->getResult(), Rapid::System::Result::Ok, std::chrono::seconds{1});
+    CHECK(loadResult->getResultValue().value_or(SessionMetaData{}).getSessionDate() == session0.getSessionDate());
+    CHECK(loadResult->getResultValue().value_or(SessionMetaData{}).getSessionTime() == session0.getSessionTime());
+    CHECK(loadResult->getResultValue().value_or(SessionMetaData{}).getTrack() == session0.getTrack());
+
+    loadResult = db.getSessionMetaDataByIndexAsync(1);
+    REQUIRE_COMPARE_WITH_TIMEOUT(loadResult->getResult(), Rapid::System::Result::Ok, std::chrono::seconds{1});
+    CHECK(loadResult->getResultValue().value_or(SessionMetaData{}).getSessionDate() == session1.getSessionDate());
+    CHECK(loadResult->getResultValue().value_or(SessionMetaData{}).getSessionTime() == session1.getSessionTime());
+    CHECK(loadResult->getResultValue().value_or(SessionMetaData{}).getTrack() == session1.getTrack());
 }
