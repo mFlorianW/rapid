@@ -142,6 +142,14 @@ public:
         return insertedIndex;
     }
 
+    std::optional<T> getItem(qsizetype row)
+    {
+        if (row < static_cast<qsizetype>(mData.size())) {
+            return mData.at(row);
+        }
+        return std::nullopt;
+    }
+
 protected:
     std::vector<T> mData;
 

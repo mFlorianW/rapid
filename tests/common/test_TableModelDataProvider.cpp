@@ -18,12 +18,16 @@ struct PersonData
 {
     QString name;
     quint8 age;
+
+    bool operator==(PersonData const& rhs) const = default;
 };
 
 struct CountryData
 {
     QString name;
     QString continent;
+
+    bool operator==(CountryData const& rhs) const = default;
 };
 
 } // namespace
@@ -93,6 +97,26 @@ TEST_CASE("The TableModelDataProvider shall notify when a item is added.")
     REQUIRE(endInsertItemSpy.size() == 1);
     CHECK(insertedIndex == 1);
     REQUIRE(dataProvider.getRowCount() == 2);
+}
+
+TEST_CASE("The TableModelDataProvider shall provide the item for an index")
+{
+    auto dataProvider = TableModelDataProvider<PersonData>{
+        {"1", "2"},
+        {PersonData{.name = QString{"Name"}, .age = 8}, PersonData{.name = QString{"Name1"}, .age = 9}}};
+    SECTION("Valid index")
+    {
+        auto item = dataProvider.getItem(0);
+        REQUIRE(item.value_or(PersonData{}) == PersonData{.name = QString{"Name"}, .age = 8});
+        item = dataProvider.getItem(1);
+        REQUIRE(item.value_or(PersonData{}) == PersonData{.name = QString{"Name1"}, .age = 9});
+    }
+
+    SECTION("Invalid index")
+    {
+        auto item = dataProvider.getItem(100);
+        REQUIRE(item == std::nullopt);
+    }
 }
 
 QT_CATCH2_TEST_MAIN();
