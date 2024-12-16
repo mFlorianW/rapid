@@ -86,6 +86,7 @@ public:
             auto* receiver = iter->receiver;
             iter = mEventQueue.erase(iter);
             receiver->handleEvent(event.get());
+            mIsWoken = false;
         }
     }
 
@@ -155,6 +156,16 @@ public:
         mBlocker.notify_all();
     }
 
+    bool isWoken()
+    {
+        return mIsWoken;
+    }
+
+    void setWoken(bool woken)
+    {
+        mIsWoken = woken;
+    }
+
     KDBindings::Signal<> wakeUp;
 
 private:
@@ -167,6 +178,7 @@ private:
     mutable std::mutex mMutex;
     std::condition_variable mBlocker;
     bool mRunning = false;
+    std::atomic<bool> mIsWoken = false;
     std::shared_ptr<KDBindings::ConnectionEvaluator> mConnectionEvaluator =
         std::make_shared<ConnectionEvaluator>(*this);
 };
@@ -210,7 +222,9 @@ void EventLoop::postEvent(EventHandler* receiver, std::unique_ptr<Event> event)
 {
     auto& queue = EventQueue::getInstance(receiver->getThreadId());
     queue.postEvent(receiver, std::move(event), receiver->getThreadId());
-    if (mEventLoops.count(receiver->getThreadId()) > 0 and not queue.isRunning()) {
+    // SPDLOG_INFO("sdfsdfsdfsdfsdfsdf {}", queue.isRunning());
+    if (mEventLoops.count(receiver->getThreadId()) > 0 and not queue.isRunning() and not queue.isWoken()) {
+        queue.setWoken(true);
         mEventLoops[receiver->getThreadId()]->wakeUp.emit();
     }
 }
