@@ -40,6 +40,11 @@ struct SessionDatabaseIpcServerPrivate
         });
     }
 
+    QString getTempFolder() const noexcept
+    {
+        return mTempFolder;
+    }
+
     QDBusConnection mConnection = QDBusConnection::sessionBus();
     std::unordered_map<System::AsyncResult*, std::shared_ptr<Rapid::Storage::GetSessionResult>> mGetSessionRequests;
     std::unordered_map<System::AsyncResult*, std::shared_ptr<Rapid::Storage::GetSessionMetaDataResult>>
@@ -214,10 +219,12 @@ bool SessionDatabaseIpcServer::writeJsonFile(QString const& path, std::string co
 {
     auto file = QFile{path};
     if (not file.open(QFile::WriteOnly)) {
+        SPDLOG_CRITICAL("Failed to open file {}", file.fileName().toStdString());
         return false;
     }
     auto size = file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
     if (size < static_cast<qint64>(rawJson.size())) {
+        SPDLOG_CRITICAL("Failed to write file conent for {}", file.fileName().toStdString());
         return false;
     }
     return true;
