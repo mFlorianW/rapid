@@ -256,3 +256,17 @@ TEST_CASE_METHOD(TestFixture, "The SqliteSessionDatabase shall give the session 
     CHECK(loadResult->getResultValue().value_or(SessionMetaData{}).getSessionTime() == session2.getSessionTime());
     CHECK(loadResult->getResultValue().value_or(SessionMetaData{}).getTrack() == session2.getTrack());
 }
+
+TEST_CASE_METHOD(TestFixture, "The SqliteSessionDatabase shall give the session data for session meta data")
+{
+    auto db = SqliteSessionDatabase{getTestDatabaseFile()};
+    setupTestDatabase(db);
+
+    auto loadResult = db.getSessionByMetadataAsync(session1);
+    REQUIRE_COMPARE_WITH_TIMEOUT(loadResult->getResult(), Rapid::System::Result::Ok, std::chrono::seconds{1});
+    CHECK(loadResult->getResultValue().value_or(SessionData{}) == session1);
+
+    loadResult = db.getSessionByMetadataAsync(session2);
+    REQUIRE_COMPARE_WITH_TIMEOUT(loadResult->getResult(), Rapid::System::Result::Ok, std::chrono::seconds{1});
+    CHECK(loadResult->getResultValue().value_or(SessionData{}) == session2);
+}

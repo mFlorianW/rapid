@@ -92,6 +92,27 @@ QString SessionDatabaseIpcServer::GetSessionByIndex(quint32 index, QDBusMessage 
     return {};
 }
 
+QString SessionDatabaseIpcServer::GetSessionByMetaData(QString const& sessionMetaPath, QDBusMessage const& message)
+{
+    message.setDelayedReply(true);
+    auto maybeSessionMetadata = readSessionMetaDataJsonFile(sessionMetaPath);
+    if (maybeSessionMetadata.has_value()) {
+        auto result = mD->mDatabase.getSessionByMetadataAsync(maybeSessionMetadata.value());
+        mD->mGetSessionRequests.insert({result.get(), result});
+        if (result->getResult() != System::Result::NotFinished) {
+            handleGetSessionByMetadata(result.get(), message);
+        } else {
+            std::ignore = result->done.connect([this, message](System::AsyncResult* result) {
+                handleGetSessionByMetadata(result, message);
+            });
+        }
+    } else {
+        auto reply = message.createErrorReply(QDBusError::InvalidArgs, "No session found for passed meta data.");
+        mD->mConnection.send(reply);
+    }
+    return {};
+}
+
 QString SessionDatabaseIpcServer::GetSessionMetaDataByIndex(quint32 index, QDBusMessage const& message) noexcept
 {
     message.setDelayedReply(true);
@@ -114,7 +135,8 @@ void SessionDatabaseIpcServer::handleGetSessionByIndex(System::AsyncResult* resu
         auto const valueResult = mD->mGetSessionRequests.at(result);
         auto const session = valueResult->getResultValue();
         if (session.has_value()) {
-            auto const filePath = mD->mTempFolder.append(QDir::separator())
+            auto const filePath = mD->getTempFolder()
+                                      .append(QDir::separator())
                                       .append("%1_%2.session")
                                       .arg(QString::fromStdString(session->getSessionDate().asString()),
                                            QString::fromStdString(session->getSessionTime().asString()));
@@ -129,6 +151,28 @@ void SessionDatabaseIpcServer::handleGetSessionByIndex(System::AsyncResult* resu
     } else {
         reply = message.createErrorReply(QDBusError::InvalidArgs, "No session found for passed index.");
     }
+    mD->mConnection.send(reply);
+    mD->mGetSessionRequests.erase(result);
+}
+
+void SessionDatabaseIpcServer::handleGetSessionByMetadata(System::AsyncResult* result, QDBusMessage const& msg)
+{
+    auto reply = QDBusMessage{};
+    if (result->getResult() == System::Result::Ok) {
+        auto const valueResult = mD->mGetSessionRequests.at(result);
+        auto const maybeSession = valueResult->getResultValue();
+        if (maybeSession.has_value()) {
+            auto maybeFilePath = writeSession(maybeSession.value());
+            if (maybeFilePath.has_value()) {
+                reply = msg.createReply();
+                reply << maybeFilePath.value();
+            }
+        } else {
+            reply = msg.createErrorReply(QDBusError::Failed, "Failed to write session informations");
+        }
+    } else {
+        reply = msg.createErrorReply(QDBusError::Failed, "No Session found");
+    }
     mD->mGetSessionRequests.erase(result);
     mD->mConnection.send(reply);
 }
@@ -140,7 +184,8 @@ void SessionDatabaseIpcServer::handleGetSessionMetaDataByIndex(System::AsyncResu
         auto const valueResult = mD->mGetSessionMetaDataRequests.at(result);
         auto const sessionMetaData = valueResult->getResultValue();
         if (sessionMetaData.has_value()) {
-            auto const filePath = mD->mTempFolder.append(QDir::separator())
+            auto const filePath = mD->getTempFolder()
+                                      .append(QDir::separator())
                                       .append("%1_%2.sessionMetaData")
                                       .arg(QString::fromStdString(sessionMetaData->getSessionDate().asString()),
                                            QString::fromStdString(sessionMetaData->getSessionTime().asString()));
@@ -215,7 +260,21 @@ void SessionDatabaseIpcServer::handleSessionStore(System::AsyncResult* result, Q
     mD->mConnection.send(reply);
 }
 
-bool SessionDatabaseIpcServer::writeJsonFile(QString const& path, std::string const& rawJson)
+std::optional<QString> SessionDatabaseIpcServer::writeSession(Common::SessionData const& session) const noexcept
+{
+    auto const filePath = mD->getTempFolder()
+                              .append(QDir::separator())
+                              .append("%1_%2.session")
+                              .arg(QString::fromStdString(session.getSessionDate().asString()),
+                                   QString::fromStdString(session.getSessionTime().asString()));
+    auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session);
+    if (not writeJsonFile(filePath, rawJson)) {
+        return std::nullopt;
+    }
+    return filePath;
+}
+
+bool SessionDatabaseIpcServer::writeJsonFile(QString const& path, std::string const& rawJson) const noexcept
 {
     auto file = QFile{path};
     if (not file.open(QFile::WriteOnly)) {
@@ -228,6 +287,26 @@ bool SessionDatabaseIpcServer::writeJsonFile(QString const& path, std::string co
         return false;
     }
     return true;
+}
+
+std::optional<Common::SessionMetaData> SessionDatabaseIpcServer::readSessionMetaDataJsonFile(QString const& path)
+{
+    auto file = QFile{path};
+    if (not file.exists()) {
+        SPDLOG_ERROR("Failed to read session meta data file {}. File not found", path.toStdString());
+        return std::nullopt;
+    }
+    if (not file.open(QFile::ReadOnly)) {
+        SPDLOG_ERROR("Failed to open session meta data file {}.", path.toStdString());
+        return std::nullopt;
+    }
+    auto content = file.readAll().toStdString();
+    auto maybeSessionMetadata = Common::JsonDeserializer::SessionMetaData::deserialize(content);
+    if (not maybeSessionMetadata.has_value()) {
+        SPDLOG_ERROR("Failed to deserialize session meta data file {}.", path.toStdString());
+        return std::nullopt;
+    }
+    return maybeSessionMetadata;
 }
 
 } // namespace Rapid::RapidShell::Storage

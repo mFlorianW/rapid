@@ -77,6 +77,15 @@ public:
     virtual std::shared_ptr<GetSessionResult> getSessionByIndexAsync(std::size_t index) noexcept = 0;
 
     /**
+     * Gives the whole session defined by the session data in async manner, so the call doesn't block the calling thread.
+     * If no session can be found for the passed meta data the result is marked as error.
+     * @param metadata The metadata for which the session data shall be returned.
+     * @return The session for the passed metadata or an error.
+     */
+    virtual std::shared_ptr<GetSessionResult> getSessionByMetadataAsync(
+        Common::SessionMetaData const& metadata) noexcept = 0;
+
+    /**
      * Gives the session meta data by the index in async manner, so the call doesn't block the calling thread.
      * If index doesn't exists a the result is marked as error.
      * @param index The index of the request session.

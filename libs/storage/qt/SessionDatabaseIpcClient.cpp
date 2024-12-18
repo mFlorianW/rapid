@@ -62,27 +62,31 @@ std::shared_ptr<GetSessionResult> SessionDatabaseIpcClient::getSessionByIndexAsy
 {
     auto call = std::make_shared<QDBusPendingCallWatcher>(mInterface->GetSessionByIndex(index));
     auto result = std::make_shared<GetSessionResult>();
-    connect(call.get(), &QDBusPendingCallWatcher::finished, this, [this, result](QDBusPendingCallWatcher* self) {
-        QDBusPendingReply<QString> call = *self;
-        if (not call.isError()) {
-            auto sessionPath = QString{call.argumentAt<0>()};
-            auto sessionFile = QFile(sessionPath);
-            auto resultStatus = Rapid::System::Result::Error;
-            if (sessionFile.exists() && sessionFile.open(QFile::ReadOnly)) {
-                auto content = sessionFile.readAll().toStdString();
-                auto session = JsonDeserializer::Session::deserialize(content);
-                if (session.has_value()) {
-                    result->setResultValue(session.value());
-                    resultStatus = System::Result::Ok;
-                }
-            } else {
-                SPDLOG_ERROR("Failed to open/read session file {}", sessionPath.toStdString());
-            }
-            result->setResult(resultStatus);
-            mPendingCalls.erase(self);
-        }
-    });
     mPendingCalls.insert({call.get(), call});
+    connect(call.get(), &QDBusPendingCallWatcher::finished, this, [this, result](auto* self) {
+        handleSessionResponse(self, result);
+    });
+    return result;
+}
+
+std::shared_ptr<GetSessionResult> SessionDatabaseIpcClient::getSessionByMetadataAsync(
+    Common::SessionMetaData const& session) noexcept
+{
+    auto result = std::make_shared<GetSessionResult>();
+    auto filePath = QString{"%1_%2.sessionMetaData"}.arg(QString::fromStdString(session.getSessionDate().asString()),
+                                                         QString::fromStdString(session.getSessionTime().asString()));
+    auto content = JsonSerializer::Session::serialize(session);
+    auto mayebeFilePath = writeExchangeFile(filePath, content);
+    if (not mayebeFilePath.has_value()) {
+        SPDLOG_ERROR("Failed to write exchange with server");
+        result->setResult(System::Result::Error, std::string{"Failed write exchange file"});
+        return result;
+    }
+    auto call = std::make_shared<QDBusPendingCallWatcher>(mInterface->GetSessionByMetaData(mayebeFilePath.value()));
+    mPendingCalls.insert({call.get(), call});
+    connect(call.get(), &QDBusPendingCallWatcher::finished, this, [this, result](auto* self) {
+        handleSessionResponse(self, result);
+    });
     return result;
 }
 
@@ -91,25 +95,8 @@ std::shared_ptr<GetSessionMetaDataResult> SessionDatabaseIpcClient::getSessionMe
 {
     auto call = std::make_shared<QDBusPendingCallWatcher>(mInterface->GetSessionMetaDataByIndex(index));
     auto result = std::make_shared<GetSessionMetaDataResult>();
-    connect(call.get(), &QDBusPendingCallWatcher::finished, this, [this, result](QDBusPendingCallWatcher* self) {
-        QDBusPendingReply<QString> call = *self;
-        if (not call.isError()) {
-            auto sessionPath = QString{call.argumentAt<0>()};
-            auto sessionFile = QFile(sessionPath);
-            auto resultStatus = Rapid::System::Result::Error;
-            if (sessionFile.exists() && sessionFile.open(QFile::ReadOnly)) {
-                auto content = sessionFile.readAll().toStdString();
-                auto sessionMetaData = JsonDeserializer::SessionMetaData::deserialize(content);
-                if (sessionMetaData.has_value()) {
-                    result->setResultValue(sessionMetaData.value());
-                    resultStatus = System::Result::Ok;
-                }
-            } else {
-                SPDLOG_ERROR("Failed to open/read session file {}", sessionPath.toStdString());
-            }
-            result->setResult(resultStatus);
-            mPendingCalls.erase(self);
-        }
+    connect(call.get(), &QDBusPendingCallWatcher::finished, this, [this, result](auto* self) {
+        handleSessionMetaDataResponse(self, result);
     });
     mPendingCalls.insert({call.get(), call});
     return result;
@@ -158,6 +145,108 @@ void SessionDatabaseIpcClient::deleteSession(std::size_t index)
         mPendingCalls.erase(self);
     });
     mPendingCalls.insert({call.get(), call});
+}
+
+void SessionDatabaseIpcClient::handleSessionResponse(QDBusPendingCallWatcher* self,
+                                                     std::shared_ptr<GetSessionResult> result)
+{
+    QDBusPendingReply<QString> call = *self;
+    auto resultStatus = Rapid::System::Result::Error;
+    if (not call.isError()) {
+        auto sessionPath = QString{call.argumentAt<0>()};
+        auto maybeSession = readExchangedSession(sessionPath);
+        if (maybeSession.has_value()) {
+            resultStatus = System::Result::Ok;
+            result->setResultValue(maybeSession.value());
+        } else {
+            SPDLOG_ERROR("Failed to open/read session file {}", sessionPath.toStdString());
+        }
+    }
+    mPendingCalls.erase(self);
+    result->setResult(resultStatus);
+}
+
+void SessionDatabaseIpcClient::handleSessionMetaDataResponse(
+    QDBusPendingCallWatcher* self,
+    std::shared_ptr<Rapid::Storage::GetSessionMetaDataResult> result)
+{
+    QDBusPendingReply<QString> call = *self;
+    auto resultStatus = Rapid::System::Result::Error;
+    if (not call.isError()) {
+        auto sessionPath = QString{call.argumentAt<0>()};
+        auto maybeSessionMeta = readExchangedSessionMetaData(sessionPath);
+        if (maybeSessionMeta.has_value()) {
+            resultStatus = System::Result::Ok;
+            result->setResultValue(maybeSessionMeta.value());
+        } else {
+            SPDLOG_ERROR("Failed to open/read session file {}", sessionPath.toStdString());
+        }
+    } else {
+        SPDLOG_ERROR("SessionMetaData request DBus call finished with an error: {}",
+                     call.error().message().toStdString());
+    }
+    result->setResult(resultStatus);
+    mPendingCalls.erase(self);
+}
+
+std::optional<QString> SessionDatabaseIpcClient::writeExchangeFile(QString const& fileName,
+                                                                   std::string const& content) const noexcept
+{
+    auto dirPath = QDir{QDir::tempPath().append(QDir::separator()).append("rapid_shell")};
+    auto filePath = dirPath.path().append(QDir::separator()).append(fileName);
+    if (not dirPath.exists() and not dirPath.mkpath(dirPath.path())) {
+        SPDLOG_ERROR("Failed to create temp folder for exchange with server", dirPath.path().toStdString());
+    }
+    auto sessionFile = QFile{filePath};
+    if (not sessionFile.open(QFile::WriteOnly)) {
+        SPDLOG_ERROR("Failed to open session file {} for exchange with server", filePath.toStdString());
+        return std::nullopt;
+    }
+    auto writtenBytes = sessionFile.write(content.c_str(), static_cast<qint64>(content.size()));
+    if (static_cast<std::size_t>(writtenBytes) < content.size()) {
+        SPDLOG_ERROR("Failed to write session file {} for exchange with server", filePath.toStdString());
+        return std::nullopt;
+    }
+    return filePath;
+}
+
+std::optional<Common::SessionData> SessionDatabaseIpcClient::readExchangedSession(QString const& path) const noexcept
+{
+    auto sessionFile = QFile(path);
+    if (not sessionFile.exists()) {
+        SPDLOG_ERROR("Exchange file {} doesn't exists.", path.toStdString());
+        return std::nullopt;
+    }
+    if (not sessionFile.open(QFile::ReadOnly)) {
+        SPDLOG_ERROR("Failed to open file {} .", path.toStdString());
+        return std::nullopt;
+    }
+    auto content = sessionFile.readAll().toStdString();
+    auto maybeSession = JsonDeserializer::Session::deserialize(content);
+    if (not maybeSession.has_value()) {
+        return std::nullopt;
+    }
+    return maybeSession;
+}
+
+std::optional<Common::SessionMetaData> SessionDatabaseIpcClient::readExchangedSessionMetaData(
+    QString const& path) const noexcept
+{
+    auto sessionFile = QFile(path);
+    if (not sessionFile.exists()) {
+        SPDLOG_ERROR("Exchange file {} doesn't exists.", path.toStdString());
+        return std::nullopt;
+    }
+    if (not sessionFile.open(QFile::ReadOnly)) {
+        SPDLOG_ERROR("Failed to open file {} .", path.toStdString());
+        return std::nullopt;
+    }
+    auto content = sessionFile.readAll().toStdString();
+    auto maybeSession = JsonDeserializer::SessionMetaData::deserialize(content);
+    if (not maybeSession.has_value()) {
+        return std::nullopt;
+    }
+    return maybeSession;
 }
 
 } // namespace Rapid::Storage::Qt

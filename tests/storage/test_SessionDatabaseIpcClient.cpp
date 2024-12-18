@@ -232,4 +232,44 @@ TEST_CASE_METHOD(TestFixture, "The SessionDatabaseIpcClient shall give the reque
     REQUIRE(sessionMetdaData.getTrack() == expectedMetaData.getTrack());
 }
 
+TEST_CASE_METHOD(TestFixture, "The SessionDataIpcClient shall give the requested session for the meta data")
+{
+    constexpr auto expectedSessionCount = std::size_t{1};
+    auto const session = Sessions::getTestSession3();
+    ALLOW_CALL(server, GetSessionCount()).RETURN(expectedSessionCount);
+    REQUIRE_CALL(server, GetSessionByMetaData(trompeloeil::_)).LR_RETURN(createSessionRequest(session));
+    auto ipcClient = SessionDatabaseIpcClient{};
+    auto const metaData = Sessions::getTestSessionMetaData();
+    auto const expectedSessionMetaDataName =
+        dir.absolutePath().append(QDir::separator()).append("01.01.1970_13:00:00.000.sessionMetaData");
+    waitForInit(ipcClient);
+
+    SECTION("The correct path is transmitted to the server")
+    {
+        ipcClient.getSessionByMetadataAsync(metaData);
+        REQUIRE(QFile::exists(expectedSessionMetaDataName));
+    }
+
+    SECTION("The session meta data are correct serialized and stored to the file")
+    {
+        auto result = ipcClient.getSessionByMetadataAsync(metaData);
+        REQUIRE(QTest::qWaitFor([&result] {
+            return result->getResult() == Rapid::System::Result::Ok;
+        }));
+        auto file = QFile{expectedSessionMetaDataName};
+        REQUIRE(file.open(QFile::ReadOnly));
+        auto const readMetaData = JsonDeserializer::SessionMetaData::deserialize(file.readAll().toStdString());
+        REQUIRE(metaData == readMetaData.value_or(SessionMetaData{}));
+    }
+
+    SECTION("The SessionData returned from the Database is correct deserialized")
+    {
+        auto const result = ipcClient.getSessionByMetadataAsync(metaData);
+        REQUIRE(QTest::qWaitFor([&result] {
+            return result->getResult() == Result::Ok;
+        }));
+        REQUIRE(result->getResultValue() == session);
+    }
+}
+
 QT_CATCH2_TEST_MAIN()

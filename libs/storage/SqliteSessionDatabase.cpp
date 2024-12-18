@@ -70,6 +70,31 @@ std::shared_ptr<GetSessionResult> SqliteSessionDatabase::getSessionByIndexAsync(
     return result;
 }
 
+std::shared_ptr<GetSessionResult> SqliteSessionDatabase::getSessionByMetadataAsync(
+    Common::SessionMetaData const& metadata) noexcept
+{
+    std::lock_guard<std::mutex> const guard{mMutex};
+    auto result = std::make_shared<GetSessionResult>();
+    auto context = std::make_shared<Private::SessionStorageContextWithValue<Common::SessionData>>(result);
+    context->mSessionData = metadata;
+    mStorageCache.emplace(context.get(), context);
+    std::ignore = context->done.connect([this](Private::StorageContextBase* ctx) {
+        auto sessionCtx =
+            StorageContextBase::getStorageAs<SessionStorageContextWithValue<Common::SessionData>>(mStorageCache[ctx]);
+        auto const result = sessionCtx->mStorageResult.getResult() ? System::Result::Ok : System::Result::Error;
+        if (result == System::Result::Ok) {
+            auto const getResult = sessionCtx->getResultAs<GetSessionResult>();
+            getResult->setResultValue(sessionCtx->value);
+        }
+        sessionCtx->mResult->setResult(result);
+        mStorageCache.erase(ctx);
+    });
+    context->mStorageThread = std::thread{[this, context]() {
+        readSessionByMetaData(context);
+    }};
+    return result;
+}
+
 std::shared_ptr<GetSessionMetaDataResult> SqliteSessionDatabase::getSessionMetaDataByIndexAsync(
     std::size_t index) noexcept
 {
@@ -271,6 +296,18 @@ void SqliteSessionDatabase::readSessionMetaData(
     auto success = false;
     if (maybeSessionMetaData.has_value()) {
         ctx->value = maybeSessionMetaData.value();
+        success = true;
+    }
+    ctx->mStoragePromise.set_value(success);
+}
+
+void SqliteSessionDatabase::readSessionByMetaData(
+    std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionData>> ctx) const
+{
+    auto maybeSessionData = readSessionByMetaData(ctx->mSessionData);
+    auto success = false;
+    if (maybeSessionData.has_value()) {
+        ctx->value = maybeSessionData.value();
         success = true;
     }
     ctx->mStoragePromise.set_value(success);
@@ -749,6 +786,57 @@ std::optional<Common::SessionMetaData> SqliteSessionDatabase::readSessionMetaDat
     return Common::SessionMetaData{trackData.value_or(Common::TrackData{}),
                                    Common::Date{sessionStm.getColumn<std::string>(0).value_or("")},
                                    Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")}};
+}
+
+std::optional<Common::SessionData> SqliteSessionDatabase::readSessionByMetaData(
+    Common::SessionMetaData const& metadata) const
+{
+    // clang-format off
+    constexpr auto sessionIdQuery = "SELECT "
+                                    "Session.SessionId "
+                                  "FROM "
+                                    "Session "
+                                  "WHERE "
+                                  "Session.Date = ? AND Session.Time = ?";
+    // clang-format on
+    auto sessionIdQueryStm = Statement{*mDbConnection};
+    auto bindError = sessionIdQueryStm.prepare(sessionIdQuery)
+                         .bindValue(1, metadata.getSessionDate().asString())
+                         .bindValue(2, metadata.getSessionTime().asString())
+                         .hasError();
+    if (bindError or (sessionIdQueryStm.execute() != ExecuteResult::Row) or (sessionIdQueryStm.getColumnCount() < 1)) {
+        spdlog::error("Error query session id from meta data. Date: {} Time: {}. Error: {}",
+                      mDbConnection->getErrorMessage(),
+                      metadata.getSessionDate().asString(),
+                      metadata.getSessionTime().asString());
+        return std::nullopt;
+    }
+    auto maybeSessionId = sessionIdQueryStm.getColumn<int>(0);
+    if (not maybeSessionId.has_value()) {
+        spdlog::error("Column error query session id from meta data. Date: {} Time: {}. Error: {}",
+                      mDbConnection->getErrorMessage(),
+                      metadata.getSessionDate().asString(),
+                      metadata.getSessionTime().asString());
+        return std::nullopt;
+    }
+    auto sessionId = maybeSessionId.value();
+    auto maybeIndex = getIndexForSessionId(sessionId);
+    if (not maybeIndex.has_value()) {
+        spdlog::error("No session index foud for session id {}", sessionId);
+        return std::nullopt;
+    }
+    return readSession(maybeIndex.value());
+}
+
+std::optional<std::size_t> SqliteSessionDatabase::getIndexForSessionId(std::size_t sessionDbId) const
+{
+    auto sessionIndex = std::find_if(mIndexMapper.cbegin(), mIndexMapper.cend(), [sessionDbId](auto&& entry) {
+        return entry.second == sessionDbId;
+    });
+    if (sessionIndex == mIndexMapper.cend()) {
+        return std::nullopt;
+    }
+    return sessionIndex->first;
 }
 
 } // namespace Rapid::Storage
