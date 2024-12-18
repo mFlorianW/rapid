@@ -79,13 +79,13 @@ public:
      * Default compare operator
      * @param rhs The SessionMetaData to compare with.
      */
-    bool operator==(SessionMetaData const& rhs) const noexcept = default;
+    bool operator==(SessionMetaData const& rhs) const noexcept;
 
     /**
      * Default compare operator
      * @param rhs The SessionMetaData to compare with.
      */
-    bool operator!=(SessionMetaData const& rhs) const noexcept = default;
+    bool operator!=(SessionMetaData const& rhs) const noexcept;
 
 private:
     SharedDataPointer<SharedSessionMetaData> mData;
