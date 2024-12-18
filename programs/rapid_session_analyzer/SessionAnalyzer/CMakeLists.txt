@@ -1,5 +1,6 @@
 qt_wrap_ui(UI
     SessionAnalyzer.ui
+    SessionSelectionDialog.ui
 )
 
 qt_add_qml_module(SessionAnalyzer
@@ -12,6 +13,8 @@ qt_add_qml_module(SessionAnalyzer
         ${UI}
         SessionAnalyzer.cpp
         SessionAnalyzer.hpp
+        SessionSelectionDialog.cpp
+        SessionSelectionDialog.hpp
 
 )
 
@@ -22,6 +25,7 @@ target_link_libraries(SessionAnalyzer
     PUBLIC
         Qt6::Widgets
         Qt6::Quick
+        Rapid::StorageQt
 )
 
 target_include_directories(SessionAnalyzer

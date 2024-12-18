@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
+#include "SessionSelectionDialog.hpp"
 #include <QMainWindow>
+#include <SessionDatabaseIpcClient.hpp>
+#include <SessionMetaData.hpp>
 
 namespace Ui
 {
@@ -36,8 +39,14 @@ public:
      */
     ~SessionAnalyzer() override;
 
+private Q_SLOTS:
+    void onSessionSelected(Rapid::Common::SessionMetaData const& selectedSession);
+
 private:
     std::unique_ptr<Ui::SessionAnalyzer> mMainWindow;
+    std::unique_ptr<Storage::Qt::SessionDatabaseIpcClient> mSessionDatabase;
+    std::unique_ptr<SessionSelectionDialog> mSessionSelectionDialog;
+    std::unordered_map<System::AsyncResult*, std::shared_ptr<Storage::GetSessionResult>> mSessionRequests;
 };
 
 } // namespace Rapid::SessionAnalyzer
