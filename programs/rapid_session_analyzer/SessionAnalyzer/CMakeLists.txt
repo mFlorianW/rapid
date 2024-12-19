@@ -26,6 +26,7 @@ target_link_libraries(SessionAnalyzer
         Qt6::Widgets
         Qt6::Quick
         Rapid::StorageQt
+        Rapid::WorkflowQt
 )
 
 target_include_directories(SessionAnalyzer
