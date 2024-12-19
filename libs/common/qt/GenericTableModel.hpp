@@ -112,7 +112,8 @@ public:
                         ::Qt::Orientation orientation,
                         int role = ::Qt::DisplayRole) const noexcept override
     {
-        if (section < mDataProvider.getColumnNames().size()) {
+        if (section < mDataProvider.getColumnNames().size() && orientation == ::Qt::Orientation::Horizontal &&
+            role == ::Qt::DisplayRole) {
             return mDataProvider.getColumnNames().at(section);
         }
         return {};

@@ -14,6 +14,7 @@ PRIVATE
     test_LapData.cpp
     test_SharedDataPointer.cpp
     test_VelocityData.cpp
+    test_SessionMetaData.cpp
 )
 
 target_link_libraries(test_common

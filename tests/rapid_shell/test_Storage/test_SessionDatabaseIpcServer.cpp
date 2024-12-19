@@ -50,22 +50,44 @@ struct TestFixture
     SessionDatabaseMock db;
     SessionDatabaseIpcServer server = SessionDatabaseIpcServer{db};
     SessionDatabase client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
-    QString storeSession(SessionData const& session)
+    QDir dir{QDir::tempPath().append(QDir::separator()).append("rapid_shell")};
+
+    TestFixture()
     {
-        auto dir = QDir{QDir::tempPath().append(QDir::separator()).append("rapid_shell")};
         if (not dir.exists()) {
             REQUIRE(dir.mkpath(dir.path()));
         }
+    }
+
+    QString storeSession(SessionData const& session)
+    {
         auto const filePath = dir.path()
                                   .append(QDir::separator())
                                   .append("%1_%2.session")
                                   .arg(QString::fromStdString(session.getSessionDate().asString()),
                                        QString::fromStdString(session.getSessionTime().asString()));
+        auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session);
+        writeFile(filePath, rawJson);
+        return filePath;
+    }
+
+    QString storeSessionMetaData(SessionMetaData const& sessionMetaData)
+    {
+        auto const filePath = dir.path()
+                                  .append(QDir::separator())
+                                  .append("%1_%2.sessionMetaData")
+                                  .arg(QString::fromStdString(sessionMetaData.getSessionDate().asString()),
+                                       QString::fromStdString(sessionMetaData.getSessionTime().asString()));
+        auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(sessionMetaData);
+        writeFile(filePath, rawJson);
+        return filePath;
+    }
+
+    void writeFile(QString const& filePath, std::string const& rawJson)
+    {
         auto file = QFile{filePath};
         REQUIRE(file.open(QFile::WriteOnly));
-        auto rawJson = Rapid::Common::JsonSerializer::Session::serialize(session);
         file.write(rawJson.c_str(), static_cast<qint64>(rawJson.size()));
-        return filePath;
     }
 };
 
@@ -84,12 +106,8 @@ TEST_CASE_METHOD(TestFixture, "the SessionDatabaseIpcServer shall provide the se
     REQUIRE(request.value() == 2);
 }
 
-TEST_CASE("the SessionDatabaseIpcServer shall provide read access to the session")
+TEST_CASE_METHOD(TestFixture, "the SessionDatabaseIpcServer shall provide read access to the session")
 {
-    auto db = SessionDatabaseMock{};
-    auto server = SessionDatabaseIpcServer{db};
-    auto client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
-
     SECTION("give the json path for the IPC client to read the session from the requested index")
     {
         auto const asyncResult = std::make_shared<Rapid::Storage::GetSessionResult>();
@@ -181,12 +199,8 @@ TEST_CASE_METHOD(TestFixture, "the SessionDatabaseIpcServer shall emit update se
     REQUIRE(sessionUpdated.at(0).first().value<quint32>() == 3);
 }
 
-TEST_CASE("the SessionDatabaseIpcServer shall provide read access to the session meta data")
+TEST_CASE_METHOD(TestFixture, "the SessionDatabaseIpcServer shall provide read access to the session meta data")
 {
-    auto db = SessionDatabaseMock{};
-    auto server = SessionDatabaseIpcServer{db};
-    auto client = SessionDatabase{"de.rapid.shell", "/de/rapid/shell", QDBusConnection::sessionBus()};
-
     SECTION("give the json path for the IPC client to read the session from the requested index")
     {
         auto const asyncResult = std::make_shared<Rapid::Storage::GetSessionMetaDataResult>();
@@ -233,6 +247,43 @@ TEST_CASE("the SessionDatabaseIpcServer shall provide read access to the session
         CHECK(request.isError());
         CHECK(request.error().type() == QDBusError::InvalidArgs);
         REQUIRE_FALSE(request.error().errorString(QDBusError::InvalidArgs).isEmpty());
+    }
+}
+
+TEST_CASE_METHOD(TestFixture, "the SessionDatabaseIpcServer shall provide session data for session meta data")
+{
+    auto const asyncResult = std::make_shared<Rapid::Storage::GetSessionResult>();
+    asyncResult->setResultValue(Sessions::getTestSession3());
+    asyncResult->setResult(Result::Ok);
+    auto path = QStringLiteral("/tmp/rapid_shell/01.02.1970_13:00:00.000.sessionMetaData");
+
+    SECTION("shall return an error when sesion meta data not found")
+    {
+        auto request = client.GetSessionByMetaData("/tmp/asdfasdfaaa");
+        REQUIRE(QTest::qWaitFor([&request] {
+            return request.isFinished();
+        }));
+        REQUIRE(request.isError());
+        REQUIRE(request.error().type() == QDBusError::InvalidArgs);
+    }
+
+    SECTION("shall return the session path for the passed meta data")
+    {
+        auto session = Sessions::getTestSession3();
+        REQUIRE_CALL(db, getSessionByMetadataAsync(trompeloeil::_)).RETURN(asyncResult);
+        storeSessionMetaData(session);
+        auto request = client.GetSessionByMetaData(path);
+        REQUIRE(QTest::qWaitFor([&request] {
+            return request.isFinished();
+        }));
+        CHECK_FALSE(request.isError());
+        auto filePath = request.value();
+        CHECK(QFile::exists(filePath));
+        auto file = QFile(filePath);
+        CHECK(file.open(QFile::ReadOnly));
+        auto content = file.readAll().toStdString();
+        auto maybeSession = Rapid::Common::JsonDeserializer::Session::deserialize(content);
+        REQUIRE(maybeSession.value_or(SessionData{}) == session);
     }
 }
 

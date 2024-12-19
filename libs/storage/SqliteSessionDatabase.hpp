@@ -63,6 +63,12 @@ public:
     std::shared_ptr<GetSessionResult> getSessionByIndexAsync(std::size_t index) noexcept override;
 
     /**
+     * @copydoc ISessionDatabase::getSessionMetaDataByIndexAsync(Common::SessionMetaData const& metadata)
+     */
+    std::shared_ptr<GetSessionResult> getSessionByMetadataAsync(
+        Common::SessionMetaData const& metadata) noexcept override;
+
+    /**
      * @copydoc ISessionDatabase::getSessionMetaDataByIndexAsync(std::size_t index)
      */
     std::shared_ptr<GetSessionMetaDataResult> getSessionMetaDataByIndexAsync(std::size_t index) noexcept override;
@@ -83,6 +89,7 @@ private:
     void readSession(std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionData>> ctx) const;
     void readSessionMetaData(
         std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionMetaData>> ctx) const;
+    void readSessionByMetaData(std::shared_ptr<Private::SessionStorageContextWithValue<Common::SessionData>> ctx) const;
     std::optional<std::size_t> readSessionIdOfIndex(std::size_t sessionIndex) const noexcept;
     std::optional<std::size_t> readSessionId(Common::SessionData const& session) const noexcept;
     std::optional<std::size_t> readIndexOfSessionId(std::size_t sessionId) const noexcept;
@@ -94,10 +101,13 @@ private:
     std::optional<std::size_t> readLapId(std::size_t sessionId, std::size_t lapIndex) const noexcept;
     std::optional<Common::SessionData> readSession(std::size_t index) const;
     std::optional<Common::SessionMetaData> readSessionMetaData(std::size_t index) const;
+    std::optional<Common::SessionData> readSessionByMetaData(Common::SessionMetaData const& metadata) const;
 
     static void handleUpdates(void* objPtr, int event, char const* database, char const* table, sqlite3_int64 rowId);
 
     void updateIndexMapper();
+
+    std::optional<std::size_t> getIndexForSessionId(std::size_t sessionDbId) const;
 
     std::shared_ptr<Private::Connection> mDbConnection;
     std::map<std::size_t, std::size_t> mIndexMapper;

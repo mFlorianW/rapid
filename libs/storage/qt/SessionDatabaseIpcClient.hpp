@@ -84,6 +84,12 @@ public:
     std::shared_ptr<GetSessionResult> getSessionByIndexAsync(std::size_t index) noexcept override;
 
     /**
+     * @copydoc @ref ISessionDatabase::getSessionByIndexAsync
+     */
+    std::shared_ptr<GetSessionResult> getSessionByMetadataAsync(
+        Common::SessionMetaData const& session) noexcept override;
+
+    /**
      * @copydoc @ref ISessionDatabase::getSessionMetaDataByIndexAsync
      */
     std::shared_ptr<GetSessionMetaDataResult> getSessionMetaDataByIndexAsync(std::size_t index) noexcept override;
@@ -101,7 +107,18 @@ public:
 Q_SIGNALS:
     void initialized();
 
+private Q_SLOTS:
+    void handleSessionResponse(QDBusPendingCallWatcher* self, std::shared_ptr<Rapid::Storage::GetSessionResult> result);
+    void handleSessionMetaDataResponse(QDBusPendingCallWatcher* self,
+                                       std::shared_ptr<Rapid::Storage::GetSessionMetaDataResult> result);
+
 private:
+    [[nodiscard]] std::optional<QString> writeExchangeFile(QString const& fileName,
+                                                           std::string const& content) const noexcept;
+    [[nodiscard]] std::optional<Common::SessionData> readExchangedSession(QString const& path) const noexcept;
+    [[nodiscard]] std::optional<Common::SessionMetaData> readExchangedSessionMetaData(
+        QString const& path) const noexcept;
+
     std::unique_ptr<DeRapidShellSessionDatabaseInterface> mInterface;
     std::unordered_map<QDBusPendingCallWatcher*, std::shared_ptr<QDBusPendingCallWatcher>> mPendingCalls;
     bool mInitialized = false;

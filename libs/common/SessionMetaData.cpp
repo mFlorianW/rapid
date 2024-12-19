@@ -58,4 +58,14 @@ TrackData const& SessionMetaData::getTrack() const noexcept
     return mData->mSessionTrack;
 }
 
+bool SessionMetaData::operator==(SessionMetaData const& rhs) const noexcept
+{
+    return mData == rhs.mData || *mData == *rhs.mData;
+}
+
+bool SessionMetaData::operator!=(SessionMetaData const& rhs) const noexcept
+{
+    return !(*this == rhs);
+}
+
 } // namespace Rapid::Common

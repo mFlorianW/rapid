@@ -96,6 +96,25 @@ struct SessionStorageContext : public StorageContext<Common::SessionData>
 
     bool mIsUpdateContext = false;
     std::size_t mSessionId = std::size_t{0};
+    Common::SessionMetaData mSessionData;
+};
+
+struct SessionMetaDataStorageContext : public StorageContext<Common::SessionMetaData>
+{
+    SessionMetaDataStorageContext() = default;
+
+    SessionMetaDataStorageContext(std::shared_ptr<System::AsyncResult> result)
+        : StorageContext<Common::SessionMetaData>{result}
+    {
+    }
+
+    ~SessionMetaDataStorageContext() override = default;
+
+    SessionMetaDataStorageContext(SessionMetaDataStorageContext const& other) = delete;
+    SessionMetaDataStorageContext& operator=(SessionMetaDataStorageContext const& ohter) = delete;
+
+    SessionMetaDataStorageContext(SessionMetaDataStorageContext&& other) noexcept = delete;
+    SessionMetaDataStorageContext& operator=(SessionMetaDataStorageContext&& ohter) = delete;
 };
 
 struct TrackStorageContext : public StorageContext<Common::TrackData>
