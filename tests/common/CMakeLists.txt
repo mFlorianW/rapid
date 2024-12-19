@@ -33,13 +33,15 @@ if(ENABLE_QT)
     add_executable(test_common_qt)
     target_sources(test_common_qt
         PRIVATE
+            test_common_qt_main.cpp
             test_GlobalSettingsReader.cpp
             test_TableModelDataProvider.cpp
             test_GenericTableModel.cpp
+            test_LapDataProvider.cpp
     )
     target_link_libraries(test_common_qt
         PRIVATE
-            Catch2::Catch2WithMain
+            Catch2::Catch2
             Qt6::Test
             Rapid::CommonQt
             Rapid::TestHelperQt
