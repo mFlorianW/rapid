@@ -83,7 +83,7 @@ public:
 
     /**
      * @brief Gives the amount of columns for table model.
-     * @return The amount of columns
+     * @return The names of the columns
      */
     QStringList getColumnNames() const noexcept
     {
