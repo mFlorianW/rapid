@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <QSignalSpy>
-#include <QtTestHelper.hpp>
-#include <RapidApplication.hpp>
 #include <TableModelDataProvider.hpp>
 #include <catch2/catch_all.hpp>
 #include <catch2/trompeloeil.hpp>
@@ -118,5 +116,3 @@ TEST_CASE("The TableModelDataProvider shall provide the item for an index")
         REQUIRE(item == std::nullopt);
     }
 }
-
-QT_CATCH2_TEST_MAIN();
