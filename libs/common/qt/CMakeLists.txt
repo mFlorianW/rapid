@@ -10,12 +10,15 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/GlobalSettingsTypes.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TableModelDataProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GenericTableModel.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/LapDataProvider.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/LapDataProvider.hpp
 )
 
 target_link_libraries(CommonObjectQt
 PUBLIC
     Qt6::Core
     Qt6::Network
+    Rapid::Common
 )
 
 target_include_directories(CommonObjectQt
