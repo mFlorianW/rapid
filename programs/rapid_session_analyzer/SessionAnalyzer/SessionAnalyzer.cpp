@@ -5,6 +5,7 @@
 #include "SessionAnalyzer.hpp"
 #include "ui_SessionAnalyzer.h"
 #include <QQuickWindow>
+#include <SessionAnalyzeWorkflow.hpp>
 #include <spdlog/spdlog.h>
 
 namespace Rapid::SessionAnalyzer
@@ -14,6 +15,7 @@ SessionAnalyzer::SessionAnalyzer()
     : QMainWindow{}
     , mMainWindow{std::make_unique<Ui::SessionAnalyzer>()}
     , mSessionDatabase{std::make_unique<Storage::Qt::SessionDatabaseIpcClient>()}
+    , mSessionAnalyzerWorkflow{std::make_unique<Workflow::Qt::SessionAnalyzeWorkflow>()}
 {
     mMainWindow->setupUi(this);
     connect(mMainWindow->actionQuit, &QAction::triggered, this, []() {
@@ -34,6 +36,11 @@ SessionAnalyzer::SessionAnalyzer()
                 this,
                 &SessionAnalyzer::onSessionSelected);
     });
+
+    // Configure LapDataView
+    mMainWindow->LapDataView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    mMainWindow->LapDataView->setSelectionMode(QAbstractItemView::SingleSelection);
+    mMainWindow->LapDataView->horizontalHeader()->setStretchLastSection(true);
 }
 
 SessionAnalyzer::~SessionAnalyzer() = default;
@@ -49,11 +56,13 @@ void SessionAnalyzer::onSessionSelected(Rapid::Common::SessionMetaData const& se
         auto resultPtr = mSessionRequests.at(result);
         auto maybeSession = resultPtr->getResultValue();
         if (maybeSession.has_value()) {
-            auto sessoin = maybeSession.value();
+            auto session = maybeSession.value();
+            mSessionAnalyzerWorkflow->setSession(session);
+            mMainWindow->LapDataView->setModel(mSessionAnalyzerWorkflow->lapModel.get().get());
             SPDLOG_INFO("{} {} {} selected for analyzing ...",
-                        sessoin.getSessionDate().asString(),
-                        sessoin.getSessionTime().asString(),
-                        sessoin.getTrack().getTrackName());
+                        session.getSessionDate().asString(),
+                        session.getSessionTime().asString(),
+                        session.getTrack().getTrackName());
         }
     });
 }
