@@ -4,6 +4,7 @@
 
 #pragma once
 #include "SessionSelectionDialog.hpp"
+#include <ISessionAnalyzeWorkflow.hpp>
 #include <QMainWindow>
 #include <SessionDatabaseIpcClient.hpp>
 #include <SessionMetaData.hpp>
@@ -47,6 +48,7 @@ private:
     std::unique_ptr<Storage::Qt::SessionDatabaseIpcClient> mSessionDatabase;
     std::unique_ptr<SessionSelectionDialog> mSessionSelectionDialog;
     std::unordered_map<System::AsyncResult*, std::shared_ptr<Storage::GetSessionResult>> mSessionRequests;
+    std::unique_ptr<Workflow::Qt::ISessionAnalyzeWorkflow> mSessionAnalyzerWorkflow;
 };
 
 } // namespace Rapid::SessionAnalyzer

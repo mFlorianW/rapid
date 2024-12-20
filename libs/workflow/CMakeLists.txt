@@ -31,3 +31,7 @@ PUBLIC
     Rapid::Storage
     Rapid::Rest
 )
+
+if(ENABLE_QT)
+    add_subdirectory(qt)
+endif()
