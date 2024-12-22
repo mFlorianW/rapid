@@ -16,7 +16,7 @@ target_link_libraries(rapid_headless
 PRIVATE
     spdlog::spdlog
     Boost::program_options
-    Rapid::LibraryPath
+    Rapid::DatabaseFile
     Rapid::System
     Rapid::Positioning
     Rapid::Storage
