@@ -58,7 +58,7 @@ if(ENABLE_VCPKG)
 else()
     find_package(SQLite3 REQUIRED)
 endif()
-find_package(Boost CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED COMPONENTS program_options)
 add_definitions(-DWITH_BOOST)
 find_package(nlohmann_json CONFIG REQUIRED)
 

@@ -14,7 +14,8 @@
     },
     "spdlog",
     "sqlite3",
-    "trompeloeil"
+    "trompeloeil",
+    "boost-program-options"
   ],
   "overrides": [
     {
