@@ -6,7 +6,6 @@
 #include <ConstantGpsPositionProvider.hpp>
 #include <DatabaseFile.hpp>
 #include <EventLoop.hpp>
-#include <LibraryPath.hpp>
 #include <PositionData.hpp>
 #include <SqliteSessionDatabase.hpp>
 #include <SqliteTrackDatabase.hpp>

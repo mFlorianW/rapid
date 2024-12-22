@@ -1,9 +1,0 @@
-// SPDX-FileCopyrightText: 2024 All contributors
-//
-// SPDX-License-Identifier: GPL-2.0-or-later
-#ifndef LIBRARYPATH_HPP
-#define LIBRARYPATH_HPP
-
-constexpr auto LIBRARY_FILE = "@LIBRARY_FILE@";
-
-#endif // LIBRARYPATH_HPP

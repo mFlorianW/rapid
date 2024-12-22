@@ -8,19 +8,8 @@ add_custom_command(OUTPUT rapid.db
 
 add_custom_target(db ALL DEPENDS rapid.db)
 
-set(LIBRARY_FILE ${CMAKE_CURRENT_BINARY_DIR}/rapid.db)
 set(DATABASE_FILE ${CMAKE_INSTALL_PREFIX}/${SHARED_DATADIR}/rapid.db)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/LibraryPath.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/LibraryPath.hpp @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DatabaseFile.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/DatabaseFile.hpp @ONLY)
-
-add_library(LibraryPath INTERFACE)
-add_library(Rapid::LibraryPath ALIAS LibraryPath)
-add_dependencies(LibraryPath db)
-
-target_include_directories(LibraryPath
-INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-)
 
 add_library(DatabaseFile INTERFACE)
 add_library(Rapid::DatabaseFile ALIAS DatabaseFile)
