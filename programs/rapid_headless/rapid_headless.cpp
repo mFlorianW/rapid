@@ -4,6 +4,7 @@
 
 #include "RapidHeadless.hpp"
 #include <ConstantGpsPositionProvider.hpp>
+#include <DatabaseFile.hpp>
 #include <EventLoop.hpp>
 #include <LibraryPath.hpp>
 #include <PositionData.hpp>
@@ -12,6 +13,7 @@
 #include <array>
 #include <boost/program_options.hpp>
 #include <csignal>
+#include <filesystem>
 #include <fstream>
 #include <pwd.h>
 #include <spdlog/spdlog.h>
@@ -28,6 +30,37 @@ using namespace boost::program_options;
 
 namespace
 {
+
+#ifdef __linux__
+
+#include <pwd.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+std::optional<std::string> setupDatabase()
+{
+    namespace fs = std::filesystem;
+    char const* hDir = getpwuid(getuid())->pw_dir;
+    auto const dbLocation = fs::path{std::format("{}/.local/share/rapid-headless", hDir)};
+    auto const dbFile = fs::path{std::format("{}/rapid.db", dbLocation.generic_string())};
+    try {
+        if (not fs::exists(dbLocation) && not fs::create_directories(dbLocation)) {
+            SPDLOG_ERROR("Failed to create database location: {} ", dbLocation.generic_string());
+            return std::nullopt;
+        }
+        if (not fs::exists(dbFile) && not fs::copy_file(DATABASE_FILE, dbFile)) {
+            SPDLOG_ERROR("Failed to copy database file from {} to {}", DATABASE_FILE, dbLocation.generic_string());
+            return std::nullopt;
+        }
+    } catch (fs::filesystem_error const& e) {
+        SPDLOG_ERROR("Failed to setup database. Filesystem error: {}", e.what());
+        return std::nullopt;
+    }
+    SPDLOG_INFO("Successful setup database file {}", dbFile.generic_string());
+    return dbFile;
+}
+
+#endif
 
 void signalHandler(int)
 {
@@ -119,10 +152,14 @@ int main(int argc, char** argv)
     positionProvider.start();
 
     // Setup session database
-    auto sessionDatabase = SqliteSessionDatabase{LIBRARY_FILE};
+    auto const maybeDbFile = setupDatabase();
+    if (not maybeDbFile.has_value()) {
+        return 0;
+    }
+    auto sessionDatabase = SqliteSessionDatabase{maybeDbFile.value()};
 
     // Setup track database
-    auto trackDatabase = SqliteTrackDatabase{LIBRARY_FILE};
+    auto trackDatabase = SqliteTrackDatabase{maybeDbFile.value()};
 
     // Setup headless laptimer
     auto laptimer = LappyHeadless{positionProvider, sessionDatabase, trackDatabase};

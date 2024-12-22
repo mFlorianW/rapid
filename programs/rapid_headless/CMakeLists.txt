@@ -22,3 +22,5 @@ PRIVATE
     Rapid::Storage
     Rapid::Workflow
 )
+
+install(TARGETS rapid_headless DESTINATION ${BINDIR})
