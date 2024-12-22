@@ -15,9 +15,12 @@ PRIVATE
 target_link_libraries(rapid_headless
 PRIVATE
     spdlog::spdlog
+    Boost::program_options
     Rapid::LibraryPath
     Rapid::System
     Rapid::Positioning
     Rapid::Storage
     Rapid::Workflow
 )
+
+install(TARGETS rapid_headless DESTINATION ${BINDIR})
