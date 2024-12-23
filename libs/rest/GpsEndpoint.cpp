@@ -4,18 +4,20 @@
 
 #include "GpsEndpoint.hpp"
 #include "RestRequest.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 using namespace Rapid::Common;
 
 namespace Rapid::Rest
 {
+
 GpsEndpoint::GpsEndpoint() = default;
 GpsEndpoint::~GpsEndpoint() = default;
 
-RequestHandleResult GpsEndpoint::handleRestRequest(RestRequest& request) noexcept
+void GpsEndpoint::handleRestRequest(RestRequest& request) noexcept
 {
+    auto result = RequestHandleResult::Error;
     try {
         auto jsonDoc = nlohmann::ordered_json{}.parse(request.getRequestBody());
         auto newPos = GpsPositionData{};
@@ -25,12 +27,16 @@ RequestHandleResult GpsEndpoint::handleRestRequest(RestRequest& request) noexcep
         std::string longitude = jsonDoc["longitude"];
         newPos.setPosition({std::stof(latitude), std::stof(longitude)});
         gpsPosition = newPos;
-
+        result = RequestHandleResult::Ok;
     } catch (std::exception const& e) {
         SPDLOG_ERROR("Failed to handle REST request unexpected error during deserialization. Error: {}", e.what());
-        return RequestHandleResult::Error;
     }
 
-    return RequestHandleResult::Ok;
+    try {
+        finished.emit(result, request);
+    } catch (std::exception const& e) {
+        SPDLOG_ERROR("Failed to emit finished the signal is already emitting. Error: {}", e.what());
+    }
 }
+
 } // namespace Rapid::Rest

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "GpsEndpoint.hpp"
+#include <CompareHelper.hpp>
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Rest;
@@ -25,9 +26,13 @@ TEST_CASE("The GpsEndpoint shall parse the JSON RestRequest and shall update the
     expectedResult.setDate({"01.00.0123"});
     expectedResult.setTime({"17:19:05.045"});
     expectedResult.setPosition({52.02739715576172, 11.278840065002441});
+    RequestHandleResult handleResult = RequestHandleResult::Error;
 
-    auto const handleResult = source.handleRestRequest(restRequest);
+    std::ignore = source.finished.connect([&handleResult](auto&& result, auto&&) {
+        handleResult = result;
+    });
+    source.handleRestRequest(restRequest);
 
-    REQUIRE(handleResult == RequestHandleResult::Ok);
+    REQUIRE_COMPARE_WITH_TIMEOUT(handleResult, RequestHandleResult::Ok, std::chrono::milliseconds{10});
     REQUIRE(source.gpsPosition.get() == expectedResult);
 }

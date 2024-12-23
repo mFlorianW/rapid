@@ -15,11 +15,11 @@ class SessionEndpoint : public IRestRequestHandler
 public:
     SessionEndpoint(Storage::ISessionDatabase& database) noexcept;
 
-    RequestHandleResult handleRestRequest(RestRequest& request) noexcept override;
+    void handleRestRequest(RestRequest& request) noexcept override;
 
 private:
-    RequestHandleResult handleGetRequest(RestRequest& request) noexcept;
-    RequestHandleResult handleDeleteRequest(RestRequest& request) noexcept;
+    void handleGetRequest(RestRequest& request) noexcept;
+    void handleDeleteRequest(RestRequest& request) noexcept;
 
 private:
     Storage::ISessionDatabase& mDb;

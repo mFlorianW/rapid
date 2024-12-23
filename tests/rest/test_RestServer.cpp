@@ -105,12 +105,16 @@ private:
 class TestRequestHandler : public IRestRequestHandler
 {
 public:
-    RequestHandleResult handleRestRequest(RestRequest& request) noexcept override
+    void handleRestRequest(RestRequest& request) noexcept override
     {
-        mHandlerCalled = true;
-        request.setReturnBody(mBody);
-        request.setReturnType(mReturnType);
-        return RequestHandleResult::Ok;
+        try {
+            mHandlerCalled = true;
+            request.setReturnBody(mBody);
+            request.setReturnType(mReturnType);
+            finished.emit(RequestHandleResult::Ok, request);
+        } catch (std::exception const& e) {
+            SPDLOG_ERROR("Failed to emit finished signal already emitting. Error: {}", e.what());
+        }
     }
 
     bool isHandlerCalled() const noexcept

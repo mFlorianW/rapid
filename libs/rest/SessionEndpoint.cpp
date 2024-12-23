@@ -21,56 +21,52 @@ SessionEndpoint::SessionEndpoint(Storage::ISessionDatabase& database) noexcept
 {
 }
 
-RequestHandleResult SessionEndpoint::handleRestRequest(RestRequest& request) noexcept
+void SessionEndpoint::handleRestRequest(RestRequest& request) noexcept
 {
     if ((request.getPath().getDepth() < 1) || (request.getPath().getEntry(0) != endpointIdentifier)) {
-        return RequestHandleResult::Error;
+        finished.emit(RequestHandleResult::Error, request);
     } else if (request.getType() == RequestType::Get) {
-        return handleGetRequest(request);
+        handleGetRequest(request);
     } else if (request.getType() == RequestType::Delete) {
-        return handleDeleteRequest(request);
+        handleDeleteRequest(request);
     }
-
-    return RequestHandleResult::Error;
 }
 
-RequestHandleResult SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
+void SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
 {
     if (request.getPath().getDepth() == 1) {
         auto responsebody = nlohmann::ordered_json{};
         responsebody["count"] = mDb.getSessionCount();
         request.setReturnBody(responsebody.dump());
-        return RequestHandleResult::Ok;
+        finished.emit(RequestHandleResult::Error, request);
     } else if (request.getPath().getDepth() == 2) {
         auto sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
         if (!sessionId.has_value()) {
-            return RequestHandleResult::Error;
+            finished.emit(RequestHandleResult::Error, request);
         }
 
         auto const session = mDb.getSessionByIndex(sessionId.value());
         if (!session.has_value()) {
-            return RequestHandleResult::Error;
+            finished.emit(RequestHandleResult::Error, request);
         }
 
         auto rawBody = Common::JsonSerializer::Session::serialize(session.value());
         request.setReturnBody(rawBody);
-        return RequestHandleResult::Ok;
+        finished.emit(RequestHandleResult::Ok, request);
     }
-
-    return RequestHandleResult::Error;
 }
 
-RequestHandleResult SessionEndpoint::handleDeleteRequest(RestRequest& request) noexcept
+void SessionEndpoint::handleDeleteRequest(RestRequest& request) noexcept
 {
     if (request.getPath().getDepth() == 2) {
         auto const sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
         if (!sessionId.has_value()) {
-            return RequestHandleResult::Error;
+            finished.emit(RequestHandleResult::Error, request);
         }
         mDb.deleteSession(sessionId.value());
-        return RequestHandleResult::Ok;
+        finished.emit(RequestHandleResult::Ok, request);
     }
-    return RequestHandleResult::Error;
+    finished.emit(RequestHandleResult::Error, request);
 }
 
 namespace

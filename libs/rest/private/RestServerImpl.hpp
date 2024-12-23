@@ -13,6 +13,7 @@
 namespace Rapid::Rest::Private
 {
 class BoostServer;
+class ClientConnection;
 class RestServerImpl : public Rest::IRestServer, public System::EventHandler
 {
 public:
@@ -68,11 +69,13 @@ public:
     bool handleEvent(System::Event* event) noexcept override;
 
 private:
-    RequestHandleResult handleGetRequest(RestRequest& request) noexcept;
+    void handleGetRequest(RestRequest& request, ClientConnection* connection) noexcept;
+    void handleFinishedGetRequest(RequestHandleResult result, RestRequest const& request);
 
     std::thread mServerThread;
     BoostServer* mBoostServer = nullptr;
     std::unordered_map<std::string, IRestRequestHandler*> mGetHandlers;
+    std::unordered_map<std::string_view, ClientConnection*> mProcessingGetRequests;
 };
 
 } // namespace Rapid::Rest::Private
