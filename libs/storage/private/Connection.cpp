@@ -51,6 +51,7 @@ Connection::Connection(std::string database)
                         SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_PRIVATECACHE,
                         nullptr) == SQLITE_OK) {
         sqlite3_exec(mHandle, "PRAGMA foreign_keys = 1", nullptr, nullptr, nullptr);
+        sqlite3_exec(mHandle, "PRAGMA journal_mode = wal", nullptr, nullptr, nullptr);
         return;
     }
 
