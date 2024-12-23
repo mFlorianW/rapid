@@ -213,9 +213,11 @@ void SqliteSessionDatabase::updateSession(Private::SessionStorageContext* ctx)
         return;
     }
 
+    auto commitGuard = CommitGuard{*mDbConnection};
     for (std::size_t lapIndex = storedLaps->size(); lapIndex < sessionLaps.size(); ++lapIndex) {
         if (!saveLapOfSession(context->mSessionId, lapIndex, context->mStorageObject.getLaps().at(lapIndex))) {
             ctx->mStoragePromise.set_value(false);
+            commitGuard.setRollback();
             return;
         }
     }
@@ -223,6 +225,7 @@ void SqliteSessionDatabase::updateSession(Private::SessionStorageContext* ctx)
     auto const updatedIndex = readIndexOfSessionId(context->mSessionId);
     if (!updatedIndex.has_value()) {
         ctx->mStoragePromise.set_value(false);
+        commitGuard.setRollback();
         return;
     }
     ctx->mStoragePromise.set_value(true);
@@ -236,6 +239,7 @@ void SqliteSessionDatabase::saveSession(Private::SessionStorageContext* ctx)
     }
 
     auto context = mStorageCache.at(ctx);
+    auto commitGuard = CommitGuard{*mDbConnection};
     // clang-format off
     constexpr auto insertQuery = "INSERT INTO SESSION (TrackId, Date, Time) "
                                  "VALUES "
@@ -252,6 +256,7 @@ void SqliteSessionDatabase::saveSession(Private::SessionStorageContext* ctx)
     if (bindError or (insertStm.execute() != ExecuteResult::Ok)) {
         spdlog::error("Error insert session. Error:", mDbConnection->getErrorMessage());
         ctx->mStoragePromise.set_value(false);
+        commitGuard.setRollback();
         return;
     }
 
@@ -260,6 +265,7 @@ void SqliteSessionDatabase::saveSession(Private::SessionStorageContext* ctx)
     if (!sessionId.has_value()) {
         spdlog::error("Failed to query session of new stored session");
         ctx->mStoragePromise.set_value(false);
+        commitGuard.setRollback();
         return;
     }
 
@@ -268,6 +274,7 @@ void SqliteSessionDatabase::saveSession(Private::SessionStorageContext* ctx)
     for (std::size_t lapIndex = 0; lapIndex < laps.size(); ++lapIndex) {
         if (!saveLapOfSession(sessionId.value(), lapIndex, laps.at(lapIndex))) {
             ctx->mStoragePromise.set_value(false);
+            commitGuard.setRollback();
             return;
         }
     }
