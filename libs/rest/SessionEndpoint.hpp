@@ -20,9 +20,16 @@ public:
 private:
     void handleGetRequest(RestRequest& request) noexcept;
     void handleDeleteRequest(RestRequest& request) noexcept;
+    void onSessionResult(System::AsyncResult* result);
 
 private:
     Storage::ISessionDatabase& mDb;
+    struct SessionGetDataRequest
+    {
+        std::shared_ptr<Storage::GetSessionResult> sessionResult;
+        RestRequest request;
+    };
+    std::unordered_map<System::AsyncResult*, SessionGetDataRequest> mGetSessionRequests;
 };
 
 } // namespace Rapid::Rest
