@@ -165,7 +165,7 @@ void SqliteTrackDatabase::deleteTrack(std::shared_ptr<Private::TrackStorageConte
     auto deleteTrackStm = Statement{*mDbConnection};
     auto const bindError = deleteTrackStm.prepare(deleteTrackQuery).bindValue(1, static_cast<int>(*trackId)).hasError();
     if (bindError or (deleteTrackStm.execute() != ExecuteResult::Ok)) {
-        spdlog::error("Failed to delete track. Error: {}", mDbConnection->getErrorMessage());
+        SPDLOG_ERROR("Failed to delete track. Error: {}", mDbConnection->getErrorMessage());
         ctx->mStoragePromise.set_value(false);
         return;
     }
@@ -175,9 +175,11 @@ void SqliteTrackDatabase::deleteTrack(std::shared_ptr<Private::TrackStorageConte
 void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext> ctx)
 {
     auto const track = ctx->mStorageObject;
+    auto commitGuard = CommitGuard{*mDbConnection};
     auto const finishlineId = savePosition(track.getFinishline());
     if (not finishlineId.has_value()) {
         SPDLOG_ERROR("Failed to save track finish line. Error: {}", mDbConnection->getErrorMessage());
+        commitGuard.setRollback();
         ctx->mStoragePromise.set_value(false);
         return;
     }
@@ -187,7 +189,7 @@ void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext
     if (startlinePos.getLongitude() > 0 && startlinePos.getLatitude() > 0) {
         startlineId = savePosition(startlinePos);
         if (not startlineId.has_value()) {
-            spdlog::error("Failed to save track start line. Error: {}", mDbConnection->getErrorMessage());
+            SPDLOG_ERROR("Failed to save track start line. Error: {}", mDbConnection->getErrorMessage());
             ctx->mStoragePromise.set_value(false);
             return;
         }
@@ -195,7 +197,8 @@ void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext
 
     auto const trackId = saveTrack(track.getTrackName(), finishlineId.value(), startlineId);
     if (not trackId.has_value()) {
-        spdlog::error("Failed to save track. Error: {}", mDbConnection->getErrorMessage());
+        SPDLOG_ERROR("Failed to save track. Error: {}", mDbConnection->getErrorMessage());
+        commitGuard.setRollback();
         ctx->mStoragePromise.set_value(false);
         return;
     }
@@ -203,7 +206,8 @@ void SqliteTrackDatabase::saveTrack(std::shared_ptr<Private::TrackStorageContext
     auto const sections = track.getSections();
     for (std::size_t index = 0; index < sections.size(); ++index) {
         if (not saveSection(trackId.value(), sections.at(index), index)) {
-            spdlog::error("Failed to save section of track. Error {}", mDbConnection->getErrorMessage());
+            commitGuard.setRollback();
+            SPDLOG_ERROR("Failed to save section of track. Error {}", mDbConnection->getErrorMessage());
         }
     }
     ctx->mStoragePromise.set_value(true);
@@ -277,7 +281,7 @@ std::vector<std::size_t> SqliteTrackDatabase::readTrackIds() const noexcept
     // clang-format on
     auto trackIdStm = Statement{*mDbConnection};
     if (trackIdStm.prepare(trackIdQuery).hasError()) {
-        spdlog::error("Failed to prepare track id query. Error: {}", mDbConnection->getErrorMessage());
+        SPDLOG_ERROR("Failed to prepare track id query. Error: {}", mDbConnection->getErrorMessage());
         return {};
     }
 
@@ -477,7 +481,7 @@ std::optional<std::size_t> SqliteTrackDatabase::readTrackCount()
     constexpr auto statementStr = "SELECT COUNT(TrackId) FROM Track";
     Statement stm{*mDbConnection};
     if (stm.prepare(statementStr).hasError() or stm.execute() != ExecuteResult::Row or stm.getColumnCount() == 0) {
-        spdlog::error("Database Error: {}", mDbConnection->getErrorMessage());
+        SPDLOG_ERROR("Database Error: {}", mDbConnection->getErrorMessage());
         return std::nullopt;
     }
     return stm.getColumn<int>(0).value_or(0);
@@ -541,7 +545,7 @@ bool SqliteTrackDatabase::updateIndexMapper()
     // clang-format on
     auto trackIdStm = Statement{*mDbConnection};
     if (trackIdStm.prepare(trackIdQuery).hasError()) {
-        spdlog::error("Failed to query track id count. Error: {}", mDbConnection->getErrorMessage());
+        SPDLOG_ERROR("Failed to query track id count. Error: {}", mDbConnection->getErrorMessage());
         return false;
     }
     mIndexMapper.clear();
