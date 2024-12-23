@@ -51,6 +51,7 @@ Connection::Connection(std::string database)
                         SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_PRIVATECACHE,
                         nullptr) == SQLITE_OK) {
         sqlite3_exec(mHandle, "PRAGMA foreign_keys = 1", nullptr, nullptr, nullptr);
+        sqlite3_exec(mHandle, "PRAGMA journal_mode = wal", nullptr, nullptr, nullptr);
         return;
     }
 
@@ -74,6 +75,41 @@ sqlite3* Connection::getRawHandle() const noexcept
     }
 
     return mHandle;
+}
+
+void Connection::beginTransaction()
+{
+    sqlite3_exec(mHandle, "BEGIN TRANSACTION", nullptr, nullptr, nullptr);
+}
+
+void Connection::commitTransaction()
+{
+    sqlite3_exec(mHandle, "COMMIT", nullptr, nullptr, nullptr);
+}
+
+void Connection::rollback()
+{
+    sqlite3_exec(mHandle, "ROLLBACK", nullptr, nullptr, nullptr);
+}
+
+CommitGuard::CommitGuard(Connection& connection)
+    : mConnection{connection}
+{
+    mConnection.beginTransaction();
+}
+
+CommitGuard::~CommitGuard()
+{
+    if (mRollback) {
+
+    } else {
+        mConnection.commitTransaction();
+    }
+}
+
+void CommitGuard::setRollback()
+{
+    mRollback = true;
 }
 
 } // namespace Rapid::Storage::Private

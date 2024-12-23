@@ -71,10 +71,69 @@ public:
      */
     sqlite3* getRawHandle() const noexcept;
 
+    /**
+     * Begins a transaction on the database.
+     */
+    void beginTransaction();
+
+    /**
+     * Commits the latest transactions on the database.
+     */
+    void commitTransaction();
+
+    /**
+     * Reverted the changes made since beginTransaction
+     */
+    void rollback();
+
 private:
     sqlite3* mHandle{nullptr};
     std::string mDatabase;
     static std::unordered_map<std::string, std::weak_ptr<Connection>> sConnections;
+};
+
+class CommitGuard
+{
+public:
+    /**
+     * Begins the transcation
+     * @param The connection on which the transaction shall be started.
+     */
+    CommitGuard(Connection& connection);
+
+    /**
+     * Commits the transaction
+     */
+    ~CommitGuard();
+
+    /**
+     * Marks the @ref CommitGurad to revert the transactions instead of commiting.
+     */
+    void setRollback();
+
+    /**
+     * Disabled move constructor
+     */
+    CommitGuard(CommitGuard const&) = delete;
+
+    /**
+     * Disabled copy operator
+     */
+    CommitGuard& operator=(CommitGuard const&) = delete;
+
+    /**
+     * Disabled move constructor
+     */
+    CommitGuard(CommitGuard&&) noexcept = delete;
+
+    /**
+     * Disabled copy operator
+     */
+    CommitGuard& operator=(CommitGuard&&) noexcept = delete;
+
+private:
+    Connection& mConnection;
+    bool mRollback = false;
 };
 
 } // namespace Rapid::Storage::Private
