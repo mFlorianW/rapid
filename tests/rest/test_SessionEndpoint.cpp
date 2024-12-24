@@ -19,15 +19,24 @@ SCENARIO("Calling the Session endpoint /sessions with GET shall return the sessi
         auto db = SessionDatabaseMock{};
         auto endpoint = SessionEndpoint{db};
         REQUIRE_CALL(db, getSessionCount()).RETURN(2);
+        bool finished = false;
+        auto expectedReturnBody = std::string{R"({"count":2})"};
+        std::string returnBody;
+        std::ignore = endpoint.finished.connect([&finished, &returnBody](auto&& result, auto&& request) {
+            REQUIRE(result == RequestHandleResult::Ok);
+            returnBody = request.getReturnBody();
+            finished = true;
+        });
 
         WHEN("Requesting the top folder /sessions shall return the session count")
         {
             auto request = RestRequest{RequestType::Get, "/sessions"};
             endpoint.handleRestRequest(request);
-            THEN("Give the correct session id list.")
+            THEN("The finished signal is emitted and the correct return body is set")
             {
-                auto expectedReturnBody = std::string{R"({"count":2})"};
-                REQUIRE(request.getReturnBody() == expectedReturnBody);
+                // REQUIRE_COMPARE_WITH_TIMEOUT(finished, true, std::chrono::milliseconds{1});
+                REQUIRE(finished == true);
+                REQUIRE(returnBody == expectedReturnBody);
             }
         }
     }
