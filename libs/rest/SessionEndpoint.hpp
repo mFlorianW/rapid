@@ -15,14 +15,21 @@ class SessionEndpoint : public IRestRequestHandler
 public:
     SessionEndpoint(Storage::ISessionDatabase& database) noexcept;
 
-    RequestHandleResult handleRestRequest(RestRequest& request) noexcept override;
+    void handleRestRequest(RestRequest& request) noexcept override;
 
 private:
-    RequestHandleResult handleGetRequest(RestRequest& request) noexcept;
-    RequestHandleResult handleDeleteRequest(RestRequest& request) noexcept;
+    void handleGetRequest(RestRequest& request) noexcept;
+    void handleDeleteRequest(RestRequest& request) noexcept;
+    void onSessionResult(System::AsyncResult* result);
 
 private:
     Storage::ISessionDatabase& mDb;
+    struct SessionGetDataRequest
+    {
+        std::shared_ptr<Storage::GetSessionResult> sessionResult;
+        RestRequest request;
+    };
+    std::unordered_map<System::AsyncResult*, SessionGetDataRequest> mGetSessionRequests;
 };
 
 } // namespace Rapid::Rest

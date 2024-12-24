@@ -29,6 +29,8 @@ std::string getReturnType(RestRequest const& request)
     return std::string{"text/plain"};
 }
 
+} // namespace
+
 class ClientConnection
 {
 public:
@@ -102,8 +104,6 @@ private:
     Http::response<Http::string_body> mResponse;
     RestRequest mRestRequest;
 };
-
-} // namespace
 
 using Request = std::tuple<ClientConnection*, Rapid::Rest::RestRequest>;
 
@@ -221,6 +221,9 @@ void RestServerImpl::registerPostHandler(std::string const& root, IRestRequestHa
 void RestServerImpl::registerGetHandler(std::string const& root, IRestRequestHandler* handler) noexcept
 {
     mGetHandlers.insert({root, handler});
+    std::ignore = handler->finished.connect([this](auto&& result, auto&& restRequest) {
+        handleFinishedGetRequest(result, restRequest);
+    });
 }
 
 bool RestServerImpl::handleEvent(System::Event* event) noexcept
@@ -231,12 +234,7 @@ bool RestServerImpl::handleEvent(System::Event* event) noexcept
             auto conn = std::get<0>(nextRequest);
             auto request = std::get<1>(nextRequest);
             if (request.getType() == Rest::RequestType::Get) {
-                auto result = handleGetRequest(request);
-                try {
-                    conn->sendResponse(result, std::string{request.getReturnBody()}, getReturnType(request));
-                } catch (...) {
-                    spdlog::error("Failed to send!");
-                }
+                handleGetRequest(request, conn);
             }
         }
         return true;
@@ -244,16 +242,34 @@ bool RestServerImpl::handleEvent(System::Event* event) noexcept
     return false;
 }
 
-RequestHandleResult RestServerImpl::handleGetRequest(RestRequest& request) noexcept
+void RestServerImpl::handleGetRequest(RestRequest& request, ClientConnection* conn) noexcept
 {
-    auto const path = request.getPath();
-    for (auto& [path, handler] : mGetHandlers) {
-        if (path.rfind("path")) {
-            return handler->handleRestRequest(request);
+    try {
+        auto const path = request.getPath();
+        for (auto& [path, handler] : mGetHandlers) {
+            if (path.rfind("path")) {
+                mProcessingGetRequests.insert({request.getPath().getPath(), conn});
+                handler->handleRestRequest(request);
+                return;
+            }
         }
+        conn->sendResponse(RequestHandleResult::Error, std::string{request.getReturnBody()}, getReturnType(request));
+    } catch (std::exception const& e) {
+        SPDLOG_ERROR("Failed to handle request for unexpected exception: {}", e.what());
     }
-    request.setReturnBody({"deine mudda"});
-    return RequestHandleResult::Error;
+}
+
+void RestServerImpl::handleFinishedGetRequest(RequestHandleResult result, RestRequest const& request)
+{
+    try {
+        auto conn = mProcessingGetRequests.at(request.getPath().getPath());
+        conn->sendResponse(result, std::string{request.getReturnBody()}, getReturnType(request));
+        mProcessingGetRequests.erase(request.getPath().getPath());
+    } catch (std::out_of_range const& e) {
+        SPDLOG_ERROR("No connection found for rquest on \"{}\"", request.getPath().getPath());
+    } catch (...) {
+        SPDLOG_ERROR("Failed to send response for request for {}", request.getPath().getPath());
+    }
 }
 
 } // namespace Rapid::Rest::Private

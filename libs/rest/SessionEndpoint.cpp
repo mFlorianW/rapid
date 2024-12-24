@@ -4,8 +4,8 @@
 
 #include "SessionEndpoint.hpp"
 #include <JsonSerializer.hpp>
-#include <charconv>
 #include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::Rest
 {
@@ -21,56 +21,87 @@ SessionEndpoint::SessionEndpoint(Storage::ISessionDatabase& database) noexcept
 {
 }
 
-RequestHandleResult SessionEndpoint::handleRestRequest(RestRequest& request) noexcept
+void SessionEndpoint::handleRestRequest(RestRequest& request) noexcept
 {
-    if ((request.getPath().getDepth() < 1) || (request.getPath().getEntry(0) != endpointIdentifier)) {
-        return RequestHandleResult::Error;
-    } else if (request.getType() == RequestType::Get) {
-        return handleGetRequest(request);
-    } else if (request.getType() == RequestType::Delete) {
-        return handleDeleteRequest(request);
-    }
+    try {
 
-    return RequestHandleResult::Error;
+        if ((request.getPath().getDepth() < 1) || (request.getPath().getEntry(0) != endpointIdentifier)) {
+            finished.emit(RequestHandleResult::Error, request);
+        } else if (request.getType() == RequestType::Get) {
+            handleGetRequest(request);
+        } else if (request.getType() == RequestType::Delete) {
+            handleDeleteRequest(request);
+        }
+    } catch (std::exception const& e) {
+        SPDLOG_ERROR("Failed to emit finished signal, already emitting. Error: {}", e.what());
+    }
 }
 
-RequestHandleResult SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
+void SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
 {
-    if (request.getPath().getDepth() == 1) {
-        auto responsebody = nlohmann::ordered_json{};
-        responsebody["count"] = mDb.getSessionCount();
-        request.setReturnBody(responsebody.dump());
-        return RequestHandleResult::Ok;
-    } else if (request.getPath().getDepth() == 2) {
-        auto sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
-        if (!sessionId.has_value()) {
-            return RequestHandleResult::Error;
+    try {
+        if (request.getPath().getDepth() == 1) {
+            auto responsebody = nlohmann::ordered_json{};
+            responsebody["count"] = mDb.getSessionCount();
+            request.setReturnBody(responsebody.dump());
+            finished.emit(RequestHandleResult::Error, request);
+        } else if (request.getPath().getDepth() == 2) {
+            auto sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
+            if (not sessionId.has_value()) {
+                finished.emit(RequestHandleResult::Error, request);
+            }
+            auto const asyncResult =
+                mDb.getSessionByIndexAsync(sessionId.value()); // NOLINT(bugprone-unchecked-optional-access)
+            mGetSessionRequests.insert(
+                {asyncResult.get(), SessionGetDataRequest{.sessionResult = asyncResult, .request = request}});
+            if (asyncResult->getResult() == System::Result::Ok) {
+                onSessionResult(asyncResult.get());
+            } else if (asyncResult->getResult() == System::Result::Error) {
+                finished.emit(RequestHandleResult::Error, request);
+            } else {
+                std::ignore = asyncResult->done.connect([this](auto* result) {
+                    onSessionResult(result);
+                });
+            }
         }
-
-        auto const session = mDb.getSessionByIndex(sessionId.value());
-        if (!session.has_value()) {
-            return RequestHandleResult::Error;
-        }
-
-        auto rawBody = Common::JsonSerializer::Session::serialize(session.value());
-        request.setReturnBody(rawBody);
-        return RequestHandleResult::Ok;
+    } catch (std::exception const& e) {
+        SPDLOG_ERROR("Failed to emit finished signal, already emitting. Error: {}", e.what());
     }
-
-    return RequestHandleResult::Error;
 }
 
-RequestHandleResult SessionEndpoint::handleDeleteRequest(RestRequest& request) noexcept
+void SessionEndpoint::handleDeleteRequest(RestRequest& request) noexcept
 {
-    if (request.getPath().getDepth() == 2) {
-        auto const sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
-        if (!sessionId.has_value()) {
-            return RequestHandleResult::Error;
+    try {
+        if (request.getPath().getDepth() == 2) {
+            auto const sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
+            if (not sessionId.has_value()) {
+                finished.emit(RequestHandleResult::Error, request);
+            }
+            mDb.deleteSession(sessionId.value()); // NOLINT(bugprone-unchecked-optional-access)
+            finished.emit(RequestHandleResult::Ok, request);
         }
-        mDb.deleteSession(sessionId.value());
-        return RequestHandleResult::Ok;
+        finished.emit(RequestHandleResult::Error, request);
+    } catch (std::exception const& e) {
+        SPDLOG_ERROR("Failed to emit finished signal, already emitting. Error: {}", e.what());
     }
-    return RequestHandleResult::Error;
+}
+
+void SessionEndpoint::onSessionResult(System::AsyncResult* result)
+{
+    if (mGetSessionRequests.count(result) < 1) {
+        SPDLOG_ERROR("Session database result handler called without request.");
+    }
+    auto& getRequest = mGetSessionRequests.at(result);
+    auto maybeSession = getRequest.sessionResult->getResultValue();
+    if (getRequest.sessionResult->getResult() == System::Result::Ok && maybeSession.has_value()) {
+        auto session = maybeSession.value();
+        auto rawBody = Common::JsonSerializer::Session::serialize(session);
+        getRequest.request.setReturnBody(rawBody);
+        finished.emit(RequestHandleResult::Ok, getRequest.request);
+    } else {
+        finished.emit(RequestHandleResult::Error, getRequest.request);
+    }
+    mGetSessionRequests.erase(result);
 }
 
 namespace

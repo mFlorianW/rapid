@@ -46,6 +46,6 @@ public:
     /**
      * @copydoc IRestRequestHandler::handleRestRequest(const RestRequest &request)
      */
-    RequestHandleResult handleRestRequest(RestRequest& request) noexcept override;
+    void handleRestRequest(RestRequest& request) noexcept override;
 };
 } // namespace Rapid::Rest

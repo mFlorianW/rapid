@@ -4,11 +4,13 @@
 
 #include "SessionEndpoint.hpp"
 #include "Sessions.hpp"
+#include <CompareHelper.hpp>
 #include <SessionDatabaseMock.hpp>
 
 using namespace Rapid::Rest;
 using namespace Rapid::TestHelper;
 using namespace Rapid::Storage;
+using namespace Rapid::System;
 
 SCENARIO("Calling the Session endpoint /sessions with GET shall return the session count")
 {
@@ -38,16 +40,47 @@ SCENARIO("Calling the Session endpoint with GET on a specific path under /sessio
         auto db = SessionDatabaseMock{};
         auto endpoint = SessionEndpoint{db};
 
-        REQUIRE_CALL(db, getSessionByIndex(trompeloeil::_)).WITH(_1 == 0).RETURN(Sessions::getTestSession());
-
-        WHEN("Requesting the a specifc under /sessions/0 shall return the session")
+        WHEN("Successful request a session shall return the session")
         {
+            auto asyncResult = std::make_shared<GetSessionResult>();
+            asyncResult->setResultValue(Sessions::getTestSession());
+            asyncResult->setResult(Result::Ok);
+            bool finished = false;
+
+            std::ignore = endpoint.finished.connect([&finished](auto result, auto&& request) {
+                finished = true;
+                auto expectedReturnBody = Sessions::getTestSessionAsJson();
+                REQUIRE(request.getReturnBody() == expectedReturnBody);
+            });
+
+            REQUIRE_CALL(db, getSessionByIndexAsync(trompeloeil::_)).WITH(_1 == 0).LR_RETURN(asyncResult);
+
             auto request = RestRequest{RequestType::Get, "/sessions/0"};
             endpoint.handleRestRequest(request);
             THEN("Give the correct session as json in the return body")
             {
-                auto expectedReturnBody = Sessions::getTestSessionAsJson();
-                REQUIRE(request.getReturnBody() == expectedReturnBody);
+                REQUIRE_COMPARE_WITH_TIMEOUT(finished, true, std::chrono::milliseconds{1});
+            }
+        }
+
+        WHEN("Failed to request a session (db error) shall return an error")
+        {
+            auto asyncResult = std::make_shared<GetSessionResult>();
+            asyncResult->setResult(Result::Error);
+            bool finished = false;
+
+            std::ignore = endpoint.finished.connect([&finished](auto result, auto&& request) {
+                finished = true;
+                REQUIRE(result == RequestHandleResult::Error);
+            });
+
+            REQUIRE_CALL(db, getSessionByIndexAsync(trompeloeil::_)).WITH(_1 == 0).LR_RETURN(asyncResult);
+
+            auto request = RestRequest{RequestType::Get, "/sessions/0"};
+            endpoint.handleRestRequest(request);
+            THEN("The request shall be set to a error")
+            {
+                REQUIRE_COMPARE_WITH_TIMEOUT(finished, true, std::chrono::milliseconds{1});
             }
         }
     }
