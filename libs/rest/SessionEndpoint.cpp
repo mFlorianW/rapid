@@ -44,7 +44,7 @@ void SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
             auto responsebody = nlohmann::ordered_json{};
             responsebody["count"] = mDb.getSessionCount();
             request.setReturnBody(responsebody.dump());
-            finished.emit(RequestHandleResult::Error, request);
+            finished.emit(RequestHandleResult::Ok, request);
         } else if (request.getPath().getDepth() == 2) {
             auto sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
             if (not sessionId.has_value()) {
