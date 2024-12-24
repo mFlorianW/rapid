@@ -45,23 +45,26 @@ void SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
             responsebody["count"] = mDb.getSessionCount();
             request.setReturnBody(responsebody.dump());
             finished.emit(RequestHandleResult::Ok, request);
-        } else if (request.getPath().getDepth() == 2) {
+        } else if (request.getPath().getDepth() == 3) {
             auto sessionId = getSessionIndex(request.getPath().getEntry(1).value_or(""));
             if (not sessionId.has_value()) {
                 finished.emit(RequestHandleResult::Error, request);
             }
-            auto const asyncResult =
-                mDb.getSessionByIndexAsync(sessionId.value()); // NOLINT(bugprone-unchecked-optional-access)
-            mGetSessionRequests.insert(
-                {asyncResult.get(), SessionGetDataRequest{.sessionResult = asyncResult, .request = request}});
-            if (asyncResult->getResult() == System::Result::Ok) {
-                onSessionResult(asyncResult.get());
-            } else if (asyncResult->getResult() == System::Result::Error) {
-                finished.emit(RequestHandleResult::Error, request);
-            } else {
-                std::ignore = asyncResult->done.connect([this](auto* result) {
-                    onSessionResult(result);
-                });
+            
+            if (request.getPath().getEntry(2) == "data") {
+                auto const asyncResult =
+                    mDb.getSessionByIndexAsync(sessionId.value()); // NOLINT(bugprone-unchecked-optional-access)
+                mGetSessionRequests.insert(
+                    {asyncResult.get(), SessionGetDataRequest{.sessionResult = asyncResult, .request = request}});
+                if (asyncResult->getResult() == System::Result::Ok) {
+                    onSessionResult(asyncResult.get());
+                } else if (asyncResult->getResult() == System::Result::Error) {
+                    finished.emit(RequestHandleResult::Error, request);
+                } else {
+                    std::ignore = asyncResult->done.connect([this](auto* result) {
+                        onSessionResult(result);
+                    });
+                }
             }
         }
     } catch (std::exception const& e) {
