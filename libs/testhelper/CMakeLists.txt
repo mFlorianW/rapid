@@ -23,6 +23,7 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionDownloaderClient.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/CompareHelper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionDatabaseMock.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SignalSpy.hpp
 )
 
 target_include_directories(TestHelper
