@@ -4,6 +4,7 @@
 
 #include "RestSessionDownloaderClient.hpp"
 #include "Sessions.hpp"
+#include <spdlog/spdlog.h>
 
 namespace Rapid::TestHelper
 {
@@ -13,8 +14,12 @@ class TestRestCall : public Rest::RestCall
 public:
     void setCallResult(Rest::RestCallResult result) noexcept override
     {
-        mResult = result;
-        finished.emit(this);
+        try {
+            mResult = result;
+            finished.emit(this);
+        } catch (std::exception const& e) {
+            SPDLOG_ERROR("Failed to emit finished signal. Error: Already emitting");
+        }
     }
 };
 

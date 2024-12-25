@@ -81,6 +81,7 @@ void SessionEndpoint::handleDeleteRequest(RestRequest& request) noexcept
             }
             mDb.deleteSession(sessionId.value()); // NOLINT(bugprone-unchecked-optional-access)
             finished.emit(RequestHandleResult::Ok, request);
+            return;
         }
         finished.emit(RequestHandleResult::Error, request);
     } catch (std::exception const& e) {

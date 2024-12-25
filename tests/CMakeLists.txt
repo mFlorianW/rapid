@@ -1,6 +1,5 @@
 add_subdirectory(algorithm)
 add_subdirectory(common)
-add_subdirectory(testhelper)
 add_subdirectory(workflow)
 add_subdirectory(positioning)
 add_subdirectory(rest)

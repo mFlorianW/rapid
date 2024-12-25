@@ -6,6 +6,7 @@
 #include "Sessions.hpp"
 #include <CompareHelper.hpp>
 #include <SessionDatabaseMock.hpp>
+#include <SignalSpy.hpp>
 
 using namespace Rapid::Rest;
 using namespace Rapid::TestHelper;
@@ -19,14 +20,8 @@ SCENARIO("Calling the Session endpoint /sessions with GET shall return the sessi
         auto db = SessionDatabaseMock{};
         auto endpoint = SessionEndpoint{db};
         REQUIRE_CALL(db, getSessionCount()).RETURN(2);
-        bool finished = false;
         auto expectedReturnBody = std::string{R"({"count":2})"};
-        std::string returnBody;
-        std::ignore = endpoint.finished.connect([&finished, &returnBody](auto&& result, auto&& request) {
-            REQUIRE(result == RequestHandleResult::Ok);
-            returnBody = request.getReturnBody();
-            finished = true;
-        });
+        auto finishedSpy = SignalSpy{endpoint.finished};
 
         WHEN("Requesting the top folder /sessions shall return the session count")
         {
@@ -34,9 +29,10 @@ SCENARIO("Calling the Session endpoint /sessions with GET shall return the sessi
             endpoint.handleRestRequest(request);
             THEN("The finished signal is emitted and the correct return body is set")
             {
-                // REQUIRE_COMPARE_WITH_TIMEOUT(finished, true, std::chrono::milliseconds{1});
-                REQUIRE(finished == true);
-                REQUIRE(returnBody == expectedReturnBody);
+                REQUIRE(finishedSpy.getCount() == 1);
+                auto [result, requestResult] = finishedSpy.at(0);
+                REQUIRE(result == RequestHandleResult::Ok);
+                REQUIRE(requestResult.getReturnBody() == expectedReturnBody);
             }
         }
     }
@@ -48,27 +44,24 @@ SCENARIO("Calling the Session endpoint with GET on a specific path under /sessio
     {
         auto db = SessionDatabaseMock{};
         auto endpoint = SessionEndpoint{db};
+        auto finishedSpy = SignalSpy{endpoint.finished};
 
         WHEN("Successful request a session shall return the session")
         {
             auto asyncResult = std::make_shared<GetSessionResult>();
             asyncResult->setResultValue(Sessions::getTestSession());
             asyncResult->setResult(Result::Ok);
-            bool finished = false;
-
-            std::ignore = endpoint.finished.connect([&finished](auto result, auto&& request) {
-                finished = true;
-                auto expectedReturnBody = Sessions::getTestSessionAsJson();
-                REQUIRE(request.getReturnBody() == expectedReturnBody);
-            });
-
             REQUIRE_CALL(db, getSessionByIndexAsync(trompeloeil::_)).WITH(_1 == 0).LR_RETURN(asyncResult);
 
             auto request = RestRequest{RequestType::Get, "/sessions/0/data"};
             endpoint.handleRestRequest(request);
+
             THEN("Give the correct session as json in the return body")
             {
-                REQUIRE_COMPARE_WITH_TIMEOUT(finished, true, std::chrono::milliseconds{1});
+                REQUIRE(finishedSpy.getCount() == 1);
+                auto [result, resultRequest] = finishedSpy.at(0);
+                REQUIRE(result == RequestHandleResult::Ok);
+                REQUIRE(resultRequest.getReturnBody() == Sessions::getTestSessionAsJson());
             }
         }
 
@@ -76,20 +69,16 @@ SCENARIO("Calling the Session endpoint with GET on a specific path under /sessio
         {
             auto asyncResult = std::make_shared<GetSessionResult>();
             asyncResult->setResult(Result::Error);
-            bool finished = false;
-
-            std::ignore = endpoint.finished.connect([&finished](auto result, auto&& request) {
-                finished = true;
-                REQUIRE(result == RequestHandleResult::Error);
-            });
-
             REQUIRE_CALL(db, getSessionByIndexAsync(trompeloeil::_)).WITH(_1 == 0).LR_RETURN(asyncResult);
 
             auto request = RestRequest{RequestType::Get, "/sessions/0/data"};
             endpoint.handleRestRequest(request);
+
             THEN("The request shall be set to a error")
             {
-                REQUIRE(finished);
+                REQUIRE(finishedSpy.getCount() == 1);
+                auto [result, _] = finishedSpy.at(0);
+                REQUIRE(result == RequestHandleResult::Error);
             }
         }
     }
@@ -100,49 +89,36 @@ TEST_CASE(
 {
     auto db = SessionDatabaseMock{};
     auto endpoint = SessionEndpoint{db};
+    auto finishedSpy = SignalSpy{endpoint.finished};
 
     SECTION("Valied request")
     {
         auto asyncResult = std::make_shared<GetSessionMetaDataResult>();
         asyncResult->setResultValue(Sessions::getTestSessionMetaData());
         asyncResult->setResult(Result::Ok);
-        bool finished = false;
-        auto returnedBody = std::string{};
-
-        std::ignore = endpoint.finished.connect([&finished, &returnedBody](auto result, auto&& request) {
-            finished = true;
-            REQUIRE(result == RequestHandleResult::Ok);
-            returnedBody = request.getReturnBody();
-        });
-
         REQUIRE_CALL(db, getSessionMetaDataByIndexAsync(trompeloeil::_)).WITH(_1 == 0).LR_RETURN(asyncResult);
 
         auto request = RestRequest{RequestType::Get, "/sessions/0/metadata"};
         endpoint.handleRestRequest(request);
 
-        REQUIRE(finished);
-        REQUIRE(returnedBody == Sessions::getTestSessionMetaAsJson());
+        REQUIRE(finishedSpy.getCount() == 1);
+        auto [result, resultRequest] = finishedSpy.at(0);
+        REQUIRE(result == RequestHandleResult::Ok);
+        REQUIRE(resultRequest.getReturnBody() == Sessions::getTestSessionMetaAsJson());
     }
 
     SECTION("Invalid request")
     {
         auto asyncResult = std::make_shared<GetSessionMetaDataResult>();
         asyncResult->setResult(Result::Error);
-        bool finished = false;
-
-        std::ignore = endpoint.finished.connect([&finished](auto result, auto&& request) {
-            finished = true;
-            REQUIRE(result == RequestHandleResult::Error);
-        });
-
         REQUIRE_CALL(db, getSessionMetaDataByIndexAsync(trompeloeil::_)).WITH(_1 == 0).LR_RETURN(asyncResult);
 
         auto request = RestRequest{RequestType::Get, "/sessions/0/metadata"};
         endpoint.handleRestRequest(request);
-        THEN("The request shall be set to a error")
-        {
-            REQUIRE(finished);
-        }
+
+        REQUIRE(finishedSpy.getCount() == 1);
+        auto [result, _] = finishedSpy.at(0);
+        REQUIRE(result == RequestHandleResult::Error);
     }
 }
 
@@ -150,9 +126,14 @@ TEST_CASE("Calling the Session endpoint with DELETE on a specific path under /se
 {
     auto db = SessionDatabaseMock{};
     auto endpoint = SessionEndpoint{db};
+    auto finishedSpy = SignalSpy{endpoint.finished};
 
     REQUIRE_CALL(db, deleteSession(trompeloeil::_)).WITH(_1 == 0);
 
     auto request = RestRequest{RequestType::Delete, "/sessions/0"};
     endpoint.handleRestRequest(request);
+
+    REQUIRE(finishedSpy.getCount() == 1);
+    auto [result, _] = finishedSpy.at(0);
+    REQUIRE(result == RequestHandleResult::Ok);
 }
