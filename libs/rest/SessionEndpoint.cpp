@@ -50,21 +50,20 @@ void SessionEndpoint::handleGetRequest(RestRequest& request) noexcept
             if (not sessionId.has_value()) {
                 finished.emit(RequestHandleResult::Error, request);
             }
-            
             if (request.getPath().getEntry(2) == "data") {
-                auto const asyncResult =
+                auto asyncResult =
                     mDb.getSessionByIndexAsync(sessionId.value()); // NOLINT(bugprone-unchecked-optional-access)
-                mGetSessionRequests.insert(
-                    {asyncResult.get(), SessionGetDataRequest{.sessionResult = asyncResult, .request = request}});
-                if (asyncResult->getResult() == System::Result::Ok) {
-                    onSessionResult(asyncResult.get());
-                } else if (asyncResult->getResult() == System::Result::Error) {
-                    finished.emit(RequestHandleResult::Error, request);
-                } else {
-                    std::ignore = asyncResult->done.connect([this](auto* result) {
-                        onSessionResult(result);
-                    });
-                }
+                handleSessionGetRequest<GetSessionRequest,
+                                        Storage::GetSessionResult,
+                                        Common::SessionData,
+                                        SessionDataCache>(asyncResult, request, mGetSessionRequests);
+            } else if (request.getPath().getEntry(2) == "metadata") {
+                auto asyncResult =
+                    mDb.getSessionMetaDataByIndexAsync(sessionId.value()); // NOLINT(bugprone-unchecked-optional-access)
+                handleSessionGetRequest<GetSessionMetadataRequest,
+                                        Storage::GetSessionMetaDataResult,
+                                        Common::SessionMetaData,
+                                        SessionMetadataCache>(asyncResult, request, mGetSessionMetadataRequests);
             }
         }
     } catch (std::exception const& e) {
@@ -89,22 +88,9 @@ void SessionEndpoint::handleDeleteRequest(RestRequest& request) noexcept
     }
 }
 
-void SessionEndpoint::onSessionResult(System::AsyncResult* result)
+void SessionEndpoint::logError(std::string const& logMsg)
 {
-    if (mGetSessionRequests.count(result) < 1) {
-        SPDLOG_ERROR("Session database result handler called without request.");
-    }
-    auto& getRequest = mGetSessionRequests.at(result);
-    auto maybeSession = getRequest.sessionResult->getResultValue();
-    if (getRequest.sessionResult->getResult() == System::Result::Ok && maybeSession.has_value()) {
-        auto session = maybeSession.value();
-        auto rawBody = Common::JsonSerializer::Session::serialize(session);
-        getRequest.request.setReturnBody(rawBody);
-        finished.emit(RequestHandleResult::Ok, getRequest.request);
-    } else {
-        finished.emit(RequestHandleResult::Error, getRequest.request);
-    }
-    mGetSessionRequests.erase(result);
+    SPDLOG_ERROR(logMsg);
 }
 
 namespace

@@ -89,8 +89,59 @@ SCENARIO("Calling the Session endpoint with GET on a specific path under /sessio
             endpoint.handleRestRequest(request);
             THEN("The request shall be set to a error")
             {
-                REQUIRE_COMPARE_WITH_TIMEOUT(finished, true, std::chrono::milliseconds{1});
+                REQUIRE(finished);
             }
+        }
+    }
+}
+
+TEST_CASE(
+    "Calling the Session endpoint with GET on a specific path under /sessions/{n}/metadata shall return the session")
+{
+    auto db = SessionDatabaseMock{};
+    auto endpoint = SessionEndpoint{db};
+
+    SECTION("Valied request")
+    {
+        auto asyncResult = std::make_shared<GetSessionMetaDataResult>();
+        asyncResult->setResultValue(Sessions::getTestSessionMetaData());
+        asyncResult->setResult(Result::Ok);
+        bool finished = false;
+        auto returnedBody = std::string{};
+
+        std::ignore = endpoint.finished.connect([&finished, &returnedBody](auto result, auto&& request) {
+            finished = true;
+            REQUIRE(result == RequestHandleResult::Ok);
+            returnedBody = request.getReturnBody();
+        });
+
+        REQUIRE_CALL(db, getSessionMetaDataByIndexAsync(trompeloeil::_)).WITH(_1 == 0).LR_RETURN(asyncResult);
+
+        auto request = RestRequest{RequestType::Get, "/sessions/0/metadata"};
+        endpoint.handleRestRequest(request);
+
+        REQUIRE(finished);
+        REQUIRE(returnedBody == Sessions::getTestSessionMetaAsJson());
+    }
+
+    SECTION("Invalid request")
+    {
+        auto asyncResult = std::make_shared<GetSessionMetaDataResult>();
+        asyncResult->setResult(Result::Error);
+        bool finished = false;
+
+        std::ignore = endpoint.finished.connect([&finished](auto result, auto&& request) {
+            finished = true;
+            REQUIRE(result == RequestHandleResult::Error);
+        });
+
+        REQUIRE_CALL(db, getSessionMetaDataByIndexAsync(trompeloeil::_)).WITH(_1 == 0).LR_RETURN(asyncResult);
+
+        auto request = RestRequest{RequestType::Get, "/sessions/0/metadata"};
+        endpoint.handleRestRequest(request);
+        THEN("The request shall be set to a error")
+        {
+            REQUIRE(finished);
         }
     }
 }
