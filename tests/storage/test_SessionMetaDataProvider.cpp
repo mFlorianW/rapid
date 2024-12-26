@@ -65,3 +65,10 @@ TEST_CASE_METHOD(TestFixture, "The SessionMetaDataProvider shall give the correc
     CHECK(sessionMetaDataProvider->data(1, 1, ::Qt::DisplayRole).toString() == QStringLiteral("01.01.1970"));
     REQUIRE(sessionMetaDataProvider->data(1, 2, ::Qt::DisplayRole).toString() == QStringLiteral("13:00:00.000"));
 }
+
+TEST_CASE_METHOD(TestFixture, "The SessionMetaDataProvider shall handle deletion in the database")
+{
+    SECTION("Remove deleted session the meta data provider")
+    {
+    }
+}

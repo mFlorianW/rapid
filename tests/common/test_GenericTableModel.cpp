@@ -4,6 +4,7 @@
 
 #include <GenericTableModel.hpp>
 #include <QAbstractItemModelTester>
+#include <QSignalSpy>
 #include <TableModelDataProvider.hpp>
 #include <catch2/catch_all.hpp>
 
@@ -60,4 +61,29 @@ TEST_CASE_METHOD(TestFixture, "The GenericTableModel shall correctly notify abou
 {
     dataProvider.addItem(TestData{.data = 0x02});
     REQUIRE(model.data(model.index(1, 0)).toUInt() == 0x02);
+}
+
+TEST_CASE_METHOD(TestFixture, "The GenericTable shall correctly notify about deletion in the provider")
+{
+    SECTION("Item is removed")
+    {
+        REQUIRE(model.rowCount() == 1);
+        REQUIRE(dataProvider.removeItemAt(0));
+        REQUIRE(model.rowCount() == 0);
+    }
+
+    SECTION("Signals are correctly emitted")
+    {
+        auto rowsAboutToRemovedSpy = QSignalSpy{&model, &QAbstractItemModel::rowsAboutToBeRemoved};
+        auto rowsRemovedSpy = QSignalSpy{&model, &QAbstractItemModel::rowsRemoved};
+
+        REQUIRE(dataProvider.removeItemAt(0));
+
+        REQUIRE(rowsAboutToRemovedSpy.size() == 1);
+        REQUIRE(rowsAboutToRemovedSpy.at(0).at(1).toInt() == 0);
+        REQUIRE(rowsAboutToRemovedSpy.at(0).at(2).toInt() == 0);
+        REQUIRE(rowsRemovedSpy.size() == 1);
+        REQUIRE(rowsRemovedSpy.at(0).at(1).toInt() == 0);
+        REQUIRE(rowsRemovedSpy.at(0).at(2).toInt() == 0);
+    }
 }
