@@ -6,6 +6,9 @@
 #define SESSIONMANAGER_HPP
 
 #include <QMainWindow>
+#include <common/qt/GenericTableModel.hpp>
+#include <storage/qt/SessionDatabaseIpcClient.hpp>
+#include <storage/qt/SessionMetaDataProvider.hpp>
 
 namespace Ui
 {
@@ -40,6 +43,12 @@ public:
 
 private:
     std::unique_ptr<Ui::SessionManager> mSessionManager;
+    std::unique_ptr<Storage::Qt::SessionDatabaseIpcClient> mSessionDatabase;
+
+    // Host SessionModel
+    using SessionModel = Common::Qt::GenericTableModel<Storage::Qt::SessionMetaDataProvider>;
+    std::unique_ptr<Storage::Qt::SessionMetaDataProvider> mHostSessionMetaDataProvider;
+    std::unique_ptr<SessionModel> mHostSessionModel;
 };
 
 } // namespace Rapid::SessionManager

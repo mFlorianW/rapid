@@ -15,6 +15,7 @@ target_sources(SessionManager
 target_link_libraries(SessionManager
     PUBLIC
         Qt6::Widgets
+        Rapid::RapidQt
 )
 
 target_include_directories(SessionManager
