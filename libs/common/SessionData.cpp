@@ -24,8 +24,8 @@ SessionData::SessionData()
 {
 }
 
-SessionData::SessionData(TrackData const& track, Date const& sessionDate, Timestamp const& sessionTime)
-    : SessionMetaData{track, sessionDate, sessionTime}
+SessionData::SessionData(TrackData const& track, Date const& sessionDate, Timestamp const& sessionTime, std::size_t id)
+    : SessionMetaData{track, sessionDate, sessionTime, id}
     , mData{new SharedSessionData}
 {
 }

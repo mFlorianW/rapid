@@ -80,6 +80,7 @@ namespace Session
 nlohmann::ordered_json serializeSessionMetaData(SessionMetaData const& session)
 {
     auto json = nlohmann::ordered_json{};
+    json["id"] = session.getId();
     json["date"] = session.getSessionDate().asString();
     json["time"] = session.getSessionTime().asString();
     json["track"] = Track::serialize(session.getTrack());

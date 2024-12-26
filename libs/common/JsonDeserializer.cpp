@@ -122,7 +122,8 @@ Common::SessionMetaData deserializeSessionMetaData(nlohmann::ordered_json const&
     auto sessionDate = Date(jsonSession["date"]);
     auto sessionTime = Timestamp(jsonSession["time"]);
     auto track = parseTrack(jsonSession["track"]);
-    return Common::SessionMetaData{track.value_or(TrackData{}), sessionDate, sessionTime};
+    auto id = jsonSession["id"].get<std::size_t>();
+    return Common::SessionMetaData{track.value_or(TrackData{}), sessionDate, sessionTime, id};
 }
 
 } // namespace

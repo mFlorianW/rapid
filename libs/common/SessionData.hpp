@@ -22,8 +22,12 @@ public:
 
     /**
      * Creates SessionData instance
+     * @param track The track for the session
+     * @param date The date of the session
+     * @param time The time of the session
+     * @param id The ID of the session for identifying the data session in a repository
      */
-    SessionData(TrackData const& track, Date const& sessionDate, Timestamp const& sessionTime);
+    SessionData(TrackData const& track, Date const& sessionDate, Timestamp const& sessionTime, std::size_t id = 0);
 
     /**
      * Default destructor
