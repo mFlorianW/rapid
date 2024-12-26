@@ -29,8 +29,23 @@ SessionManager::SessionManager()
         mHostSessionModel = std::make_unique<SessionModel>(*mHostSessionMetaDataProvider);
         mSessionManager->HostSessionTableView->setModel(mHostSessionModel.get());
     });
+
+    connect(mSessionManager->DeleteHostSession, &QPushButton::clicked, this, &SessionManager::onDeleteHostSession);
 }
 
 SessionManager::~SessionManager() = default;
+
+void SessionManager::onDeleteHostSession()
+{
+    auto selectedRows = mSessionManager->HostSessionTableView->selectionModel()->selectedRows();
+    if (selectedRows.isEmpty()) {
+        return;
+    }
+    auto maybeSession = mHostSessionMetaDataProvider->getItem(selectedRows.first().row());
+    if (not maybeSession.has_value()) {
+        return;
+    }
+    mSessionDatabase->deleteSession(maybeSession->getId());
+}
 
 } // namespace Rapid::SessionManager

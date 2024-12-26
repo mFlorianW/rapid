@@ -41,6 +41,9 @@ public:
      */
     ~SessionManager() override;
 
+private Q_SLOTS:
+    void onDeleteHostSession();
+
 private:
     std::unique_ptr<Ui::SessionManager> mSessionManager;
     std::unique_ptr<Storage::Qt::SessionDatabaseIpcClient> mSessionDatabase;
