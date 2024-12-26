@@ -36,7 +36,7 @@ SessionData createSession()
     lap.addPosition(gpsPos);
     lap.addPosition(gpsPos);
 
-    auto session = SessionData{Tracks::getOscherslebenTrack(), sessionDate, sessionTime};
+    auto session = SessionData{Tracks::getOscherslebenTrack(), sessionDate, sessionTime, 10};
     session.addLap(lap);
 
     return session;
@@ -93,7 +93,7 @@ SessionData createSession3()
     lap.addPosition(gpsPos);
     lap.addPosition(gpsPos);
 
-    auto session = SessionData{Tracks::getOscherslebenTrack2(), sessionDate, sessionTime};
+    auto session = SessionData{Tracks::getOscherslebenTrack2(), sessionDate, sessionTime, 10};
     session.addLap(lap);
     session.addLap(lap);
 
@@ -146,6 +146,7 @@ char const* getTestSessionAsJson()
     // clang-format off
     static constexpr const char* TestSessionAsJson = {
         "{"
+            "\"id\":10,"
             "\"date\":\"01.01.1970\","
             "\"time\":\"13:00:00.000\","
             "\"track\":{"
@@ -214,7 +215,7 @@ Common::SessionMetaData getTestSessionMetaData()
     sessionDate.setDay(1);
     Timestamp sessionTime;
     sessionTime.setHour(13);
-    return SessionMetaData{Tracks::getOscherslebenTrack(), sessionDate, sessionTime};
+    return SessionMetaData{Tracks::getOscherslebenTrack(), sessionDate, sessionTime, 10};
 }
 
 char const* getTestSessionMetaAsJson()
@@ -222,6 +223,7 @@ char const* getTestSessionMetaAsJson()
     // clang-format off
     static constexpr const char* TestSessionAsJson = {
         "{"
+            "\"id\":10,"
             "\"date\":\"01.01.1970\","
             "\"time\":\"13:00:00.000\","
             "\"track\":{"

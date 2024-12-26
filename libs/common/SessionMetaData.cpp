@@ -13,13 +13,17 @@ public:
     Date mSessionDate;
     Timestamp mSessionTime;
     TrackData mSessionTrack;
+    std::size_t mId = 0;
 
     friend bool operator==(SharedSessionMetaData const& lhs, SharedSessionMetaData const& rhs)
     {
         // clang-format off
-        return ((lhs.mSessionDate) == (rhs.mSessionDate) &&
-                (lhs.mSessionTime) == (rhs.mSessionTime) &&
-                (lhs.mSessionTrack) == (rhs.mSessionTrack));
+        return (
+                (lhs.mSessionDate) == (rhs.mSessionDate) and
+                (lhs.mSessionTime) == (rhs.mSessionTime) and
+                (lhs.mSessionTrack) == (rhs.mSessionTrack) and
+                (lhs.mId) == (rhs.mId)
+               );
         // clang-format on
     }
 };
@@ -29,12 +33,13 @@ SessionMetaData::SessionMetaData()
 {
 }
 
-SessionMetaData::SessionMetaData(TrackData track, Date date, Timestamp time)
+SessionMetaData::SessionMetaData(TrackData track, Date date, Timestamp time, std::size_t id)
     : mData{new SharedSessionMetaData}
 {
     mData->mSessionTrack = track;
     mData->mSessionTime = time;
     mData->mSessionDate = date;
+    mData->mId = id;
 }
 
 SessionMetaData::~SessionMetaData() = default;
@@ -42,6 +47,11 @@ SessionMetaData::SessionMetaData(SessionMetaData const&) = default;
 SessionMetaData& SessionMetaData::operator=(SessionMetaData const&) = default;
 SessionMetaData::SessionMetaData(SessionMetaData&&) noexcept = default;
 SessionMetaData& SessionMetaData::operator=(SessionMetaData&&) noexcept = default;
+
+std::size_t SessionMetaData::getId() const noexcept
+{
+    return mData->mId;
+}
 
 Date SessionMetaData::getSessionDate() const noexcept
 {

@@ -756,7 +756,8 @@ std::optional<Common::SessionData> SqliteSessionDatabase::readSession(std::size_
     auto sessionMetaData = maybeSessionMetaData.value();
     auto session = Common::SessionData{sessionMetaData.getTrack(),
                                        sessionMetaData.getSessionDate(),
-                                       sessionMetaData.getSessionTime()};
+                                       sessionMetaData.getSessionTime(),
+                                       sessionMetaData.getId()};
     session.addLaps(laps.value_or(std::vector<Common::LapData>{}));
     return session;
 }
@@ -792,7 +793,8 @@ std::optional<Common::SessionMetaData> SqliteSessionDatabase::readSessionMetaDat
 
     return Common::SessionMetaData{trackData.value_or(Common::TrackData{}),
                                    Common::Date{sessionStm.getColumn<std::string>(0).value_or("")},
-                                   Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")}};
+                                   Common::Timestamp{sessionStm.getColumn<std::string>(1).value_or("")},
+                                   sessionIndex->first};
 }
 
 std::optional<Common::SessionData> SqliteSessionDatabase::readSessionByMetaData(

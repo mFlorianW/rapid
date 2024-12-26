@@ -29,8 +29,9 @@ public:
      * @param track The track for the session
      * @param date The date of the session
      * @param time The time of the session
+     * @param id The ID of the session for identifying the data session in a repository
      */
-    SessionMetaData(TrackData track, Date date, Timestamp time);
+    SessionMetaData(TrackData track, Date date, Timestamp time, std::size_t id = 0);
 
     /**
      * Default destructor
@@ -56,6 +57,18 @@ public:
      * Move assignment operator
      */
     SessionMetaData& operator=(SessionMetaData&&) noexcept;
+
+    /**
+     * @brief Gets the session ID for identifying the data in a repository
+     *
+     * @details
+     * The session id is set once on creation.
+     * The value of the sessiond ID depends on who creates the session data.
+     * E.g. for a database the session ID will have the meaning to identify the session in the database.
+     *
+     * @return The session ID for identifying the session in a repository.
+     */
+    std::size_t getId() const noexcept;
 
     /**
      * Gives the date of the session.
