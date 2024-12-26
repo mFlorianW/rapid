@@ -1,6 +1,0 @@
-{
-    "name": "Session Downloader",
-    "executable": "@TEST@/rapid_sessiondl",
-    "iconUrl": "@ICON_URL@/rapid_sessiondl.svg",
-    "version": "0.1.0"
-}

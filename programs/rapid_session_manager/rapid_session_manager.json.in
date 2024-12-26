@@ -1,0 +1,6 @@
+{
+    "name": "Session Manager",
+    "executable": "@TEST@/rapid_session_manager",
+    "iconUrl": "@ICON_URL@/rapid_session_manager.svg",
+    "version": "0.1.0"
+}

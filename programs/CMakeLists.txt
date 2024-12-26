@@ -1,6 +1,6 @@
 add_subdirectory(rapid_headless)
 if(ENABLE_QT)
-    add_subdirectory(rapid_sessiondl)
+    add_subdirectory(rapid_session_manager)
     add_subdirectory(restgpssource)
     add_subdirectory(rapid_shell)
     add_subdirectory(rapid_session_analyzer)
