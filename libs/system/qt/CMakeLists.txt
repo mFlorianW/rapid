@@ -19,7 +19,7 @@ PUBLIC
 
 target_include_directories(SystemQt
 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
 )
 
 target_compile_definitions(SystemQt PRIVATE QT_NO_KEYWORDS)

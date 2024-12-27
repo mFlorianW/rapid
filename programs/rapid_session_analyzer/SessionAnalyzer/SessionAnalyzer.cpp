@@ -5,8 +5,8 @@
 #include "SessionAnalyzer.hpp"
 #include "ui_SessionAnalyzer.h"
 #include <QQuickWindow>
-#include <SessionAnalyzeWorkflow.hpp>
 #include <spdlog/spdlog.h>
+#include <workflow/qt/SessionAnalyzeWorkflow.hpp>
 
 namespace Rapid::SessionAnalyzer
 {

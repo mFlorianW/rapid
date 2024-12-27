@@ -4,14 +4,14 @@
 
 #include "DummyProcessPath.hpp"
 #include <ProcessManager.hpp>
-#include <ProcessStatusChecker.hpp>
-#include <ProcessStopper.hpp>
 #include <QSignalSpy>
 #include <QTest>
-#include <QtTestHelper.hpp>
-#include <RapidApplication.hpp>
 #include <catch2/catch_all.hpp>
+#include <system/qt/RapidApplication.hpp>
 #include <testhelper/CompareHelper.hpp>
+#include <testhelper/qt/ProcessStatusChecker.hpp>
+#include <testhelper/qt/ProcessStopper.hpp>
+#include <testhelper/qt/QtTestHelper.hpp>
 
 using namespace Rapid::RapidShell;
 

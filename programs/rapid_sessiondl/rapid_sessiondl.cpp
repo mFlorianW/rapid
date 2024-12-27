@@ -5,8 +5,8 @@
 #include "CliOptions.hpp"
 #include "SessionDownloader.hpp"
 #include <QTimer>
-#include <RapidApplication.hpp>
 #include <system/EventLoop.hpp>
+#include <system/qt/RapidApplication.hpp>
 
 int main(int argc, char** argv)
 {

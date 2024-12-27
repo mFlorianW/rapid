@@ -8,15 +8,15 @@
 #include <QFile>
 #include <QSignalSpy>
 #include <QTest>
-#include <QtTestHelper.hpp>
-#include <RapidApplication.hpp>
 #include <SessionDatabaseIpcServer.hpp>
 #include <catch2/catch_all.hpp>
 #include <common/JsonDeserializer.hpp>
 #include <common/JsonSerializer.hpp>
 #include <spdlog/spdlog.h>
+#include <system/qt/RapidApplication.hpp>
 #include <testhelper/SessionDatabaseMock.hpp>
 #include <testhelper/Sessions.hpp>
+#include <testhelper/qt/QtTestHelper.hpp>
 
 using namespace Rapid::RapidShell::Storage;
 using namespace de::rapid::shell;

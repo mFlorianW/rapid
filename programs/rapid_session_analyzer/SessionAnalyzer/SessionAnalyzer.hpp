@@ -4,10 +4,10 @@
 
 #pragma once
 #include "SessionSelectionDialog.hpp"
-#include <ISessionAnalyzeWorkflow.hpp>
 #include <QMainWindow>
 #include <common/SessionMetaData.hpp>
 #include <storage/qt/SessionDatabaseIpcClient.hpp>
+#include <workflow/qt/ISessionAnalyzeWorkflow.hpp>
 
 namespace Ui
 {

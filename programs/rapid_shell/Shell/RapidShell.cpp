@@ -6,7 +6,6 @@
 #include "DatabaseFile.hpp"
 #include "LoggingCategories.hpp"
 #include "ui_MainWindow.h"
-#include <EventLoopIntegration.hpp>
 #include <LoggingCategories.hpp>
 #include <QAbstractEventDispatcher>
 #include <QApplication>
@@ -17,6 +16,7 @@
 #include <common/qt/GlobalSettingsReader.hpp>
 #include <spdlog/spdlog.h>
 #include <storage/SqliteSessionDatabase.hpp>
+#include <system/qt/EventLoopIntegration.hpp>
 
 namespace Rapid::RapidShell
 {

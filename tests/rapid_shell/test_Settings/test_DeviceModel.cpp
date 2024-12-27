@@ -4,11 +4,11 @@
 
 #include <DeviceModel.hpp>
 #include <GlobalSettingsWriter.hpp>
-#include <SettingsMemoryBackend.hpp>
 #include <catch2/catch_all.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
 #include <common/qt/GlobalSettingsTypes.hpp>
 #include <common/qt/private/GlobalSettingsKeys.hpp>
+#include <testhelper/qt/SettingsMemoryBackend.hpp>
 
 using namespace Rapid::RapidShell::Settings;
 using namespace Rapid::TestHelper;
