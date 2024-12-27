@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "DummyProcessPath.hpp"
-#include <CompareHelper.hpp>
 #include <ProcessManager.hpp>
 #include <ProcessStatusChecker.hpp>
 #include <ProcessStopper.hpp>
@@ -12,6 +11,7 @@
 #include <QtTestHelper.hpp>
 #include <RapidApplication.hpp>
 #include <catch2/catch_all.hpp>
+#include <testhelper/CompareHelper.hpp>
 
 using namespace Rapid::RapidShell;
 

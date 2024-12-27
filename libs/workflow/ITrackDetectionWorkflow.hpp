@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "TrackData.hpp"
+#include "common/TrackData.hpp"
 #include "kdbindings/signal.h"
 
 namespace Rapid::Workflow

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #define CATCH_CONFIG_MAIN
-#include <VelocityData.hpp>
 #include <catch2/catch_all.hpp>
+#include <common/VelocityData.hpp>
 
 using namespace Rapid::Common;
 

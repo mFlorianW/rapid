@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "GlobalSettingsReader.hpp"
-#include "GlobalSettingsKeys.hpp"
+#include "common/qt/GlobalSettingsReader.hpp"
+#include "common/qt/private/GlobalSettingsKeys.hpp"
 
-namespace Rapid::Common
+namespace Rapid::Common::Qt
 {
 
 GlobalSettingsReader::GlobalSettingsReader(GlobalSettingsBackend* settingsBackend)
@@ -57,4 +57,4 @@ QList<DeviceSettings> GlobalSettingsReader::getDeviceSettings() const noexcept
     return devices;
 }
 
-} // namespace Rapid::Common
+} // namespace Rapid::Common::Qt

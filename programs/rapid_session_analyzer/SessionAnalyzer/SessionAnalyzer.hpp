@@ -6,8 +6,8 @@
 #include "SessionSelectionDialog.hpp"
 #include <ISessionAnalyzeWorkflow.hpp>
 #include <QMainWindow>
-#include <SessionDatabaseIpcClient.hpp>
-#include <SessionMetaData.hpp>
+#include <common/SessionMetaData.hpp>
+#include <storage/qt/SessionDatabaseIpcClient.hpp>
 
 namespace Ui
 {

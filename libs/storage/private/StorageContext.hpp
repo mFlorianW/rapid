@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <AsyncResult.hpp>
-#include <FutureWatcher.hpp>
-#include <SessionData.hpp>
+#include <common/SessionData.hpp>
+#include <system/AsyncResult.hpp>
+#include <system/FutureWatcher.hpp>
 #include <thread>
 
 namespace Rapid::Storage::Private

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ISessionDatabase.hpp"
+#include "storage/ISessionDatabase.hpp"
 #include <QDBusPendingCallWatcher>
 #include <QObject>
 #include <QPointer>

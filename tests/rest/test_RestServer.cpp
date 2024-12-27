@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "RestServer.hpp"
-#include <CompareHelper.hpp>
+#include "rest/RestServer.hpp"
 #include <boost/beast.hpp>
 #include <catch2/catch_all.hpp>
 #include <spdlog/spdlog.h>
+#include <testhelper/CompareHelper.hpp>
 
 using namespace Rapid::Rest;
 namespace Http = boost::beast::http;

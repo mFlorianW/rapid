@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <GenericTableModel.hpp>
 #include <QAbstractItemModelTester>
 #include <QSignalSpy>
-#include <TableModelDataProvider.hpp>
 #include <catch2/catch_all.hpp>
+#include <common/qt/GenericTableModel.hpp>
+#include <common/qt/TableModelDataProvider.hpp>
 
 using namespace Rapid::Common::Qt;
 

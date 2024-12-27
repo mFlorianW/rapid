@@ -5,9 +5,9 @@
 #ifndef LAPDATAPROVIDER_HPP
 #define LAPDATAPROVIDER_HPP
 
-#include "LapData.hpp"
 #include "TableModelDataProvider.hpp"
-#include "TrackData.hpp"
+#include "common/LapData.hpp"
+#include "common/TrackData.hpp"
 
 namespace Rapid::Common::Qt
 {

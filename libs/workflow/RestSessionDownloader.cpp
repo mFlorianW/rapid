@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RestSessionDownloader.hpp"
-#include <JsonDeserializer.hpp>
+#include <common/JsonDeserializer.hpp>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <sstream>
@@ -67,7 +67,11 @@ void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) no
                 SPDLOG_ERROR("RestSessionDownloader fetchSessionCount Error: DeserializeJson failed: {}", e.what());
             }
         }
-        sessionCountFetched.emit(dlResult);
+        try {
+            sessionCountFetched.emit(dlResult);
+        } catch (std::exception const& e) {
+            SPDLOG_ERROR("Failed ot emit sessionCountFetched. Error already emitting.");
+        }
     }
     mFetchCounterCache.erase(call);
 }
@@ -86,7 +90,11 @@ void RestSessionDownloader::onSessionDownloadFinished(Rest::RestCall* call) noex
                 mDownloadedSessions.insert({index, session.value()});
             }
         }
-        sessionDownloadFinshed.emit(index, dlResult);
+        try {
+            sessionDownloadFinshed.emit(index, dlResult);
+        } catch (std::exception const& e) {
+            SPDLOG_ERROR("Failed ot emit sessionCountFetched. Error already emitting.");
+        }
         mDownloadSessionCache.erase(call);
     }
 }

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-#include <SharedDataPointer.hpp>
+#include <common/SharedDataPointer.hpp>
 #include <optional>
 #include <string>
 

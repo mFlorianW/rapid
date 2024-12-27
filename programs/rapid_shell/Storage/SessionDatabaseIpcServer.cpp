@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SessionDatabaseIpcServer.hpp"
-#include <EventLoop.hpp>
-#include <ISessionDatabase.hpp>
-#include <JsonDeserializer.hpp>
-#include <JsonSerializer.hpp>
 #include <QDir>
 #include <QStandardPaths>
+#include <common/JsonDeserializer.hpp>
+#include <common/JsonSerializer.hpp>
 #include <spdlog/spdlog.h>
+#include <storage/ISessionDatabase.hpp>
+#include <system/EventLoop.hpp>
 
 namespace Rapid::RapidShell::Storage
 {

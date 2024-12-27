@@ -13,7 +13,7 @@ PRIVATE
 
 target_include_directories(Positioning
 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 )
 
 target_link_libraries(Positioning
@@ -27,23 +27,5 @@ PUBLIC
 )
 
 if(ENABLE_QT)
-    add_library(PositioningQt STATIC)
-    add_library(Rapid::PositioningQt ALIAS PositioningQt)
-
-    target_sources(PositioningQt
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/qt/CsvGpsFileReader.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/qt/CsvGpsFileReader.hpp
-    )
-
-    target_include_directories(PositioningQt
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/qt>
-    )
-
-    target_link_libraries(PositioningQt
-    PUBLIC
-        Rapid::Positioning
-        Qt6::Core
-    )
+    add_subdirectory(qt)
 endif()

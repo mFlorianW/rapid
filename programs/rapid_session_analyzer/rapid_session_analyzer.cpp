@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <EventLoop.hpp>
 #include <RapidApplication.hpp>
 #include <SessionAnalyzer.hpp>
+#include <system/EventLoop.hpp>
 
 int main(int argc, char** argv)
 {

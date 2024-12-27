@@ -5,8 +5,8 @@
 #pragma once
 
 #include "IRestRequestHandler.hpp"
-#include "ISessionDatabase.hpp"
-#include <JsonSerializer.hpp>
+#include "storage/ISessionDatabase.hpp"
+#include <common/JsonSerializer.hpp>
 
 namespace Rapid::Rest
 {

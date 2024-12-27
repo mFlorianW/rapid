@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "IRestServer.hpp"
-#include <EventHandler.hpp>
+#include "rest/IRestServer.hpp"
 #include <boost/beast.hpp>
+#include <system/EventHandler.hpp>
 #include <thread>
 #include <unordered_map>
 

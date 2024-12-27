@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Path.hpp"
-#include "SharedDataPointer.hpp"
+#include "common/SharedDataPointer.hpp"
 #include <string_view>
 
 namespace Rapid::Rest

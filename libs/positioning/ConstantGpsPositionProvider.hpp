@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IGpsPositionProvider.hpp"
-#include <Timer.hpp>
+#include "positioning/IGpsPositionProvider.hpp"
+#include <system/Timer.hpp>
 
 namespace Rapid::Positioning
 {

@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "GpsEndpoint.hpp"
-#include <CompareHelper.hpp>
+#include "rest/GpsEndpoint.hpp"
 #include <catch2/catch_all.hpp>
+#include <testhelper/CompareHelper.hpp>
 
 using namespace Rapid::Rest;
 using namespace Rapid::Common;

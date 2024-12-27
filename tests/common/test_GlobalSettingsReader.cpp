@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <GlobalSettingsKeys.hpp>
-#include <GlobalSettingsReader.hpp>
 #include <QHostAddress>
 #include <SettingsMemoryBackend.hpp>
 #include <catch2/catch_all.hpp>
+#include <common/qt/GlobalSettingsReader.hpp>
+#include <common/qt/private/GlobalSettingsKeys.hpp>
 
 using namespace Rapid::Common;
+using namespace Rapid::Common::Qt;
 using namespace Rapid::TestHelper;
 
 SCENARIO("The Settings shall load the settings database file path from the provided backend.")

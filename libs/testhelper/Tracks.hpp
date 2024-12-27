@@ -5,7 +5,7 @@
 #ifndef TRACKS_HPP
 #define TRACKS_HPP
 
-#include "TrackData.hpp"
+#include "common/TrackData.hpp"
 
 namespace Rapid::TestHelper::Tracks
 {

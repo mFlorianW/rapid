@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #define CATCH_CONFIG_MAIN
-#include "Event.hpp"
-#include "EventLoop.hpp"
-#include <CompareHelper.hpp>
+#include "system/Event.hpp"
+#include "system/EventLoop.hpp"
 #include <catch2/catch_all.hpp>
+#include <testhelper/CompareHelper.hpp>
 #include <thread>
 
 using namespace Rapid::System;

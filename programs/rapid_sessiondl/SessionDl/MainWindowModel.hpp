@@ -6,10 +6,10 @@
 
 #include <QHostAddress>
 #include <QObject>
-#include <QRestClient.hpp>
+#include <rest/qt/QRestClient.hpp>
 #ifndef Q_MOC_RUN
-#include <ISessionDatabase.hpp>
-#include <RestSessionDownloader.hpp>
+#include <storage/ISessionDatabase.hpp>
+#include <workflow/RestSessionDownloader.hpp>
 #endif
 
 namespace Rapid::SessionDl

@@ -5,9 +5,9 @@
 #ifndef SESSIONMETADATAPROVIDER_HPP
 #define SESSIONMETADATAPROVIDER_HPP
 
-#include "ISessionDatabase.hpp"
-#include <SessionMetaData.hpp>
-#include <TableModelDataProvider.hpp>
+#include "storage/ISessionDatabase.hpp"
+#include <common/SessionMetaData.hpp>
+#include <common/qt/TableModelDataProvider.hpp>
 
 namespace Rapid::Storage::Qt
 {

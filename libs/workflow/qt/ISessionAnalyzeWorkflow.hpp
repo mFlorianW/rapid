@@ -5,9 +5,9 @@
 #ifndef ISESSIONANALYZEWORKFLOW_HPP
 #define ISESSIONANALYZEWORKFLOW_HPP
 
-#include <GenericTableModel.hpp>
-#include <LapDataProvider.hpp>
-#include <SessionData.hpp>
+#include <common/SessionData.hpp>
+#include <common/qt/GenericTableModel.hpp>
+#include <common/qt/LapDataProvider.hpp>
 #include <kdbindings/property.h>
 
 namespace Rapid::Workflow::Qt

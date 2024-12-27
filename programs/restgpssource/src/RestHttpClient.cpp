@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RestHttpClient.hpp"
-#include <GpsPositionData.hpp>
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -12,6 +11,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QUrl>
+#include <common/GpsPositionData.hpp>
 
 struct RestHttpClientPrivate
 {

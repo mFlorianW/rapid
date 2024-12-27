@@ -5,7 +5,7 @@
 #ifndef IACTIVESESSIONWORKFLOW_HPP
 #define IACTIVESESSIONWORKFLOW_HPP
 
-#include "SessionData.hpp"
+#include "common/SessionData.hpp"
 #include <kdbindings/property.h>
 
 namespace Rapid::Workflow

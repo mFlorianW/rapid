@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-#include <ISessionDatabase.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/trompeloeil.hpp>
+#include <storage/ISessionDatabase.hpp>
 
 namespace Rapid::TestHelper
 {

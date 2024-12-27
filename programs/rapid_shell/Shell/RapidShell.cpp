@@ -7,7 +7,6 @@
 #include "LoggingCategories.hpp"
 #include "ui_MainWindow.h"
 #include <EventLoopIntegration.hpp>
-#include <GlobalSettingsReader.hpp>
 #include <LoggingCategories.hpp>
 #include <QAbstractEventDispatcher>
 #include <QApplication>
@@ -15,8 +14,9 @@
 #include <QFile>
 #include <QQmlContext>
 #include <QStandardPaths>
-#include <SqliteSessionDatabase.hpp>
+#include <common/qt/GlobalSettingsReader.hpp>
 #include <spdlog/spdlog.h>
+#include <storage/SqliteSessionDatabase.hpp>
 
 namespace Rapid::RapidShell
 {
@@ -36,8 +36,8 @@ public Q_SLOTS:
             SPDLOG_CRITICAL("Failed to creat event loop integration don't start database endpoint");
             return;
         }
-        auto settingsBackend = Common::QSettingsBackend{};
-        auto dbFile = Rapid::Common::GlobalSettingsReader{&settingsBackend}.getDbFilePath();
+        auto settingsBackend = Common::Qt::QSettingsBackend{};
+        auto dbFile = Common::Qt::GlobalSettingsReader{&settingsBackend}.getDbFilePath();
         auto sessionDatabase = std::make_unique<Rapid::Storage::SqliteSessionDatabase>(dbFile.toStdString());
         auto sessionDatabaseIpcServer = std::make_unique<Storage::SessionDatabaseIpcServer>(*sessionDatabase);
         QEventLoop{}.exec();

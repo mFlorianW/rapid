@@ -17,7 +17,7 @@ PRIVATE
 
 target_include_directories(RestQt
 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 )
 
 target_compile_definitions(RestQt PRIVATE QT_NO_KEYWORDS)

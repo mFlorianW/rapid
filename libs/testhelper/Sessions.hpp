@@ -5,7 +5,7 @@
 #ifndef SESSION_HPP
 #define SESSION_HPP
 
-#include "SessionData.hpp"
+#include "common/SessionData.hpp"
 
 namespace Rapid::TestHelper::Sessions
 {

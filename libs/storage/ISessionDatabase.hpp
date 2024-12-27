@@ -5,8 +5,8 @@
 #ifndef ISESSIONDATABASE_HPP
 #define ISESSIONDATABASE_HPP
 
-#include "AsyncResult.hpp"
-#include "SessionData.hpp"
+#include "common/SessionData.hpp"
+#include "system/AsyncResult.hpp"
 #include <kdbindings/signal.h>
 #include <memory>
 

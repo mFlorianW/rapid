@@ -4,11 +4,10 @@
 
 #include "RestServerImpl.hpp"
 #include "kdbindings/signal.h"
-#include <EventLoop.hpp>
 #include <boost/asio.hpp>
-#include <iostream>
 #include <memory>
 #include <spdlog/spdlog.h>
+#include <system/EventLoop.hpp>
 
 namespace Asio = boost::asio;
 namespace Ip = boost::asio::ip;

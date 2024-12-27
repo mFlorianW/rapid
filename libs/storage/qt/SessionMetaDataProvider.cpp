@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SessionMetaDataProvider.hpp"
-#include <EventLoop.hpp>
 #include <spdlog/spdlog.h>
+#include <system/EventLoop.hpp>
 
 namespace Rapid::Storage::Qt
 {

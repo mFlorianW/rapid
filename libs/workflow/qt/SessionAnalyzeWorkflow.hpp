@@ -6,7 +6,7 @@
 #define SESSIONANALYZERWORKFLOW_HPP
 
 #include "ISessionAnalyzeWorkflow.hpp"
-#include <LapDataProvider.hpp>
+#include <common/qt/LapDataProvider.hpp>
 
 namespace Rapid::Workflow::Qt
 {

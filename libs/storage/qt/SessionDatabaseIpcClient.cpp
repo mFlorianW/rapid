@@ -4,8 +4,8 @@
 
 #include "SessionDatabaseIpcClient.hpp"
 #include "SessionDatabaseIpcInterface.h"
-#include <JsonDeserializer.hpp>
-#include <JsonSerializer.hpp>
+#include <common/JsonDeserializer.hpp>
+#include <common/JsonSerializer.hpp>
 #include <spdlog/spdlog.h>
 
 using namespace Rapid::Common;

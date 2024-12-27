@@ -5,8 +5,8 @@
 #pragma once
 
 #include "ITrackDetectionWorkflow.hpp"
-#include <IGpsPositionProvider.hpp>
-#include <ITrackDetection.hpp>
+#include <algorithm/ITrackDetection.hpp>
+#include <positioning/IGpsPositionProvider.hpp>
 
 namespace Rapid::Workflow
 {

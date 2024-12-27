@@ -5,7 +5,7 @@
 #ifndef POSITIONS_HPP
 #define POSITIONS_HPP
 
-#include "PositionData.hpp"
+#include "common/PositionData.hpp"
 
 namespace Rapid::TestHelper::Positions
 {

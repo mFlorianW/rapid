@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "IRestClient.hpp"
+#include "rest/IRestClient.hpp"
 #include <QtGlobal>
 
 namespace Rapid::Rest

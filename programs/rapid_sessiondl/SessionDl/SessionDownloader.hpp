@@ -5,10 +5,10 @@
 #pragma once
 
 #include "MainWindowModel.hpp"
-#include <ISessionDatabase.hpp>
 #include <QHostAddress>
 #include <QQmlApplicationEngine>
-#include <RestCall.hpp>
+#include <rest/RestCall.hpp>
+#include <storage/ISessionDatabase.hpp>
 
 namespace Rapid::SessionDl
 {

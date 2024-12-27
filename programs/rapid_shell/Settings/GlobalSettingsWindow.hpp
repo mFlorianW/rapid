@@ -6,11 +6,11 @@
 
 #include "DevicePage.hpp"
 #include "GeneralSettingsPage.hpp"
-#include <GlobalSettingsBackend.hpp>
-#include <GlobalSettingsReader.hpp>
 #include <QDialog>
 #include <QStackedLayout>
 #include <QtGlobal>
+#include <common/qt/GlobalSettingsBackend.hpp>
+#include <common/qt/GlobalSettingsReader.hpp>
 #include <memory>
 
 namespace Ui
@@ -47,9 +47,9 @@ public:
     Q_DISABLE_COPY_MOVE(GlobalSettingsWindow);
 
 private:
-    Common::QSettingsBackend mSettingsBackend = Common::QSettingsBackend{};
+    Common::Qt::QSettingsBackend mSettingsBackend = Common::Qt::QSettingsBackend{};
     GlobalSettingsWriter mSettingsWriter = GlobalSettingsWriter{&mSettingsBackend};
-    Common::GlobalSettingsReader mSettingsReader = Common::GlobalSettingsReader{&mSettingsBackend};
+    Common::Qt::GlobalSettingsReader mSettingsReader = Common::Qt::GlobalSettingsReader{&mSettingsBackend};
     std::unique_ptr<Ui::GlobalSettingsWindow> mGlobalSettingsWindow;
     std::unique_ptr<QStackedLayout> mSettingsPages;
     std::unique_ptr<GeneralSettingsPage> mGeneralSettingsPage;

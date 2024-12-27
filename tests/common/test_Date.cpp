@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "Date.hpp"
+#include "common/Date.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Common;

@@ -5,7 +5,7 @@
 #ifndef IPOSITIONDATETIMEPROVIDER_HPP
 #define IPOSITIONDATETIMEPROVIDER_HPP
 
-#include "GpsPositionData.hpp"
+#include "common/GpsPositionData.hpp"
 #include <kdbindings/property.h>
 
 namespace Rapid::Positioning

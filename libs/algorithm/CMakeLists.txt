@@ -21,7 +21,7 @@ PUBLIC
 
 target_include_directories(AlgorithmObject
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
 )
 
 add_library(Algorithm STATIC)

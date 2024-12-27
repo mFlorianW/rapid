@@ -2,18 +2,17 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <EventHandler.hpp>
-#include <EventLoop.hpp>
 #include <EventLoopIntegration.hpp>
 #include <QAbstractEventDispatcher>
 #include <QSignalSpy>
 #include <QTest>
 #include <QtTestHelper.hpp>
 #include <RapidApplication.hpp>
-#include <Timer.hpp>
 #include <catch2/catch_all.hpp>
 #include <catch2/trompeloeil.hpp>
-#include <iostream>
+#include <system/EventHandler.hpp>
+#include <system/EventLoop.hpp>
+#include <system/Timer.hpp>
 
 using namespace Rapid::System;
 using namespace Rapid::System::Qt;

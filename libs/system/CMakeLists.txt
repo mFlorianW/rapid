@@ -39,7 +39,7 @@ PUBLIC
 
 target_include_directories(System
 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
 )
 
 if(ENABLE_QT)

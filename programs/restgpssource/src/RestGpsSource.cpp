@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RestGpsSource.hpp"
-#include "EventLoop.hpp"
 #include "MainWindowViewModel.hpp"
+#include "system/EventLoop.hpp"
 #include <QQmlContext>
 #include <QQuickWindow>
 #include <QTimer>
-#include <Timer.hpp>
+#include <system/Timer.hpp>
 
 struct RestGpsSourcePrivate
 {

@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "Sessions.hpp"
-#include "SqliteSessionDatabase.hpp"
-#include "private/Connection.hpp"
-#include <CompareHelper.hpp>
-#include <SqliteDatabaseTestHelper.hpp>
+#include "storage/SqliteSessionDatabase.hpp"
+#include "storage/private/Connection.hpp"
 #include <catch2/catch_all.hpp>
 #include <spdlog/spdlog.h>
 #include <sqlite3.h>
+#include <testhelper/CompareHelper.hpp>
+#include <testhelper/Sessions.hpp>
+#include <testhelper/SqliteDatabaseTestHelper.hpp>
 
 using namespace Rapid::System;
 using namespace Rapid::Storage;

@@ -8,7 +8,7 @@
 #include "ITrackDatabase.hpp"
 #include "private/Connection.hpp"
 #include "private/StorageContext.hpp"
-#include <LapData.hpp>
+#include <common/LapData.hpp>
 #include <map>
 #include <optional>
 
