@@ -4,7 +4,7 @@
 
 #include "RestGpsSource.hpp"
 #include <QApplication>
-#include <RapidApplication.hpp>
+#include <system/qt/RapidApplication.hpp>
 
 int main(int argc, char* argv[])
 {

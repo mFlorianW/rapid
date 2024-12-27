@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <SessionAnalyzeWorkflow.hpp>
 #include <catch2/catch_all.hpp>
 #include <testhelper/Sessions.hpp>
+#include <workflow/qt/SessionAnalyzeWorkflow.hpp>
 
 using namespace Rapid::Workflow::Qt;
 using namespace Rapid::TestHelper;

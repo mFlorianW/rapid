@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RapidShell.hpp"
-#include <RapidApplication.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
+#include <system/qt/RapidApplication.hpp>
 
 int main(int argc, char* argv[])
 {

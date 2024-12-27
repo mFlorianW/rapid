@@ -9,8 +9,8 @@
 #include <QSignalSpy>
 #include <QTest>
 #include <QtTestHelper.hpp>
-#include <RapidApplication.hpp>
 #include <catch2/catch_all.hpp>
+#include <system/qt/RapidApplication.hpp>
 #include <testhelper/CompareHelper.hpp>
 
 using namespace Rapid::RapidShell;
