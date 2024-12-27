@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SessionDownloader.hpp"
-#include <GlobalSettingsReader.hpp>
 #include <LoggingCategories.hpp>
 #include <QDebug>
 #include <QQmlContext>
 #include <QQuickWindow>
 #include <SessionDatabaseIpcClient.hpp>
+#include <common/qt/GlobalSettingsReader.hpp>
 #include <spdlog/spdlog.h>
 
 namespace Rapid::SessionDl
@@ -16,8 +16,8 @@ namespace Rapid::SessionDl
 
 SessionDownloader::SessionDownloader(QHostAddress const& address, quint16 port) noexcept
 {
-    auto settingsBackend = Common::QSettingsBackend{};
-    auto const settings = Common::GlobalSettingsReader{&settingsBackend};
+    auto settingsBackend = Common::Qt::QSettingsBackend{};
+    auto const settings = Common::Qt::GlobalSettingsReader{&settingsBackend};
 
     mDatabase = std::make_unique<Storage::Qt::SessionDatabaseIpcClient>();
     mMainWindowModel = std::make_unique<MainWindowModel>(mSessionDownloader, *mDatabase);

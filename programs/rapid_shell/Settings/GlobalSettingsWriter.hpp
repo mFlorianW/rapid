@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <GlobalSettingsBackend.hpp>
-#include <GlobalSettingsTypes.hpp>
 #include <QSettings>
 #include <QVariant>
+#include <common/qt/GlobalSettingsBackend.hpp>
+#include <common/qt/GlobalSettingsTypes.hpp>
 
 namespace Rapid::RapidShell::Settings
 {
@@ -24,7 +24,7 @@ public:
      *                        The Settings doesn't take the ownership of the pointer so the caller must
      *                        guarantee that the object is valid as long the Settings class exists.
      */
-    GlobalSettingsWriter(Common::GlobalSettingsBackend* settingsBackend);
+    GlobalSettingsWriter(Common::Qt::GlobalSettingsBackend* settingsBackend);
 
     /**
      * Default destructor
@@ -65,10 +65,10 @@ public:
      * @return true the successful stored
      * @return false Failed to store
      */
-    [[nodiscard]] bool storeDeviceSettings(QList<Common::DeviceSettings> const& deviceSettings) noexcept;
+    [[nodiscard]] bool storeDeviceSettings(QList<Common::Qt::DeviceSettings> const& deviceSettings) noexcept;
 
 private:
-    Common::GlobalSettingsBackend* mSettingsBackend;
+    Common::Qt::GlobalSettingsBackend* mSettingsBackend;
 };
 
 } // namespace Rapid::RapidShell::Settings

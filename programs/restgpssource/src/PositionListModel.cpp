@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "PositionListModel.hpp"
-#include <GpsPositionData.hpp>
 #include <QDebug>
+#include <common/GpsPositionData.hpp>
 #include <memory>
 
 constexpr auto POSITION_BUFFER_SIZE = 300;

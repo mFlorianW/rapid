@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "TestSessionDatabaseIpcClient.h"
-#include <JsonDeserializer.hpp>
-#include <JsonSerializer.hpp>
 #include <QCoreApplication>
 #include <QDeadlineTimer>
 #include <QFile>
@@ -16,6 +14,8 @@
 #include <SessionDatabaseMock.hpp>
 #include <Sessions.hpp>
 #include <catch2/catch_all.hpp>
+#include <common/JsonDeserializer.hpp>
+#include <common/JsonSerializer.hpp>
 #include <spdlog/spdlog.h>
 
 using namespace Rapid::RapidShell::Storage;

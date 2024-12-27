@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Tracks.hpp"
-#include "PositionData.hpp"
 #include "Positions.hpp"
+#include "common/PositionData.hpp"
 
 using namespace Rapid::Common;
 

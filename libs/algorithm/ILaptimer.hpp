@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <GpsPositionData.hpp>
-#include <Timestamp.hpp>
-#include <TrackData.hpp>
+#include <common/GpsPositionData.hpp>
+#include <common/Timestamp.hpp>
+#include <common/TrackData.hpp>
 #include <kdbindings/property.h>
 
 namespace Rapid::Algorithm

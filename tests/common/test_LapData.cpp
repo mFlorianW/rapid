@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #define CATCH_CONFIG_MAIN
-#include "LapData.hpp"
-#include "Timestamp.hpp"
+#include "common/LapData.hpp"
+#include "common/Timestamp.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Common;

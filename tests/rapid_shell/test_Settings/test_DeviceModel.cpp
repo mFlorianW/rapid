@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <DeviceModel.hpp>
-#include <GlobalSettingsKeys.hpp>
-#include <GlobalSettingsReader.hpp>
-#include <GlobalSettingsTypes.hpp>
 #include <GlobalSettingsWriter.hpp>
 #include <SettingsMemoryBackend.hpp>
 #include <catch2/catch_all.hpp>
+#include <common/qt/GlobalSettingsReader.hpp>
+#include <common/qt/GlobalSettingsTypes.hpp>
+#include <common/qt/private/GlobalSettingsKeys.hpp>
 
 using namespace Rapid::RapidShell::Settings;
 using namespace Rapid::TestHelper;
 using namespace Rapid::Common;
+using namespace Rapid::Common::Qt;
 
 SCENARIO("The device list model shall provide the header data for the list view.")
 {
@@ -24,10 +25,10 @@ SCENARIO("The device list model shall provide the header data for the list view.
         auto model = DeviceModel{&writer, &reader};
         WHEN("Requesting the header")
         {
-            auto const headerDataCol0 = model.headerData(0, Qt::Orientation::Horizontal, Qt::DisplayRole);
-            auto const headerDataCol1 = model.headerData(1, Qt::Orientation::Horizontal, Qt::DisplayRole);
-            auto const headerDataCol2 = model.headerData(2, Qt::Orientation::Horizontal, Qt::DisplayRole);
-            auto const headerDataCol3 = model.headerData(3, Qt::Orientation::Horizontal, Qt::DisplayRole);
+            auto const headerDataCol0 = model.headerData(0, ::Qt::Orientation::Horizontal, ::Qt::DisplayRole);
+            auto const headerDataCol1 = model.headerData(1, ::Qt::Orientation::Horizontal, ::Qt::DisplayRole);
+            auto const headerDataCol2 = model.headerData(2, ::Qt::Orientation::Horizontal, ::Qt::DisplayRole);
+            auto const headerDataCol3 = model.headerData(3, ::Qt::Orientation::Horizontal, ::Qt::DisplayRole);
 
             THEN("The correct header data is returned")
             {
@@ -54,10 +55,10 @@ SCENARIO("The device model shall add new devices to it's interal list")
             THEN("The row count in the model should be increased and default data shall be returned.")
             {
                 REQUIRE(model.rowCount(QModelIndex{}) == 1);
-                REQUIRE(model.data(model.index(0, 0), Qt::DisplayRole).toString() == QStringLiteral("Lappy"));
-                REQUIRE(model.data(model.index(0, 1), Qt::DisplayRole).toString() == QString("127.0.0.1"));
-                REQUIRE(model.data(model.index(0, 2), Qt::DisplayRole).toString() == QString("80"));
-                REQUIRE(model.data(model.index(0, 3), Qt::DisplayRole).toBool() == false);
+                REQUIRE(model.data(model.index(0, 0), ::Qt::DisplayRole).toString() == QStringLiteral("Lappy"));
+                REQUIRE(model.data(model.index(0, 1), ::Qt::DisplayRole).toString() == QString("127.0.0.1"));
+                REQUIRE(model.data(model.index(0, 2), ::Qt::DisplayRole).toString() == QString("80"));
+                REQUIRE(model.data(model.index(0, 3), ::Qt::DisplayRole).toBool() == false);
             }
         }
 
@@ -68,10 +69,10 @@ SCENARIO("The device model shall add new devices to it's interal list")
             {
                 REQUIRE(model.rowCount(QModelIndex{}) == 5);
                 for (int i = 0; i < 5; ++i) {
-                    REQUIRE(model.data(model.index(i, 0), Qt::DisplayRole).toString() == QStringLiteral("Lappy"));
-                    REQUIRE(model.data(model.index(i, 3), Qt::DisplayRole).toBool() == false);
-                    REQUIRE(model.data(model.index(i, 2), Qt::DisplayRole).toString() == QString("80"));
-                    REQUIRE(model.data(model.index(i, 1), Qt::DisplayRole).toString() == QString("127.0.0.1"));
+                    REQUIRE(model.data(model.index(i, 0), ::Qt::DisplayRole).toString() == QStringLiteral("Lappy"));
+                    REQUIRE(model.data(model.index(i, 3), ::Qt::DisplayRole).toBool() == false);
+                    REQUIRE(model.data(model.index(i, 2), ::Qt::DisplayRole).toString() == QString("80"));
+                    REQUIRE(model.data(model.index(i, 1), ::Qt::DisplayRole).toString() == QString("127.0.0.1"));
                 }
             }
         }
@@ -94,10 +95,10 @@ SCENARIO("Remove existing device settings in the model")
             THEN("The row count should be changed and the removed row shall not be accessable")
             {
                 REQUIRE(model.rowCount(QModelIndex{}) == 0);
-                REQUIRE(model.data(model.index(0, 0), Qt::DisplayRole).isNull() == true);
-                REQUIRE(model.data(model.index(0, 1), Qt::DisplayRole).isNull() == true);
-                REQUIRE(model.data(model.index(0, 2), Qt::DisplayRole).isNull() == true);
-                REQUIRE(model.data(model.index(0, 3), Qt::DisplayRole).isNull() == true);
+                REQUIRE(model.data(model.index(0, 0), ::Qt::DisplayRole).isNull() == true);
+                REQUIRE(model.data(model.index(0, 1), ::Qt::DisplayRole).isNull() == true);
+                REQUIRE(model.data(model.index(0, 2), ::Qt::DisplayRole).isNull() == true);
+                REQUIRE(model.data(model.index(0, 3), ::Qt::DisplayRole).isNull() == true);
             }
         }
 
@@ -131,7 +132,7 @@ SCENARIO("Editing Device settings in the model")
             REQUIRE(model.setData(index, name));
             THEN("The device setting name for the index should be changed")
             {
-                REQUIRE(model.data(index, Qt::DisplayRole).toString() == name);
+                REQUIRE(model.data(index, ::Qt::DisplayRole).toString() == name);
             }
         }
 
@@ -142,7 +143,7 @@ SCENARIO("Editing Device settings in the model")
             REQUIRE(model.setData(index, ip));
             THEN("The device setting ip for the index should be changed.")
             {
-                REQUIRE(model.data(index, Qt::DisplayRole).toString() == ip);
+                REQUIRE(model.data(index, ::Qt::DisplayRole).toString() == ip);
             }
         }
 
@@ -163,7 +164,7 @@ SCENARIO("Editing Device settings in the model")
             REQUIRE(model.setData(index, port));
             THEN("The device setting port for the index should be changed.")
             {
-                REQUIRE(model.data(index, Qt::DisplayRole).toString() == port);
+                REQUIRE(model.data(index, ::Qt::DisplayRole).toString() == port);
             }
         }
 
@@ -229,12 +230,12 @@ SCENARIO("Restore the original device settings")
             auto const index = model.index(1, 0);
             auto const deviceName = QStringLiteral("TestName");
             REQUIRE(model.setData(index, deviceName));
-            REQUIRE(model.data(index, Qt::DisplayRole).toString() == deviceName);
+            REQUIRE(model.data(index, ::Qt::DisplayRole).toString() == deviceName);
             REQUIRE(model.restore());
 
             THEN("The original data shall be restored restored")
             {
-                REQUIRE(model.data(index, Qt::DisplayRole).toString() == expDeviceName);
+                REQUIRE(model.data(index, ::Qt::DisplayRole).toString() == expDeviceName);
             }
         }
 
@@ -246,7 +247,7 @@ SCENARIO("Restore the original device settings")
             THEN("The original data shall be restored restored")
             {
                 REQUIRE(model.rowCount({}) == 3);
-                REQUIRE(model.data(index, Qt::DisplayRole).toString() == expDeviceName);
+                REQUIRE(model.data(index, ::Qt::DisplayRole).toString() == expDeviceName);
             }
         }
 
@@ -266,12 +267,12 @@ SCENARIO("Restore the original device settings")
             auto const index = model.index(1, 0);
             auto const deviceName = QStringLiteral("TestName");
             REQUIRE(model.setData(index, deviceName));
-            REQUIRE(model.data(index, Qt::DisplayRole).toString() == deviceName);
+            REQUIRE(model.data(index, ::Qt::DisplayRole).toString() == deviceName);
             REQUIRE(model.save());
             REQUIRE(model.restore());
             THEN("The new data shall be returned")
             {
-                REQUIRE(model.data(index, Qt::DisplayRole).toString() == deviceName);
+                REQUIRE(model.data(index, ::Qt::DisplayRole).toString() == deviceName);
             }
         }
     }
@@ -297,9 +298,9 @@ SCENARIO("Load stored device settings")
         THEN("The stored data is correctly loaded")
         {
             REQUIRE(model.rowCount({}) == 1);
-            REQUIRE(model.data(model.index(0, 0), Qt::DisplayRole).toString() == expDeviceName);
-            REQUIRE(model.data(model.index(0, 1), Qt::DisplayRole).toString() == expHostAddress);
-            REQUIRE(model.data(model.index(0, 2), Qt::DisplayRole).toUInt() == expPort);
+            REQUIRE(model.data(model.index(0, 0), ::Qt::DisplayRole).toString() == expDeviceName);
+            REQUIRE(model.data(model.index(0, 1), ::Qt::DisplayRole).toString() == expHostAddress);
+            REQUIRE(model.data(model.index(0, 2), ::Qt::DisplayRole).toUInt() == expPort);
         }
     }
 }

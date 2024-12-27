@@ -6,7 +6,7 @@
 
 #include "IRestRequestHandler.hpp"
 #include "ISessionDatabase.hpp"
-#include <JsonSerializer.hpp>
+#include <common/JsonSerializer.hpp>
 
 namespace Rapid::Rest
 {

@@ -4,8 +4,7 @@
 
 #include "Sessions.hpp"
 #include "Tracks.hpp"
-#include <GpsPositionData.hpp>
-#include <array>
+#include <common/GpsPositionData.hpp>
 
 using namespace Rapid::Common;
 

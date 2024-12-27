@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <PositionData.hpp>
+#include <common/PositionData.hpp>
 
 namespace Rapid::Algorithm::DistanceCalculator
 {

@@ -6,11 +6,11 @@
 #include <ConstantGpsPositionProvider.hpp>
 #include <DatabaseFile.hpp>
 #include <EventLoop.hpp>
-#include <PositionData.hpp>
 #include <SqliteSessionDatabase.hpp>
 #include <SqliteTrackDatabase.hpp>
 #include <array>
 #include <boost/program_options.hpp>
+#include <common/PositionData.hpp>
 #include <csignal>
 #include <filesystem>
 #include <fstream>

@@ -5,10 +5,10 @@
 #include "SessionDatabaseIpcServer.hpp"
 #include <EventLoop.hpp>
 #include <ISessionDatabase.hpp>
-#include <JsonDeserializer.hpp>
-#include <JsonSerializer.hpp>
 #include <QDir>
 #include <QStandardPaths>
+#include <common/JsonDeserializer.hpp>
+#include <common/JsonSerializer.hpp>
 #include <spdlog/spdlog.h>
 
 namespace Rapid::RapidShell::Storage

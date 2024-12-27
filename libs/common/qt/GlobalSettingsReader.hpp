@@ -5,10 +5,10 @@
 #pragma once
 
 #include "GlobalSettingsTypes.hpp"
-#include <GlobalSettingsBackend.hpp>
 #include <QString>
+#include <common/qt/GlobalSettingsBackend.hpp>
 
-namespace Rapid::Common
+namespace Rapid::Common::Qt
 {
 
 /**
@@ -68,4 +68,4 @@ private:
     GlobalSettingsBackend* mSettingsBackend;
 };
 
-} // namespace Rapid::Common
+} // namespace Rapid::Common::Qt

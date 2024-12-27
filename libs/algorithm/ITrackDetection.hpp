@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <PositionData.hpp>
-#include <TrackData.hpp>
+#include <common/PositionData.hpp>
+#include <common/TrackData.hpp>
 
 namespace Rapid::Algorithm
 {

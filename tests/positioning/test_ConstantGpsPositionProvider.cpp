@@ -4,8 +4,8 @@
 
 #include "CompareHelper.hpp"
 #include "ConstantGpsPositionProvider.hpp"
-#include <PositionData.hpp>
 #include <catch2/catch_all.hpp>
+#include <common/PositionData.hpp>
 
 using namespace Rapid::Positioning;
 using namespace Rapid::Common;

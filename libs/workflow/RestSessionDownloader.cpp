@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RestSessionDownloader.hpp"
-#include <JsonDeserializer.hpp>
+#include <common/JsonDeserializer.hpp>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <sstream>

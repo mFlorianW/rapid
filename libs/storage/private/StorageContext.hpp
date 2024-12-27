@@ -6,7 +6,7 @@
 
 #include <AsyncResult.hpp>
 #include <FutureWatcher.hpp>
-#include <SessionData.hpp>
+#include <common/SessionData.hpp>
 #include <thread>
 
 namespace Rapid::Storage::Private

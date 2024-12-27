@@ -13,7 +13,7 @@ namespace
 constexpr auto columns = int{3};
 } // namespace
 
-DeviceModel::DeviceModel(GlobalSettingsWriter* settingsWriter, Common::GlobalSettingsReader* settingsReader)
+DeviceModel::DeviceModel(GlobalSettingsWriter* settingsWriter, Common::Qt::GlobalSettingsReader* settingsReader)
     : mSettingsWriter{settingsWriter}
 {
     Q_ASSERT(mSettingsWriter != nullptr);
@@ -102,10 +102,10 @@ bool DeviceModel::insertRows(int row, int count, QModelIndex const& parent) noex
         backup();
         beginInsertRows(index(row, 0), row, row + count - 1);
         for (int i = 0; i < count; ++i) {
-            mDevices.emplace_back(Common::DeviceSettings{.name = QString{"Lappy"},
-                                                         .ip = QHostAddress{QString{"127.0.0.1"}},
-                                                         .port = 80,
-                                                         .defaultDevice = false});
+            mDevices.emplace_back(Common::Qt::DeviceSettings{.name = QString{"Lappy"},
+                                                             .ip = QHostAddress{QString{"127.0.0.1"}},
+                                                             .port = 80,
+                                                             .defaultDevice = false});
         }
         endInsertRows();
         return true;
@@ -148,7 +148,7 @@ bool DeviceModel::restore() noexcept
     return true;
 }
 
-bool DeviceModel::setIpAddress(Common::DeviceSettings& device, QVariant const& rawIp) noexcept
+bool DeviceModel::setIpAddress(Common::Qt::DeviceSettings& device, QVariant const& rawIp) noexcept
 {
     if (not rawIp.canConvert<QString>()) {
         return false;
@@ -162,7 +162,7 @@ bool DeviceModel::setIpAddress(Common::DeviceSettings& device, QVariant const& r
     return true;
 }
 
-bool DeviceModel::setDevicePort(Common::DeviceSettings& device, QVariant const& rawPort) noexcept
+bool DeviceModel::setDevicePort(Common::Qt::DeviceSettings& device, QVariant const& rawPort) noexcept
 {
     auto ok = false;
     auto const port = rawPort.toInt(&ok);

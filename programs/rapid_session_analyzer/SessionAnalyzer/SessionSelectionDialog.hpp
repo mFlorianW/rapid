@@ -5,11 +5,11 @@
 #ifndef SESSIONSELECTIONDIALOG_HPP
 #define SESSIONSELECTIONDIALOG_HPP
 
-#include <GenericTableModel.hpp>
 #include <ISessionDatabase.hpp>
 #include <QDialog>
 #include <QHeaderView>
 #include <SessionMetaDataProvider.hpp>
+#include <common/qt/GenericTableModel.hpp>
 #include <memory>
 
 namespace Ui

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #define CATCH_CONFIG_MAIN
-#include "JsonSerializer.hpp"
 #include "Sessions.hpp"
+#include "common/JsonSerializer.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Common;

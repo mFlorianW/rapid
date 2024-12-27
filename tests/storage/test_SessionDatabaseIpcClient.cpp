@@ -2,19 +2,19 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <JsonDeserializer.hpp>
-#include <JsonSerializer.hpp>
 #include <QSignalSpy>
 #include <QTest>
 #include <QtTestHelper.hpp>
 #include <RapidApplication.hpp>
-#include <SessionData.hpp>
 #include <SessionDatabaseAdaptor.h>
 #include <SessionDatabaseIpcClient.hpp>
 #include <Sessions.hpp>
 #include <catch2/catch_session.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/trompeloeil.hpp>
+#include <common/JsonDeserializer.hpp>
+#include <common/JsonSerializer.hpp>
+#include <common/SessionData.hpp>
 #include <spdlog/spdlog.h>
 
 using namespace Rapid::Storage::Qt;

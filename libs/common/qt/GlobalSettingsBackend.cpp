@@ -4,7 +4,7 @@
 
 #include "GlobalSettingsBackend.hpp"
 
-namespace Rapid::Common
+namespace Rapid::Common::Qt
 {
 
 QSettingsBackend::QSettingsBackend()
@@ -23,4 +23,4 @@ QVariant QSettingsBackend::getValue(QAnyStringView const& key) const noexcept
     return mSettings.value(key);
 }
 
-} // namespace Rapid::Common
+} // namespace Rapid::Common::Qt

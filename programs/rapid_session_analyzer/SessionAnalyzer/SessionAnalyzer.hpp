@@ -7,7 +7,7 @@
 #include <ISessionAnalyzeWorkflow.hpp>
 #include <QMainWindow>
 #include <SessionDatabaseIpcClient.hpp>
-#include <SessionMetaData.hpp>
+#include <common/SessionMetaData.hpp>
 
 namespace Ui
 {

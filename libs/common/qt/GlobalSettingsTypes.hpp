@@ -6,7 +6,7 @@
 
 #include <QHostAddress>
 
-namespace Rapid::Common
+namespace Rapid::Common::Qt
 {
 
 /**
@@ -20,4 +20,4 @@ struct DeviceSettings
     bool defaultDevice = false;
 };
 
-} // namespace Rapid::Common
+} // namespace Rapid::Common::Qt

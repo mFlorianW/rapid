@@ -5,8 +5,8 @@
 #ifndef CSVGPSFILEREADER_HPP
 #define CSVGPSFILEREADER_HPP
 
-#include <PositionData.hpp>
 #include <QString>
+#include <common/PositionData.hpp>
 #include <vector>
 
 namespace Rapid::Positioning::Qt

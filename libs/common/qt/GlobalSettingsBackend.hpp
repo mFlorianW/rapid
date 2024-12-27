@@ -5,7 +5,7 @@
 #pragma once
 #include <QSettings>
 
-namespace Rapid::Common
+namespace Rapid::Common::Qt
 {
 
 class GlobalSettingsBackend
@@ -108,4 +108,4 @@ private:
     QSettings mSettings;
 };
 
-} // namespace Rapid::Common
+} // namespace Rapid::Common::Qt

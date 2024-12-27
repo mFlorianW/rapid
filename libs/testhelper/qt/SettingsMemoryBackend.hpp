@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include <GlobalSettingsBackend.hpp>
+#include <common/qt/GlobalSettingsBackend.hpp>
 
 namespace Rapid::TestHelper
 {
 
-class SettingsMemoryBackend : public Common::GlobalSettingsBackend
+class SettingsMemoryBackend : public Common::Qt::GlobalSettingsBackend
 {
 public:
     [[nodiscard]] bool storeValue(QAnyStringView const& key, QVariant const& value) noexcept override;
