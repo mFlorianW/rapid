@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "TrackDetectionWorkflow.hpp"
 #include "algorithm/TrackDetection.hpp"
 #include "testhelper/PositionDateTimeProvider.hpp"
 #include "testhelper/Positions.hpp"
 #include "testhelper/Tracks.hpp"
+#include "workflow/TrackDetectionWorkflow.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Workflow;
