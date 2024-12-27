@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "Path.hpp"
+#include "rest/Path.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Rest;

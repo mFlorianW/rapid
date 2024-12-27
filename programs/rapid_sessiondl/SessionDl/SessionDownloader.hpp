@@ -8,7 +8,7 @@
 #include <ISessionDatabase.hpp>
 #include <QHostAddress>
 #include <QQmlApplicationEngine>
-#include <RestCall.hpp>
+#include <rest/RestCall.hpp>
 
 namespace Rapid::SessionDl
 {

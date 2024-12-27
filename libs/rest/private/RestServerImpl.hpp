@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "IRestServer.hpp"
+#include "rest/IRestServer.hpp"
 #include <EventHandler.hpp>
 #include <boost/beast.hpp>
 #include <thread>

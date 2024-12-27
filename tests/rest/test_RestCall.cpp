@@ -2,8 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "RestCall.hpp"
+#include "rest/RestCall.hpp"
 #include <catch2/catch_all.hpp>
+#include <spdlog/spdlog.h>
 
 using namespace Rapid::Rest;
 
@@ -12,8 +13,12 @@ class TestableRestCall : public RestCall
 public:
     void setCallResult(RestCallResult result) noexcept override
     {
-        mResult = result;
-        finished.emit(this);
+        try {
+            mResult = result;
+            finished.emit(this);
+        } catch (std::exception const& e) {
+            SPDLOG_ERROR("Failed ot emit finished signal. Error already emitting.");
+        }
     }
 };
 

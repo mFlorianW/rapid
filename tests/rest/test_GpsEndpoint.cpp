@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "GpsEndpoint.hpp"
+#include "rest/GpsEndpoint.hpp"
 #include <CompareHelper.hpp>
 #include <catch2/catch_all.hpp>
 

@@ -6,7 +6,7 @@
 
 #include <QHostAddress>
 #include <QObject>
-#include <QRestClient.hpp>
+#include <rest/qt/QRestClient.hpp>
 #ifndef Q_MOC_RUN
 #include <ISessionDatabase.hpp>
 #include <RestSessionDownloader.hpp>

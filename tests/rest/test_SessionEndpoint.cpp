@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "SessionEndpoint.hpp"
 #include "Sessions.hpp"
+#include "rest/SessionEndpoint.hpp"
 #include <CompareHelper.hpp>
 #include <SessionDatabaseMock.hpp>
 #include <SignalSpy.hpp>

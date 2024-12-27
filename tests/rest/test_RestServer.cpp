@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "RestServer.hpp"
+#include "rest/RestServer.hpp"
 #include <CompareHelper.hpp>
 #include <boost/beast.hpp>
 #include <catch2/catch_all.hpp>
