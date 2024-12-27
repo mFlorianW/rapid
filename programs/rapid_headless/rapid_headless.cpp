@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RapidHeadless.hpp"
-#include <ConstantGpsPositionProvider.hpp>
 #include <DatabaseFile.hpp>
 #include <EventLoop.hpp>
 #include <SqliteSessionDatabase.hpp>
@@ -14,6 +13,7 @@
 #include <csignal>
 #include <filesystem>
 #include <fstream>
+#include <positioning/ConstantGpsPositionProvider.hpp>
 #include <pwd.h>
 #include <spdlog/spdlog.h>
 #include <sstream>

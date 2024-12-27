@@ -6,13 +6,13 @@
 
 #include "SessionEndpoint.hpp"
 #include <ActiveSessionWorkflow.hpp>
-#include <IGpsPositionProvider.hpp>
 #include <ISessionDatabase.hpp>
 #include <ITrackDatabase.hpp>
 #include <RestServer.hpp>
 #include <TrackDetectionWorkflow.hpp>
 #include <algorithm/SimpleLaptimer.hpp>
 #include <algorithm/TrackDetection.hpp>
+#include <positioning/IGpsPositionProvider.hpp>
 
 namespace Rapid::LappyHeadless
 {

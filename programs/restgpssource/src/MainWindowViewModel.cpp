@@ -5,10 +5,10 @@
 #include "MainWindowViewModel.hpp"
 #include "PositionListModel.hpp"
 #include "RestHttpClient.hpp"
-#include <ConstantGpsPositionProvider.hpp>
-#include <CsvGpsFileReader.hpp>
 #include <QDebug>
 #include <QUrl>
+#include <positioning/ConstantGpsPositionProvider.hpp>
+#include <positioning/qt/CsvGpsFileReader.hpp>
 
 struct MainWindowViewModelPrivate
 {

@@ -5,7 +5,7 @@
 #ifndef POSITIONDATETIMEPROVIDER_HPP
 #define POSITIONDATETIMEPROVIDER_HPP
 
-#include "IGpsPositionProvider.hpp"
+#include "positioning/IGpsPositionProvider.hpp"
 
 namespace Rapid::TestHelper
 {

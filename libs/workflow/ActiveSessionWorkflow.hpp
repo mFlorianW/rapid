@@ -6,9 +6,9 @@
 #define ACTIVESESSIONWORKFLOW_HPP
 
 #include "IActiveSessionWorkflow.hpp"
-#include <IGpsPositionProvider.hpp>
 #include <ISessionDatabase.hpp>
 #include <algorithm/ILaptimer.hpp>
+#include <positioning/IGpsPositionProvider.hpp>
 
 namespace Rapid::Workflow
 {

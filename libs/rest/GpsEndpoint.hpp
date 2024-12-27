@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "IGpsPositionProvider.hpp"
 #include "IRestRequestHandler.hpp"
+#include "positioning/IGpsPositionProvider.hpp"
 
 namespace Rapid::Rest
 {
