@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <QHostAddress>
-#include <SettingsMemoryBackend.hpp>
 #include <catch2/catch_all.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
 #include <common/qt/private/GlobalSettingsKeys.hpp>
+#include <testhelper/qt/SettingsMemoryBackend.hpp>
 
 using namespace Rapid::Common;
 using namespace Rapid::Common::Qt;

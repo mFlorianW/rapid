@@ -4,7 +4,6 @@
 
 #include <QSignalSpy>
 #include <QTest>
-#include <QtTestHelper.hpp>
 #include <SessionDatabaseAdaptor.h>
 #include <catch2/catch_session.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -16,6 +15,7 @@
 #include <storage/qt/SessionDatabaseIpcClient.hpp>
 #include <system/qt/RapidApplication.hpp>
 #include <testhelper/Sessions.hpp>
+#include <testhelper/qt/QtTestHelper.hpp>
 
 using namespace Rapid::Storage::Qt;
 using namespace Rapid::Storage;

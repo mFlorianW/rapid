@@ -5,7 +5,6 @@
 #include <QAbstractEventDispatcher>
 #include <QSignalSpy>
 #include <QTest>
-#include <QtTestHelper.hpp>
 #include <catch2/catch_all.hpp>
 #include <catch2/trompeloeil.hpp>
 #include <system/EventHandler.hpp>
@@ -13,6 +12,7 @@
 #include <system/Timer.hpp>
 #include <system/qt/EventLoopIntegration.hpp>
 #include <system/qt/RapidApplication.hpp>
+#include <testhelper/qt/QtTestHelper.hpp>
 
 using namespace Rapid::System;
 using namespace Rapid::System::Qt;
