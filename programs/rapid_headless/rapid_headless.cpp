@@ -5,8 +5,6 @@
 #include "RapidHeadless.hpp"
 #include <DatabaseFile.hpp>
 #include <EventLoop.hpp>
-#include <SqliteSessionDatabase.hpp>
-#include <SqliteTrackDatabase.hpp>
 #include <array>
 #include <boost/program_options.hpp>
 #include <common/PositionData.hpp>
@@ -17,6 +15,8 @@
 #include <pwd.h>
 #include <spdlog/spdlog.h>
 #include <sstream>
+#include <storage/SqliteSessionDatabase.hpp>
+#include <storage/SqliteTrackDatabase.hpp>
 #include <string>
 #include <unistd.h>
 #include <vector>

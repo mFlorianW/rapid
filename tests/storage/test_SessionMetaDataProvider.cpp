@@ -4,10 +4,10 @@
 
 #include <CompareHelper.hpp>
 #include <SessionDatabaseMock.hpp>
-#include <SessionMetaDataProvider.hpp>
 #include <Sessions.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/trompeloeil.hpp>
+#include <storage/qt/SessionMetaDataProvider.hpp>
 
 using namespace Rapid::TestHelper;
 using namespace Rapid::Storage;

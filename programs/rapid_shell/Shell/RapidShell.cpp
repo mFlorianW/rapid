@@ -14,9 +14,9 @@
 #include <QFile>
 #include <QQmlContext>
 #include <QStandardPaths>
-#include <SqliteSessionDatabase.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
 #include <spdlog/spdlog.h>
+#include <storage/SqliteSessionDatabase.hpp>
 
 namespace Rapid::RapidShell
 {

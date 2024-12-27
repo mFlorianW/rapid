@@ -7,9 +7,9 @@
 #include <QDebug>
 #include <QQmlContext>
 #include <QQuickWindow>
-#include <SessionDatabaseIpcClient.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
 #include <spdlog/spdlog.h>
+#include <storage/qt/SessionDatabaseIpcClient.hpp>
 
 namespace Rapid::SessionDl
 {

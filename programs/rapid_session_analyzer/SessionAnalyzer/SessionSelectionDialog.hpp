@@ -5,12 +5,12 @@
 #ifndef SESSIONSELECTIONDIALOG_HPP
 #define SESSIONSELECTIONDIALOG_HPP
 
-#include <ISessionDatabase.hpp>
 #include <QDialog>
 #include <QHeaderView>
-#include <SessionMetaDataProvider.hpp>
 #include <common/qt/GenericTableModel.hpp>
 #include <memory>
+#include <storage/ISessionDatabase.hpp>
+#include <storage/qt/SessionMetaDataProvider.hpp>
 
 namespace Ui
 {

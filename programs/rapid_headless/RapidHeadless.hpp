@@ -5,14 +5,14 @@
 #pragma once
 
 #include <ActiveSessionWorkflow.hpp>
-#include <ISessionDatabase.hpp>
-#include <ITrackDatabase.hpp>
 #include <TrackDetectionWorkflow.hpp>
 #include <algorithm/SimpleLaptimer.hpp>
 #include <algorithm/TrackDetection.hpp>
 #include <positioning/IGpsPositionProvider.hpp>
 #include <rest/RestServer.hpp>
 #include <rest/SessionEndpoint.hpp>
+#include <storage/ISessionDatabase.hpp>
+#include <storage/ITrackDatabase.hpp>
 
 namespace Rapid::LappyHeadless
 {

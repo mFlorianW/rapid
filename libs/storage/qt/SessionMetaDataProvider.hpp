@@ -5,7 +5,7 @@
 #ifndef SESSIONMETADATAPROVIDER_HPP
 #define SESSIONMETADATAPROVIDER_HPP
 
-#include "ISessionDatabase.hpp"
+#include "storage/ISessionDatabase.hpp"
 #include <common/SessionMetaData.hpp>
 #include <common/qt/TableModelDataProvider.hpp>
 

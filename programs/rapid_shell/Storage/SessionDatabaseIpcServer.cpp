@@ -4,12 +4,12 @@
 
 #include "SessionDatabaseIpcServer.hpp"
 #include <EventLoop.hpp>
-#include <ISessionDatabase.hpp>
 #include <QDir>
 #include <QStandardPaths>
 #include <common/JsonDeserializer.hpp>
 #include <common/JsonSerializer.hpp>
 #include <spdlog/spdlog.h>
+#include <storage/ISessionDatabase.hpp>
 
 namespace Rapid::RapidShell::Storage
 {

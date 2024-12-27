@@ -8,8 +8,8 @@
 #include <QObject>
 #include <rest/qt/QRestClient.hpp>
 #ifndef Q_MOC_RUN
-#include <ISessionDatabase.hpp>
 #include <RestSessionDownloader.hpp>
+#include <storage/ISessionDatabase.hpp>
 #endif
 
 namespace Rapid::SessionDl
