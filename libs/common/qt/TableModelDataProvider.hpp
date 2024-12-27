@@ -39,6 +39,24 @@ Q_SIGNALS:
      */
     void endInsertItem();
 
+    /**
+     * @brief This signal is emitted when an item in the @ref TableModelDataProvider is removed.
+     *
+     * @details The signal contains the row that is removed.
+     *          So the @ref GenericTableModel can use it to update the UI correctly.
+     *
+     * @param The row which got removed from the model.
+     */
+    void beginRemoveItem(qsizetype row);
+
+    /**
+     * @brief This signal is emitted when the remove operation of an item in the @ref TableModelDataProvider is done.
+     *
+     * @details The signal contains the row that is removed.
+     *          So the @ref GenericTableModel can use it to update the UI correctly.
+     */
+    void endRemoveItem();
+
 protected:
     /**
      * Creates an instance of the TableModelDataProviderBase
@@ -76,7 +94,7 @@ public:
      * @brief Gives the amount of columns for table model.
      * @return The amount of columns
      */
-    qsizetype getColumnCount() const noexcept
+    [[nodiscard]] qsizetype getColumnCount() const noexcept
     {
         return mColumnNames.size();
     }
@@ -85,7 +103,7 @@ public:
      * @brief Gives the amount of columns for table model.
      * @return The names of the columns
      */
-    QStringList getColumnNames() const noexcept
+    [[nodiscard]] QStringList getColumnNames() const noexcept
     {
         return mColumnNames;
     }
@@ -93,7 +111,7 @@ public:
     /**
      * Gives the amount of items in the data provider.
      */
-    qsizetype getRowCount() const noexcept
+    [[nodiscard]] qsizetype getRowCount() const noexcept
     {
         return mData.size();
     }
@@ -108,7 +126,7 @@ public:
      * @param role The role defines which type of data is requested.
      *             E.g. the Qt::Display role is requested when value for displaying shall be returned.
      */
-    QVariant data(qsizetype row, qsizetype column, qint32 role) const noexcept
+    [[nodiscard]] QVariant data(qsizetype row, qsizetype column, qint32 role) const noexcept
     {
         if (row >= static_cast<qsizetype>(mData.size()) or column >= mColumnNames.size()) {
             return {};
@@ -142,12 +160,33 @@ public:
         return insertedIndex;
     }
 
-    std::optional<T> getItem(qsizetype row)
+    [[nodiscard]] std::optional<T> getItem(qsizetype row)
     {
         if (row < static_cast<qsizetype>(mData.size())) {
             return mData.at(row);
         }
         return std::nullopt;
+    }
+
+    /**
+     * @brief Removes an item for the passed row
+     *
+     * @detils The item is only removed if the index is valid and for the index an item exists.
+     *         The signal @ref beginRemoveItem is emitted on deletion begin.
+     *         The signal @ref endRemoveItem is emitted when finished.
+     *         The signals are used by the GenericTableModel to correctly update the view.
+     *
+     * @return True means the item is deleted otherwise the false.
+     */
+    [[nodiscard]] bool removeItemAt(qsizetype row)
+    {
+        if (row < static_cast<qsizetype>(mData.size())) {
+            Q_EMIT beginRemoveItem(row);
+            mData.erase(mData.begin() + row);
+            Q_EMIT endRemoveItem();
+            return true;
+        }
+        return false;
     }
 
 protected:

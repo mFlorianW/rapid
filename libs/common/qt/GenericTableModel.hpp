@@ -22,6 +22,8 @@ concept DataProvider = requires(T t, qsizetype row, qsizetype column, qint32 rol
     { t.data(row, column, role) } -> std::same_as<QVariant>;
     { t.beginInsertItem(row) } -> std::same_as<void>;
     { t.endInsertItem() } -> std::same_as<void>;
+    { t.beginRemoveItem(row) } -> std::same_as<void>;
+    { t.endInsertItem() } -> std::same_as<void>;
 };
 
 /**
@@ -50,6 +52,14 @@ public:
 
         connect(&mDataProvider, &T::endInsertItem, this, [this] {
             endInsertRows();
+        });
+
+        connect(&mDataProvider, &T::beginRemoveItem, this, [this](auto&& index) {
+            beginRemoveRows(QModelIndex(), index, index);
+        });
+
+        connect(&mDataProvider, &T::endRemoveItem, this, [this] {
+            endRemoveRows();
         });
     }
 

@@ -116,3 +116,35 @@ TEST_CASE("The TableModelDataProvider shall provide the item for an index")
         REQUIRE(item == std::nullopt);
     }
 }
+
+TEST_CASE("The TableModelDataProvider shall remove an item for an index")
+{
+    auto dataProvider = TableModelDataProvider<PersonData>{
+        {"1", "2"},
+        {PersonData{.name = QString{"Name"}, .age = 8}, PersonData{.name = QString{"Name1"}, .age = 9}}};
+
+    SECTION("Remove with valid index")
+    {
+        CHECK(dataProvider.removeItemAt(0));
+        CHECK(dataProvider.getRowCount() == 1);
+        REQUIRE(dataProvider.getItem(0).value_or(PersonData{}) ==
+                PersonData{.name = QStringLiteral("Name1"), .age = 9});
+    }
+
+    SECTION("Remove with invalid index")
+    {
+        CHECK_FALSE(dataProvider.removeItemAt(3));
+    }
+
+    SECTION("Emits deletions signals are emitted")
+    {
+        auto beginRemoveItem = QSignalSpy{&dataProvider, &TableModelDataProviderBase::beginRemoveItem};
+        auto endRemoveItem = QSignalSpy{&dataProvider, &TableModelDataProviderBase::endRemoveItem};
+
+        CHECK(dataProvider.removeItemAt(1));
+
+        REQUIRE(beginRemoveItem.size() == 1);
+        REQUIRE(endRemoveItem.size() == 1);
+        REQUIRE(beginRemoveItem.at(0).at(0).value<qsizetype>() == 1);
+    }
+}
