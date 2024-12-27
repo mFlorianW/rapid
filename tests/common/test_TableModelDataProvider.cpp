@@ -148,3 +148,37 @@ TEST_CASE("The TableModelDataProvider shall remove an item for an index")
         REQUIRE(beginRemoveItem.at(0).at(0).value<qsizetype>() == 1);
     }
 }
+
+TEST_CASE("The TableModelDataProvider shall support ordered inserts")
+{
+    auto const person1 = PersonData{.name = QString{"Name"}, .age = 8};
+    auto const person2 = PersonData{.name = QString{"Name1"}, .age = 9};
+    auto dataProvider = TableModelDataProvider<PersonData>{{"1", "2"}, {person1, person2}};
+    auto const insertItem = PersonData{.name = "hello", .age = 10};
+
+    auto beginInsertItem = QSignalSpy{&dataProvider, &TableModelDataProviderBase::beginInsertItem};
+    auto endInsertItem = QSignalSpy{&dataProvider, &TableModelDataProviderBase::endInsertItem};
+
+    SECTION("Insert item at the end")
+    {
+        dataProvider.addItemAt(dataProvider.getRowCount(), insertItem);
+        REQUIRE(dataProvider.getRowCount() == 3);
+        REQUIRE(dataProvider.getItem(2) == insertItem);
+
+        REQUIRE(beginInsertItem.size() == 1);
+        REQUIRE(endInsertItem.size() == 1);
+        REQUIRE(beginInsertItem.at(0).at(0).value<qsizetype>() == 2);
+    }
+
+    SECTION("Insert existing item and moves the other")
+    {
+        dataProvider.addItemAt(1, insertItem);
+        REQUIRE(dataProvider.getRowCount() == 3);
+        REQUIRE(dataProvider.getItem(1) == insertItem);
+        REQUIRE(dataProvider.getItem(2) == person2);
+
+        REQUIRE(beginInsertItem.size() == 1);
+        REQUIRE(endInsertItem.size() == 1);
+        REQUIRE(beginInsertItem.at(0).at(0).value<qsizetype>() == 1);
+    }
+}

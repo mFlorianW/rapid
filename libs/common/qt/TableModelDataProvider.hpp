@@ -149,7 +149,8 @@ public:
     }
 
     /**
-     * Adds an item to the data provider
+     * @brief Adds an item to the end of the items in the data provider
+     * @param item The item which is put to the end of items.
      */
     qsizetype addItem(T const& item)
     {
@@ -160,6 +161,33 @@ public:
         return insertedIndex;
     }
 
+    /**
+     * @brief adds an item to the provider in the place of the row parameter
+     *
+     * @details Places the item at the position "row" if the row is less than the length of the data.
+     *          In all cases the item is apended to the end.
+     *
+     * @param row The position in which the item shall be placed.
+     * @param item The item that shall be placed.
+     */
+    void addItemAt(qsizetype row, T const& item)
+    {
+        if (row >= static_cast<qsizetype>(mData.size())) {
+            addItem(item);
+            return;
+        }
+        beginInsertItem(row);
+        mData.insert(mData.begin() + row, item);
+        endInsertItem();
+    }
+
+    /**
+     * @brief Gives the item at row.
+     *
+     * @param row The position of the item.
+     *
+     * @retrun The item or a std::nullopt if no item is found.
+     */
     [[nodiscard]] std::optional<T> getItem(qsizetype row)
     {
         if (row < static_cast<qsizetype>(mData.size())) {
@@ -190,7 +218,7 @@ public:
     }
 
 protected:
-    std::vector<T> mData;
+    std::vector<T> mData; // TODO use a list to avoid reallocation/copies on insert
 
 private:
     QStringList mColumnNames;
