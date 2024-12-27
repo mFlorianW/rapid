@@ -7,8 +7,8 @@
 
 #include "IActiveSessionWorkflow.hpp"
 #include <IGpsPositionProvider.hpp>
-#include <ILaptimer.hpp>
 #include <ISessionDatabase.hpp>
+#include <algorithm/ILaptimer.hpp>
 
 namespace Rapid::Workflow
 {

@@ -5,7 +5,7 @@
 #ifndef LAPTIMER_HPP
 #define LAPTIMER_HPP
 
-#include "ILaptimer.hpp"
+#include "algorithm/ILaptimer.hpp"
 
 namespace Rapid::TestHelper
 {

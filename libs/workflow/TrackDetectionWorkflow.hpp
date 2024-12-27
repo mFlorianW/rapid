@@ -6,7 +6,7 @@
 
 #include "ITrackDetectionWorkflow.hpp"
 #include <IGpsPositionProvider.hpp>
-#include <ITrackDetection.hpp>
+#include <algorithm/ITrackDetection.hpp>
 
 namespace Rapid::Workflow
 {

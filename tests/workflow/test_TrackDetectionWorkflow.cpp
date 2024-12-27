@@ -4,7 +4,7 @@
 
 #include "PositionDateTimeProvider.hpp"
 #include "Positions.hpp"
-#include "TrackDetection.hpp"
+#include "algorithm/TrackDetection.hpp"
 #include "TrackDetectionWorkflow.hpp"
 #include "Tracks.hpp"
 #include <catch2/catch_all.hpp>

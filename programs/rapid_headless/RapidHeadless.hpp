@@ -10,9 +10,9 @@
 #include <ISessionDatabase.hpp>
 #include <ITrackDatabase.hpp>
 #include <RestServer.hpp>
-#include <SimpleLaptimer.hpp>
-#include <TrackDetection.hpp>
 #include <TrackDetectionWorkflow.hpp>
+#include <algorithm/SimpleLaptimer.hpp>
+#include <algorithm/TrackDetection.hpp>
 
 namespace Rapid::LappyHeadless
 {
