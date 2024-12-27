@@ -5,8 +5,11 @@
 #ifndef SESSIONMANAGER_HPP
 #define SESSIONMANAGER_HPP
 
+#include <QComboBox>
 #include <QMainWindow>
+#include <common/qt/DeviceSettingsProvider.hpp>
 #include <common/qt/GenericTableModel.hpp>
+#include <common/qt/GlobalSettingsReader.hpp>
 #include <storage/qt/SessionDatabaseIpcClient.hpp>
 #include <storage/qt/SessionMetaDataProvider.hpp>
 
@@ -48,10 +51,19 @@ private:
     std::unique_ptr<Ui::SessionManager> mSessionManager;
     std::unique_ptr<Storage::Qt::SessionDatabaseIpcClient> mSessionDatabase;
 
+    std::unique_ptr<Common::Qt::GlobalSettingsBackend> mSettingsBackend;
+    std::unique_ptr<Common::Qt::GlobalSettingsReader> mSettingsReader;
+
     // Host SessionModel
     using SessionModel = Common::Qt::GenericTableModel<Storage::Qt::SessionMetaDataProvider>;
     std::unique_ptr<Storage::Qt::SessionMetaDataProvider> mHostSessionMetaDataProvider;
     std::unique_ptr<SessionModel> mHostSessionModel;
+
+    // Toolbar elements
+    std::unique_ptr<Common::Qt::DeviceSettingsProvider> mDeviceSettingsProvider;
+    using DeviceSettingsModel = Common::Qt::GenericTableModel<Common::Qt::DeviceSettingsProvider>;
+    std::unique_ptr<DeviceSettingsModel> mDeviceSettingsModel;
+    std::unique_ptr<QComboBox> mToolbarDeviceComboBox = std::make_unique<QComboBox>();
 };
 
 } // namespace Rapid::SessionManager

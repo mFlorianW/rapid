@@ -14,7 +14,7 @@ public:
     /**
      * Default destructor
      */
-    ~GlobalSettingsBackend() = default;
+    virtual ~GlobalSettingsBackend() = default;
 
     /**
      * Deleted copy constructor

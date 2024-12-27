@@ -39,6 +39,7 @@ if(ENABLE_QT)
             test_GenericTableModel.cpp
             test_LapDataProvider.cpp
             test_SessionMetaDataProvider.cpp
+            test_DeviceSettingsProvider.cpp
     )
     target_link_libraries(test_common_qt
         PRIVATE

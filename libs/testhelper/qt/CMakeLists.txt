@@ -10,6 +10,7 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ProcessStopper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ProcessStopper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/QtTestHelper.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SettingsBackendMock.hpp
 )
 
 target_link_libraries(TestHelperQt

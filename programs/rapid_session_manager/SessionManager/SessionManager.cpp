@@ -11,6 +11,10 @@ namespace Rapid::SessionManager
 SessionManager::SessionManager()
     : mSessionManager{std::make_unique<Ui::SessionManager>()}
     , mSessionDatabase{std::make_unique<Storage::Qt::SessionDatabaseIpcClient>()}
+    , mSettingsBackend{std::make_unique<Common::Qt::QSettingsBackend>()}
+    , mSettingsReader{std::make_unique<Common::Qt::GlobalSettingsReader>(mSettingsBackend.get())}
+    , mDeviceSettingsProvider{std::make_unique<Common::Qt::DeviceSettingsProvider>(*mSettingsReader)}
+    , mDeviceSettingsModel{std::make_unique<DeviceSettingsModel>(*mDeviceSettingsProvider)}
 {
     mSessionManager->setupUi(this);
 
@@ -31,6 +35,10 @@ SessionManager::SessionManager()
     });
 
     connect(mSessionManager->DeleteHostSession, &QPushButton::clicked, this, &SessionManager::onDeleteHostSession);
+
+    //Setup Toolbar
+    mToolbarDeviceComboBox->setModel(mDeviceSettingsModel.get());
+    mSessionManager->toolBar->addWidget(mToolbarDeviceComboBox.get());
 }
 
 SessionManager::~SessionManager() = default;
