@@ -7,7 +7,6 @@
 #include <QtTestHelper.hpp>
 #include <RapidApplication.hpp>
 #include <SessionDatabaseAdaptor.h>
-#include <Sessions.hpp>
 #include <catch2/catch_session.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/trompeloeil.hpp>
@@ -16,6 +15,7 @@
 #include <common/SessionData.hpp>
 #include <spdlog/spdlog.h>
 #include <storage/qt/SessionDatabaseIpcClient.hpp>
+#include <testhelper/Sessions.hpp>
 
 using namespace Rapid::Storage::Qt;
 using namespace Rapid::Storage;

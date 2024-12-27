@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "Positions.hpp"
 #include "algorithm/SimpleLaptimer.hpp"
+#include "testhelper/Positions.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Algorithm;

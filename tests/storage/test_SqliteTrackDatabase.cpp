@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "storage/SqliteTrackDatabase.hpp"
-#include <CompareHelper.hpp>
-#include <SqliteDatabaseTestHelper.hpp>
 #include <catch2/catch_all.hpp>
 #include <chrono>
 #include <storage/private/Connection.hpp>
+#include <testhelper/CompareHelper.hpp>
+#include <testhelper/SqliteDatabaseTestHelper.hpp>
 
 using namespace Rapid::Storage;
 using namespace Rapid::TestHelper;

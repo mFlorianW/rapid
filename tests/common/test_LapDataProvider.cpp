@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <Tracks.hpp>
 #include <catch2/catch_all.hpp>
 #include <common/qt/LapDataProvider.hpp>
 #include <ranges>
+#include <testhelper/Tracks.hpp>
 
 using namespace Rapid::Common::Qt;
 using namespace Rapid::Common;

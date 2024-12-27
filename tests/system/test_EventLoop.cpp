@@ -5,8 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "system/Event.hpp"
 #include "system/EventLoop.hpp"
-#include <CompareHelper.hpp>
 #include <catch2/catch_all.hpp>
+#include <testhelper/CompareHelper.hpp>
 #include <thread>
 
 using namespace Rapid::System;

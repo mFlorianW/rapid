@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "Sessions.hpp"
 #include "TestFile.hpp"
 #include "common/JsonDeserializer.hpp"
+#include "testhelper/Sessions.hpp"
 #include <catch2/catch_all.hpp>
 #include <fstream>
 #include <iostream>

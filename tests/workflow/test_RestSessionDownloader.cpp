@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RestSessionDownloader.hpp"
-#include "RestSessionDownloaderClient.hpp"
-#include "Sessions.hpp"
+#include "testhelper/RestSessionDownloaderClient.hpp"
+#include "testhelper/Sessions.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::Workflow;

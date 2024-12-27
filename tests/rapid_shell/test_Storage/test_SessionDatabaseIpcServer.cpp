@@ -11,12 +11,12 @@
 #include <QtTestHelper.hpp>
 #include <RapidApplication.hpp>
 #include <SessionDatabaseIpcServer.hpp>
-#include <SessionDatabaseMock.hpp>
-#include <Sessions.hpp>
 #include <catch2/catch_all.hpp>
 #include <common/JsonDeserializer.hpp>
 #include <common/JsonSerializer.hpp>
 #include <spdlog/spdlog.h>
+#include <testhelper/SessionDatabaseMock.hpp>
+#include <testhelper/Sessions.hpp>
 
 using namespace Rapid::RapidShell::Storage;
 using namespace de::rapid::shell;

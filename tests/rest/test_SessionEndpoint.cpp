@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "Sessions.hpp"
 #include "rest/SessionEndpoint.hpp"
-#include <CompareHelper.hpp>
-#include <SessionDatabaseMock.hpp>
-#include <SignalSpy.hpp>
+#include "testhelper/Sessions.hpp"
+#include <testhelper/CompareHelper.hpp>
+#include <testhelper/SessionDatabaseMock.hpp>
+#include <testhelper/SignalSpy.hpp>
 
 using namespace Rapid::Rest;
 using namespace Rapid::TestHelper;

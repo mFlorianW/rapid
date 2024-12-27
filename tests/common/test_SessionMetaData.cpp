@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <Sessions.hpp>
 #include <catch2/catch_all.hpp>
+#include <testhelper/Sessions.hpp>
 
 TEST_CASE("Correctly compare two session meta instances")
 {

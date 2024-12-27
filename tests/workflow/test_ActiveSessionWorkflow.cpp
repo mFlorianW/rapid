@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "ActiveSessionWorkflow.hpp"
-#include "Laptimer.hpp"
-#include "PositionDateTimeProvider.hpp"
-#include "Positions.hpp"
-#include "SessionDatabaseMock.hpp"
+#include "testhelper/Laptimer.hpp"
+#include "testhelper/PositionDateTimeProvider.hpp"
+#include "testhelper/Positions.hpp"
+#include "testhelper/SessionDatabaseMock.hpp"
 
 using namespace Rapid::Workflow;
 using namespace Rapid::TestHelper;

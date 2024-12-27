@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "CompareHelper.hpp"
 #include "positioning/ConstantGpsPositionProvider.hpp"
+#include "testhelper/CompareHelper.hpp"
 #include <catch2/catch_all.hpp>
 #include <common/PositionData.hpp>
 
