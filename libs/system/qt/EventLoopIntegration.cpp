@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "EventLoopIntegration.hpp"
-#include <EventLoop.hpp>
 #include <QAbstractEventDispatcher>
 #include <spdlog/spdlog.h>
+#include <system/EventLoop.hpp>
 #include <unordered_map>
 
 namespace Rapid::System::Qt::EventLoopIntegration

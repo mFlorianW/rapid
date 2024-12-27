@@ -5,8 +5,8 @@
 #pragma once
 
 #include "rest/IRestServer.hpp"
-#include <EventHandler.hpp>
 #include <boost/beast.hpp>
+#include <system/EventHandler.hpp>
 #include <thread>
 #include <unordered_map>
 

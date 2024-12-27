@@ -4,7 +4,6 @@
 
 #include "RapidHeadless.hpp"
 #include <DatabaseFile.hpp>
-#include <EventLoop.hpp>
 #include <array>
 #include <boost/program_options.hpp>
 #include <common/PositionData.hpp>
@@ -18,6 +17,7 @@
 #include <storage/SqliteSessionDatabase.hpp>
 #include <storage/SqliteTrackDatabase.hpp>
 #include <string>
+#include <system/EventLoop.hpp>
 #include <unistd.h>
 #include <vector>
 

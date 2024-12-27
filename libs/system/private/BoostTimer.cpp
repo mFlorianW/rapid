@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "BoostTimer.hpp"
-#include "EventLoop.hpp"
+#include "system/private/BoostTimer.hpp"
+#include "system/EventLoop.hpp"
 #include <memory>
 #include <spdlog/spdlog.h>
 

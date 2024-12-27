@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "Event.hpp"
+#include "system/Event.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::System;

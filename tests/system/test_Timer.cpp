@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "CompareHelper.hpp"
-#include "EventLoop.hpp"
-#include "Timer.hpp"
+#include "system/Timer.hpp"
 #include <catch2/catch_all.hpp>
 
 using namespace Rapid::System;

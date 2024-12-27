@@ -4,9 +4,9 @@
 
 #include "CliOptions.hpp"
 #include "SessionDownloader.hpp"
-#include <EventLoop.hpp>
 #include <QTimer>
 #include <RapidApplication.hpp>
+#include <system/EventLoop.hpp>
 
 int main(int argc, char** argv)
 {

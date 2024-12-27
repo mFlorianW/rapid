@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-#include "EventLoop.hpp"
 #include <catch2/catch_all.hpp>
-#include <chrono>
 #include <sstream>
+#include <system/EventLoop.hpp>
 
 using namespace Rapid::System;
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "CompareHelper.hpp"
-#include "FutureWatcher.hpp"
+#include "system/FutureWatcher.hpp"
 #include <catch2/catch_all.hpp>
 #include <thread>
 
