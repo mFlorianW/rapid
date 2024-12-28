@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-#include "ISessionDownloader.hpp"
 #include "rest/IRestClient.hpp"
+#include "workflow/ISessionDownloader.hpp"
 
 namespace Rapid::Workflow
 {
-class RestSessionDownloader final : public ISessionDownloader
+class RestSessionDownloader : public ISessionDownloader
 {
 public:
     RestSessionDownloader(Rest::IRestClient& restClient) noexcept;

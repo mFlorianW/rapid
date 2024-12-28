@@ -42,28 +42,11 @@ TEST_CASE_METHOD(TestFixture, "The SessionMetaDataProvider shall load SessionMet
     REQUIRE(sessionMetaDataProvider->getRowCount() == 2);
 }
 
-TEST_CASE_METHOD(TestFixture, "The SessionMetaDataProvider shall set correct columnames")
-{
-    CHECK(sessionMetaDataProvider->getColumnCount() == 3);
-    REQUIRE(sessionMetaDataProvider->getColumnNames() ==
-            QStringList{QStringLiteral("Track"), QStringLiteral("Date"), QStringLiteral("Time")});
-}
-
 TEST_CASE_METHOD(TestFixture, "The SessionMetaDataProvider shall handle new SessionMetaData")
 {
     REQUIRE_CALL(dbMock, getSessionMetaDataByIndexAsync(2)).LR_RETURN(createSuccessSessionMetaDataResult());
     dbMock.sessionAdded.emit(2);
     REQUIRE_COMPARE_WITH_TIMEOUT(sessionMetaDataProvider->getRowCount(), 3, std::chrono::milliseconds(1));
-}
-
-TEST_CASE_METHOD(TestFixture, "The SessionMetaDataProvider shall give the correct SessionMetaData")
-{
-    CHECK(sessionMetaDataProvider->data(0, 0, ::Qt::DisplayRole).toString() == QStringLiteral("Oschersleben"));
-    CHECK(sessionMetaDataProvider->data(0, 1, ::Qt::DisplayRole).toString() == QStringLiteral("01.01.1970"));
-    CHECK(sessionMetaDataProvider->data(0, 2, ::Qt::DisplayRole).toString() == QStringLiteral("13:00:00.000"));
-    CHECK(sessionMetaDataProvider->data(1, 0, ::Qt::DisplayRole).toString() == QStringLiteral("Oschersleben"));
-    CHECK(sessionMetaDataProvider->data(1, 1, ::Qt::DisplayRole).toString() == QStringLiteral("01.01.1970"));
-    REQUIRE(sessionMetaDataProvider->data(1, 2, ::Qt::DisplayRole).toString() == QStringLiteral("13:00:00.000"));
 }
 
 TEST_CASE_METHOD(TestFixture, "The SessionMetaDataProvider shall handle deletion in the database")

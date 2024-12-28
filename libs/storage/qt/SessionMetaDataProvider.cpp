@@ -10,7 +10,7 @@ namespace Rapid::Storage::Qt
 {
 
 SessionMetaDataProvider::SessionMetaDataProvider(ISessionDatabase& sessionDb)
-    : Rapid::Common::Qt::TableModelDataProvider<Common::SessionMetaData>{{tr("Track"), tr("Date"), tr("Time")}}
+    : Rapid::Common::Qt::SessionMetadataProvider{}
     , mSessionDb{sessionDb}
 {
     auto sessionCount = mSessionDb.getSessionCount();
@@ -21,26 +21,6 @@ SessionMetaDataProvider::SessionMetaDataProvider(ISessionDatabase& sessionDb)
     auto conEval = System::EventLoop::instance().getConnectionEvaluator();
     std::ignore = mSessionDb.sessionAdded.connectDeferred(conEval, [this](auto index) {
         requestSessionMetaData(index);
-    });
-
-    setDataExtractor([](Common::SessionMetaData const& item, std::size_t column, qint32 role) {
-        auto data = QVariant{};
-        if (role == ::Qt::DisplayRole) {
-            switch (column) {
-            case 0:
-                data = QString::fromStdString(item.getTrack().getTrackName());
-                break;
-            case 1:
-                data = QString::fromStdString(item.getSessionDate().asString());
-                break;
-            case 2:
-                data = QString::fromStdString(item.getSessionTime().asString());
-                break;
-            default:
-                return QVariant{};
-            }
-        }
-        return data;
     });
 }
 

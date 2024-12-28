@@ -12,6 +12,8 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/GenericTableModel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LapDataProvider.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LapDataProvider.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetadataProvider.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetadataProvider.hpp
 )
 
 target_link_libraries(CommonObjectQt
