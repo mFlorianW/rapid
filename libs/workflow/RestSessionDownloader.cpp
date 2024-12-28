@@ -44,7 +44,7 @@ std::optional<Common::SessionData> RestSessionDownloader::getSession(std::size_t
 void RestSessionDownloader::downloadSession(std::size_t index) noexcept
 {
     std::ostringstream outStream;
-    outStream << "/sessions/" << index;
+    outStream << "/sessions/" << index << "/data";
     auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, outStream.str()});
     mDownloadSessionCache.insert({call.get(), {.index = index, .call = call}});
     if (call->isFinished()) {
