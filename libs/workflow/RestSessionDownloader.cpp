@@ -41,6 +41,14 @@ std::optional<Common::SessionData> RestSessionDownloader::getSession(std::size_t
     return mDownloadedSessions.at(index);
 }
 
+std::optional<Common::SessionMetaData> RestSessionDownloader::getSessionMetadata(std::size_t index) const noexcept
+{
+    if (mDownloadedSessionMetadata.count(index) == 0) {
+        return std::nullopt;
+    }
+    return mDownloadedSessionMetadata.at(index);
+}
+
 void RestSessionDownloader::downloadSession(std::size_t index) noexcept
 {
     std::ostringstream outStream;
@@ -51,6 +59,19 @@ void RestSessionDownloader::downloadSession(std::size_t index) noexcept
         onSessionDownloadFinished(call.get());
     } else {
         std::ignore = call->finished.connect(&RestSessionDownloader::onSessionDownloadFinished, this);
+    }
+}
+
+void RestSessionDownloader::downloadSessionMetadata(std::size_t index) noexcept
+{
+    std::ostringstream outStream;
+    outStream << "/sessions/" << index << "/metadata";
+    auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, outStream.str()});
+    mSessionMetadataDownloadCache.insert({call.get(), {.index = index, .call = call}});
+    if (call->isFinished()) {
+        onSessionMetadataDownloadFinished(call.get());
+    } else {
+        std::ignore = call->finished.connect(&RestSessionDownloader::onSessionMetadataDownloadFinished, this);
     }
 }
 
@@ -96,6 +117,29 @@ void RestSessionDownloader::onSessionDownloadFinished(Rest::RestCall* call) noex
             SPDLOG_ERROR("Failed ot emit sessionCountFetched. Error already emitting.");
         }
         mDownloadSessionCache.erase(call);
+    }
+}
+
+void RestSessionDownloader::onSessionMetadataDownloadFinished(Rest::RestCall* call) noexcept
+{
+    if (mSessionMetadataDownloadCache.size() > 0 && call != nullptr) {
+        auto const dlResult =
+            call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
+        auto const index = mSessionMetadataDownloadCache.at(call).index;
+        if (dlResult == DownloadResult::Ok) {
+            auto session = Common::JsonDeserializer::SessionMetaData::deserialize(call->getData());
+            if (!session) {
+                spdlog::error("RestSessionDownloader downloadSessionError: DeserializeJson failed.");
+            } else {
+                mDownloadedSessionMetadata.insert({index, session.value()});
+            }
+        }
+        try {
+            sessionMetadataDownloadFinshed.emit(index, dlResult);
+        } catch (std::exception const& e) {
+            SPDLOG_ERROR("Failed ot emit sessionCountFetched. Error already emitting.");
+        }
+        mSessionMetadataDownloadCache.erase(call);
     }
 }
 

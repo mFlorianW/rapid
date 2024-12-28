@@ -67,9 +67,30 @@ public:
     virtual std::optional<Common::SessionData> getSession(std::size_t index) const noexcept = 0;
 
     /**
+     * @brief Gives the session data for the passed index.
+     *
+     * @details The return is only valid when the session metadata previously was downloaded.
+     *          The download is started with @ref downloadSessionMetadata.
+     *
+     * @param index The index of the session.
+     * @return The session data for the passed index.
+     */
+    virtual std::optional<Common::SessionMetaData> getSessionMetadata(std::size_t index) const noexcept = 0;
+
+    /**
      * Downloads a specific session of the device.
      */
     virtual void downloadSession(std::size_t index) noexcept = 0;
+
+    /**
+     * @brief Downloads the session metadata from the device
+     *
+     * @details The download result is reported with signal @ref sessionMetadataDownloadFinshed
+     *          The actual metadata then can received the with @ref getSessionMetadatafunction.
+     *
+     * @param index The index of the session for which the session meta data shall be downloaded.
+     */
+    virtual void downloadSessionMetadata(std::size_t index) noexcept = 0;
 
     /**
      * This signal is emitted when the fetchSessionCount operation finshed.
@@ -83,6 +104,13 @@ public:
      * @param DownloadResult The result of the session download.
      */
     KDBindings::Signal<std::size_t, DownloadResult> sessionDownloadFinshed;
+
+    /**
+     * @brief This signal is emitted when a session metadata download is finished.
+     * @param std::size_t The index of the session which is finished.
+     * @param DownloadResult The result of the session download.
+     */
+    KDBindings::Signal<std::size_t, DownloadResult> sessionMetadataDownloadFinshed;
 
 protected:
     ISessionDownloader() noexcept = default;

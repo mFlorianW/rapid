@@ -74,3 +74,25 @@ SCENARIO("The RestSessionDownload shall download a specific session stored on th
         }
     }
 }
+
+TEST_CASE("The RestSessionDownloader shall download session metadata")
+{
+    auto restClient = RestClientMock{};
+    auto rDl = RestSessionDownloader{restClient};
+    auto sessionMetadataDownloadSpy = SignalSpy{rDl.sessionMetadataDownloadFinshed};
+    auto restCall = std::make_shared<RestCallMock>();
+
+    REQUIRE_CALL(restClient, execute(_))
+        .WITH(_1.getType() == RequestType::Get and _1.getPath() == Path{"/sessions/0/metadata"})
+        .SIDE_EFFECT(restCall->setCallResult(RestCallResult::Success))
+        .LR_RETURN(restCall);
+
+    restCall->setData(Sessions::getTestSessionMetaAsJson());
+    rDl.downloadSessionMetadata(0);
+
+    REQUIRE(sessionMetadataDownloadSpy.getCount() == 1);
+    auto [index, downloadResult] = sessionMetadataDownloadSpy.at(0);
+    REQUIRE(index == 0);
+    REQUIRE(downloadResult == DownloadResult::Ok);
+    REQUIRE(rDl.getSessionMetadata(0).value_or(SessionData{}) == Sessions::getTestSessionMetaData());
+}

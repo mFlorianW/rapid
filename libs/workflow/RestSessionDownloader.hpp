@@ -54,13 +54,24 @@ public:
     std::optional<Common::SessionData> getSession(std::size_t index) const noexcept override;
 
     /**
+     * @copydoc ISessionDownloader::getSessionMetadata()
+     */
+    std::optional<Common::SessionMetaData> getSessionMetadata(std::size_t index) const noexcept override;
+
+    /**
      * @copydoc ISessionDownloader::downloadSession()
      */
     void downloadSession(std::size_t index) noexcept override;
 
+    /**
+     * @copydoc ISessionDownloader::downloadSessionMetadata
+     */
+    void downloadSessionMetadata(std::size_t index) noexcept override;
+
 private:
     void onFetchSessionCountFinished(Rest::RestCall* call) noexcept;
     void onSessionDownloadFinished(Rest::RestCall* call) noexcept;
+    void onSessionMetadataDownloadFinished(Rest::RestCall* call) noexcept;
 
 private:
     struct SessionDownloadCacheEntry
@@ -73,7 +84,9 @@ private:
     std::size_t mSessionCount{0};
     std::unordered_map<Rest::RestCall*, std::shared_ptr<Rest::RestCall>> mFetchCounterCache;
     std::unordered_map<Rest::RestCall*, SessionDownloadCacheEntry> mDownloadSessionCache;
+    std::unordered_map<Rest::RestCall*, SessionDownloadCacheEntry> mSessionMetadataDownloadCache;
     std::unordered_map<std::size_t, Common::SessionData> mDownloadedSessions;
+    std::unordered_map<std::size_t, Common::SessionMetaData> mDownloadedSessionMetadata;
 };
 
 } // namespace Rapid::Workflow
