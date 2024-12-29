@@ -54,7 +54,11 @@ void RestSessionDownloader::downloadSession(std::size_t index) noexcept
     std::ostringstream outStream;
     outStream << "/sessions/" << index << "/data";
     download(outStream.str(), index, mDownloadSessionCache, [this](auto&& call) {
-        onSessionDownloadFinished(call);
+        onDownloadFinished(call,
+                           mDownloadSessionCache,
+                           mDownloadedSessions,
+                           sessionDownloadFinshed,
+                           &Common::JsonDeserializer::Session::deserialize);
     });
 }
 
@@ -63,7 +67,11 @@ void RestSessionDownloader::downloadSessionMetadata(std::size_t index) noexcept
     std::ostringstream outStream;
     outStream << "/sessions/" << index << "/metadata";
     download(outStream.str(), index, mSessionMetadataDownloadCache, [this](auto&& call) {
-        onSessionMetadataDownloadFinished(call);
+        onDownloadFinished(call,
+                           mSessionMetadataDownloadCache,
+                           mDownloadedSessionMetadata,
+                           sessionMetadataDownloadFinshed,
+                           &Common::JsonDeserializer::SessionMetaData::deserialize);
     });
 }
 
@@ -89,50 +97,9 @@ void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) no
     mFetchCounterCache.erase(call);
 }
 
-void RestSessionDownloader::onSessionDownloadFinished(Rest::RestCall* call) noexcept
+void RestSessionDownloader::logError(std::string const& errorMsg) const noexcept
 {
-    if (mDownloadSessionCache.size() > 0 && call != nullptr) {
-        auto const dlResult =
-            call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
-        auto const index = mDownloadSessionCache.at(call).index;
-        if (dlResult == DownloadResult::Ok) {
-            auto session = Common::JsonDeserializer::Session::deserialize(call->getData());
-            if (!session) {
-                spdlog::error("RestSessionDownloader downloadSessionError: DeserializeJson failed.");
-            } else {
-                mDownloadedSessions.insert({index, session.value()});
-            }
-        }
-        try {
-            sessionDownloadFinshed.emit(index, dlResult);
-        } catch (std::exception const& e) {
-            SPDLOG_ERROR("Failed ot emit sessionCountFetched. Error already emitting.");
-        }
-        mDownloadSessionCache.erase(call);
-    }
-}
-
-void RestSessionDownloader::onSessionMetadataDownloadFinished(Rest::RestCall* call) noexcept
-{
-    if (mSessionMetadataDownloadCache.size() > 0 && call != nullptr) {
-        auto const dlResult =
-            call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
-        auto const index = mSessionMetadataDownloadCache.at(call).index;
-        if (dlResult == DownloadResult::Ok) {
-            auto session = Common::JsonDeserializer::SessionMetaData::deserialize(call->getData());
-            if (!session) {
-                spdlog::error("RestSessionDownloader downloadSessionError: DeserializeJson failed.");
-            } else {
-                mDownloadedSessionMetadata.insert({index, session.value()});
-            }
-        }
-        try {
-            sessionMetadataDownloadFinshed.emit(index, dlResult);
-        } catch (std::exception const& e) {
-            SPDLOG_ERROR("Failed ot emit sessionCountFetched. Error already emitting.");
-        }
-        mSessionMetadataDownloadCache.erase(call);
-    }
+    SPDLOG_ERROR(errorMsg);
 }
 
 } // namespace Rapid::Workflow

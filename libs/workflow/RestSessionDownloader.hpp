@@ -69,6 +69,8 @@ public:
     void downloadSessionMetadata(std::size_t index) noexcept override;
 
 private:
+    void onFetchSessionCountFinished(Rest::RestCall* call) noexcept;
+
     template <typename Cache>
     void download(std::string const& path,
                   std::size_t index,
@@ -84,9 +86,36 @@ private:
         }
     }
 
-    void onFetchSessionCountFinished(Rest::RestCall* call) noexcept;
-    void onSessionDownloadFinished(Rest::RestCall* call) noexcept;
-    void onSessionMetadataDownloadFinished(Rest::RestCall* call) noexcept;
+    template <typename Cache, typename ResultCache, typename SignalType, typename Func>
+    void onDownloadFinished(Rest::RestCall* call,
+                            Cache& cache,
+                            ResultCache& resultCache,
+                            SignalType& signal,
+                            Func func) noexcept
+    {
+        if (cache.size() == 0 or call == nullptr) {
+            return;
+        }
+        auto const dlResult =
+            call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
+        auto const index = cache.at(call).index;
+        if (dlResult == DownloadResult::Ok) {
+            auto session = func(call->getData());
+            if (!session) {
+                logError("Download Failure. Error: JSON deserialization failed.");
+            } else {
+                resultCache.insert({index, session.value()});
+            }
+        }
+        try {
+            signal.emit(index, dlResult);
+        } catch (std::exception const& e) {
+            logError("Failed to emit download finished. Error already emitting.");
+        }
+        cache.erase(call);
+    }
+
+    void logError(std::string const& errorMsg) const noexcept;
 
 private:
     struct SessionDownloadCacheEntry
