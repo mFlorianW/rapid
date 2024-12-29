@@ -71,7 +71,7 @@ void RestSessionManagementWorkflow::downloadSessionMetadata(std::size_t index) n
         onDownloadFinished(call,
                            mSessionMetadataDownloadCache,
                            mDownloadedSessionMetadata,
-                           sessionMetadataDownloadFinshed,
+                           sessionMetadataDownloadFinished,
                            &Common::JsonDeserializer::SessionMetaData::deserialize);
     });
 }

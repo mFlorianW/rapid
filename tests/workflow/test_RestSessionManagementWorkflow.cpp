@@ -75,11 +75,11 @@ SCENARIO("The RestSessionManagementWorkflow shall download a specific session st
     }
 }
 
-TEST_CASE("The RestSessionDownloader shall download session metadata")
+TEST_CASE("The RestSessionManagementWorkflow shall download session metadata")
 {
     auto restClient = RestClientMock{};
     auto rDl = RestSessionManagementWorkflow{restClient};
-    auto sessionMetadataDownloadSpy = SignalSpy{rDl.sessionMetadataDownloadFinshed};
+    auto sessionMetadataDownloadSpy = SignalSpy{rDl.sessionMetadataDownloadFinished};
     auto restCall = std::make_shared<RestCallMock>();
 
     REQUIRE_CALL(restClient, execute(_))

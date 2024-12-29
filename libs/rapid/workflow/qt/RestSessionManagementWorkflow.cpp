@@ -12,7 +12,7 @@ RestSessionManagementWorkflow::RestSessionManagementWorkflow(Rest::IRestClient& 
     , mProvider{std::make_shared<Common::Qt::SessionMetadataProvider>()}
 {
     std::ignore =
-        sessionMetadataDownloadFinshed.connect(&RestSessionManagementWorkflow::onSessionMetadataDownloaded, this);
+        sessionMetadataDownloadFinished.connect(&RestSessionManagementWorkflow::onSessionMetadataDownloaded, this);
 }
 
 RestSessionManagementWorkflow::~RestSessionManagementWorkflow() = default;
