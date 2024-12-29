@@ -1,20 +1,10 @@
-add_library(PositioningQt STATIC)
-add_library(Rapid::PositioningQt ALIAS PositioningQt)
-
-target_sources(PositioningQt
-PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/CsvGpsFileReader.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/CsvGpsFileReader.hpp
+set(RAPID_POSITIONING_QT_PUBLIC_HEADS
+        ${CMAKE_CURRENT_SOURCE_DIR}/CsvGpsFileReader.hpp
 )
+install(FILES ${RAPID_COMMON_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/positioning/qt")
 
-target_include_directories(PositioningQt
-PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+target_sources(RapidLibraryQt
+    PRIVATE
+        ${RAPID_POSITIONING_QT_PUBLIC_HEADS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/CsvGpsFileReader.cpp
 )
-
-target_link_libraries(PositioningQt
-PUBLIC
-    Rapid::Positioning
-    Qt6::Core
-)
-

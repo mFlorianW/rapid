@@ -28,7 +28,7 @@ target_link_libraries(Rapid
         Rapid::ShellCommon
         Rapid::ShellApplications
         Rapid::ShellApplicationsPlugin
-        Rapid::SystemQt
+        Rapid::RapidQt
 )
 
 target_include_directories(Rapid

@@ -6,6 +6,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QObject>
+#include <spdlog/spdlog.h>
 
 namespace Rapid::Rest
 {
@@ -42,8 +43,12 @@ protected:
 
     void setCallResult(RestCallResult result) noexcept override
     {
-        mResult = result;
-        finished.emit(this);
+        try {
+            mResult = result;
+            finished.emit(this);
+        } catch (std::exception const& e) {
+            SPDLOG_ERROR("Failed to emit finished signal. Error: Signal is already emitting.");
+        }
     }
 
 private:

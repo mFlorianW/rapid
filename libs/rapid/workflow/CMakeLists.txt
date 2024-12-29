@@ -1,33 +1,19 @@
-add_library(Workflow OBJECT)
-add_library(Rapid::Workflow ALIAS Workflow)
-
-target_sources(Workflow
-PRIVATE
+set(RAPID_WORKFLOW_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/ITrackDetectionWorkflow.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/TrackDetectionWorkflow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TrackDetectionWorkflow.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/IActiveSessionWorkflow.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ActiveSessionWorkflow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ActiveSessionWorkflow.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ISessionDownloader.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionDownloader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionDownloader.hpp
 )
+install(FILES ${RAPID_WORKFLOW_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/workflow")
 
-target_include_directories(Workflow
-PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-)
-
-target_link_libraries(Workflow
+target_sources(RapidLibrary
 PRIVATE
-    spdlog::spdlog
-PUBLIC
-    Rapid::Common
-    Rapid::Positioning
-    Rapid::Algorithm
-    Rapid::Storage
-    Rapid::Rest
+    ${RAPID_WORKFLOW_PUBLIC_HEADERS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/TrackDetectionWorkflow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ActiveSessionWorkflow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionDownloader.cpp
 )
 
 if(ENABLE_QT)

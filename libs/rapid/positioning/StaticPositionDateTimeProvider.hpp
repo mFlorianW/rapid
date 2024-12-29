@@ -6,7 +6,7 @@
 #define STATICPOSITIONDATETIMEPROVIDER_HPP
 
 #include "IGpsPositionProvider.hpp"
-#include <Timestamp.hpp>
+#include <common/Timestamp.hpp>
 
 namespace Rapid::Positioning
 {

@@ -33,7 +33,7 @@ add_library(Rapid::ShellSettingsPlugin ALIAS Settingsplugin)
 target_link_libraries(Settings
     PUBLIC
         Qt6::Widgets
-        Rapid::CommonQt
+        Rapid::RapidQt
     PRIVATE
         Rapid::DatabaseFile
         Rapid::ShellCommon

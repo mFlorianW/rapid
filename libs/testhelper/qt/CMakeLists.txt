@@ -15,8 +15,7 @@ PRIVATE
 target_link_libraries(TestHelperQt
 PUBLIC
     Rapid::TestHelper
-    Rapid::SystemQt
-    Rapid::CommonQt
+    Rapid::RapidQt
 )
 
 target_include_directories(TestHelperQt

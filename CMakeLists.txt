@@ -9,6 +9,7 @@ include(FeatureSummary)
 include(CheckCCompilerFlag)
 include(GNUInstallDirs)
 include(PreCommit)
+include(CMakePackageConfigHelpers)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)

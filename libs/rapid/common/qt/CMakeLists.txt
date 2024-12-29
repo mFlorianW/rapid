@@ -1,37 +1,25 @@
-add_library(CommonObjectQt OBJECT)
-add_library(Rapid::CommonObjectQt ALIAS CommonObjectQt)
-
-target_sources(CommonObjectQt
-PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/GlobalSettingsBackend.cpp
+set(RAPID_COMMON_QT_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/GlobalSettingsBackend.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/GlobalSettingsReader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GlobalSettingsReader.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GlobalSettingsTypes.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TableModelDataProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GenericTableModel.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/LapDataProvider.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LapDataProvider.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetadataProvider.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetadataProvider.hpp
 )
+install(FILES ${RAPID_COMMON_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/common/qt")
 
-target_link_libraries(CommonObjectQt
-PUBLIC
-    Qt6::Core
-    Qt6::Network
-    Rapid::Common
+set(RAPID_COMMON_QT_PRIVATE_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/private/GlobalSettingsKeys.hpp
 )
+install(FILES ${RAPID_COMMON_QT_PRIVATE_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/common/qt/private")
 
-target_include_directories(CommonObjectQt
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-)
-
-add_library(CommonQt STATIC)
-add_library(Rapid::CommonQt ALIAS CommonQt)
-
-target_link_libraries(CommonQt
-PUBLIC
-    Rapid::CommonObjectQt
+target_sources(RapidLibraryQt
+PRIVATE
+    ${RAPID_COMMON_QT_PUBLIC_HEADERS}
+    ${RAPID_COMMON_QT_PRIVATE_HEADERS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/GlobalSettingsBackend.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GlobalSettingsReader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/LapDataProvider.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetadataProvider.cpp
 )

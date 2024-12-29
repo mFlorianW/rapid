@@ -1,23 +1,10 @@
-add_library(RestQt STATIC)
-add_library(Rapid::RestQt ALIAS RestQt)
-
-target_sources(RestQt
-PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/QRestClient.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/QRestClient.hpp
+set(RAPID_REST_QT_PUBLIC_HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/QRestClient.hpp
 )
+install(FILES ${RAPID_REST_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/rest/qt")
 
-target_link_libraries(RestQt
-PUBLIC
-    Rapid::Rest
-PRIVATE
-    Qt6::Core
-    Qt6::Network
+target_sources(RapidLibraryQt
+    PRIVATE
+        ${RAPID_REST_QT_PUBLIC_HEADERS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/QRestClient.cpp
 )
-
-target_include_directories(RestQt
-PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-)
-
-target_compile_definitions(RestQt PRIVATE QT_NO_KEYWORDS)

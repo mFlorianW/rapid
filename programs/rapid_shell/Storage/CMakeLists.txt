@@ -13,7 +13,7 @@ PUBLIC
     Qt6::Core
     Qt6::DBus
     spdlog::spdlog
-    Rapid::Storage
+    Rapid::Rapid
 )
 
 target_include_directories(ShellStorage

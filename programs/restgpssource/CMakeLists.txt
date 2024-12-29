@@ -26,8 +26,6 @@ PRIVATE
     Qt6::Widgets
     Qt6::Quick
     Qt6::Location
-    Rapid::Common
-    Rapid::Positioning
-    Rapid::PositioningQt
-    Rapid::SystemQt
+    Rapid::Rapid
+    Rapid::RapidQt
 )

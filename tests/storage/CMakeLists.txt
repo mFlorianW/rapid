@@ -27,7 +27,9 @@ PRIVATE
 target_link_libraries(test_storage_sqlitesession_database
 PRIVATE
     Catch2::Catch2WithMain
-    Rapid::Storage
+    spdlog::spdlog
+    SQLite::SQLite3
+    Rapid::Rapid
     Rapid::TestHelper
 )
 catch_discover_tests(test_storage_sqlitesession_database)
@@ -42,7 +44,9 @@ PRIVATE
 target_link_libraries(test_storage_sqlitetrack_database
 PRIVATE
     Catch2::Catch2WithMain
-    Rapid::Storage
+    spdlog::spdlog
+    SQLite::SQLite3
+    Rapid::Rapid
     Rapid::TestHelper
 )
 catch_discover_tests(test_storage_sqlitetrack_database)
@@ -67,7 +71,8 @@ if(ENABLE_QT)
     PRIVATE
         Catch2::Catch2
         Qt6::Test
-        Rapid::StorageQt
+        spdlog::spdlog
+        Rapid::RapidQt
         Rapid::TestHelper
         Rapid::TestHelperQt
     )

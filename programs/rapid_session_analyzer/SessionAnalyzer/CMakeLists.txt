@@ -25,8 +25,8 @@ target_link_libraries(SessionAnalyzer
     PUBLIC
         Qt6::Widgets
         Qt6::Quick
-        Rapid::StorageQt
-        Rapid::WorkflowQt
+        spdlog::spdlog
+        Rapid::RapidQt
 )
 
 target_include_directories(SessionAnalyzer

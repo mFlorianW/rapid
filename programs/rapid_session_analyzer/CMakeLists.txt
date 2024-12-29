@@ -3,15 +3,15 @@ add_subdirectory(SessionAnalyzer)
 add_executable(rapid_session_analyzer)
 
 target_sources(rapid_session_analyzer
-PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/rapid_session_analyzer.cpp
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/rapid_session_analyzer.cpp
 )
 
 target_link_libraries(rapid_session_analyzer
-PRIVATE
-    Rapid::SystemQt
-    Rapid::SessionAnalyzer
-    Rapid::SessionAnalyzerPlugin
+    PRIVATE
+        Rapid::RapidQt
+        Rapid::SessionAnalyzer
+        Rapid::SessionAnalyzerPlugin
 )
 
 set(LAPPY_SESSION_DL_DATADIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/rapid)

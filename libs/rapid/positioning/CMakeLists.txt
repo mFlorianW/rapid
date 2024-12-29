@@ -1,9 +1,4 @@
-add_library(Positioning STATIC)
-add_library(Rapid::Positioning ALIAS Positioning)
-
-target_sources(Positioning
-PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/ConstantGpsPositionProvider.cpp
+set(RAPID_POSITIONING_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/ConstantGpsPositionProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/IGPSInformationProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/IGpsPositionProvider.hpp
@@ -11,20 +6,13 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/StaticPositionDateTimeProvider.hpp
 )
 
-target_include_directories(Positioning
-PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+target_sources(RapidLibrary
+    PRIVATE
+        ${RAPID_POSITIONING_PUBLIC_HEADERS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/ConstantGpsPositionProvider.cpp
 )
 
-target_link_libraries(Positioning
-PRIVATE
-    spdlog::spdlog
-PUBLIC
-    Rapid::Common
-    Rapid::System
-    Rapid::ThirdParty::UTM
-    KDAB::KDBindings
-)
+install(FILES ${RAPID_POSITIONING_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/positioning")
 
 if(ENABLE_QT)
     add_subdirectory(qt)

@@ -1,27 +1,13 @@
-add_library(WorkflowQt STATIC)
-add_library(Rapid::WorkflowQt ALIAS WorkflowQt)
-
-target_sources(WorkflowQt
-PRIVATE
+set(RAPID_WORKFLOW_QT_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/ISessionAnalyzeWorkflow.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/SessionAnalyzeWorkflow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionAnalyzeWorkflow.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionDownloader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionDownloader.hpp
 )
+install(FILES ${RAPID_WORKFLOW_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/workflow/qt")
 
-target_link_libraries(WorkflowQt
-PUBLIC
-    Rapid::CommonQt
-    Rapid::Workflow
-    Qt6::Gui
-    Qt6::GuiPrivate
-    Qt6::Widgets
+target_sources(RapidLibraryQt
+PRIVATE
+    ${RAPID_WORKFLOW_QT_PUBLIC_HEADERS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionAnalyzeWorkflow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionDownloader.cpp
 )
-
-target_include_directories(WorkflowQt
-PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-)
-
-target_compile_definitions(WorkflowQt PRIVATE QT_NO_KEYWORDS)
