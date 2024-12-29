@@ -5,11 +5,13 @@ Everything has the WIP status and is not ready to use.
 ## Project Structure
 
 ### lib Folder
-Every subfolder in libs holds a library.
-The public API of these library is placed directly in the folder.
+The lib folder contains the rapid library.
+Every subfolder in here contains a submodule of the library.
+The public API of these library is placed directly in the sub folder.
 Private API when present is located in subfolder private.
 Everything in the private just an implemenation details and is indirectly tested through the tests of the public API.
-Some libraries have a Qt extensions these are optional and are used by some programs
+Some libraries have a Qt extensions these are optional and are used by some programs.
+Qt extension files are located in the sub folder qt
 
 ### programs Folder
 This folder contains programs which use functionality of the libraries.

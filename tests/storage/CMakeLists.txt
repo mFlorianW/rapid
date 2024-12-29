@@ -49,7 +49,7 @@ catch_discover_tests(test_storage_sqlitetrack_database)
 
 if(ENABLE_QT)
     qt_add_dbus_adaptor(SESSION_DATABASE_ADAPTOR
-        ${CMAKE_SOURCE_DIR}/libs/storage/qt/SessionDatabase.xml
+        ${CMAKE_SOURCE_DIR}/libs/rapid/storage/qt/SessionDatabase.xml
         SessionDatabaseServer.hpp
         SessionDatabaseServer
         SessionDatabaseAdaptor
