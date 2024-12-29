@@ -14,4 +14,6 @@ target_link_libraries(test_positioning
         Rapid::TestHelper
 )
 
-catch_discover_tests(test_positioning)
+catch_discover_tests(test_positioning
+    DISCOVERY_MODE PRE_TEST
+)

@@ -29,6 +29,10 @@ PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+catch_discover_tests(test_common
+    DISCOVERY_MODE PRE_TEST
+)
+
 if(ENABLE_QT)
     add_executable(test_common_qt)
     target_sources(test_common_qt
@@ -48,7 +52,7 @@ if(ENABLE_QT)
             Rapid::RapidQt
             Rapid::TestHelperQt
     )
-    catch_discover_tests(test_common_qt)
+    catch_discover_tests(test_common_qt
+        DISCOVERY_MODE PRE_TEST
+    )
 endif()
-
-catch_discover_tests(test_common)

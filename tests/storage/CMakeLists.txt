@@ -32,7 +32,9 @@ PRIVATE
     Rapid::Rapid
     Rapid::TestHelper
 )
-catch_discover_tests(test_storage_sqlitesession_database)
+catch_discover_tests(test_storage_sqlitesession_database
+    DISCOVERY_MODE PRE_TEST
+)
 
 add_executable(test_storage_sqlitetrack_database)
 add_dependencies(test_storage_sqlitetrack_database test_trackmangement_db)
@@ -49,7 +51,9 @@ PRIVATE
     Rapid::Rapid
     Rapid::TestHelper
 )
-catch_discover_tests(test_storage_sqlitetrack_database)
+catch_discover_tests(test_storage_sqlitetrack_database
+    DISCOVERY_MODE PRE_TEST
+)
 
 if(ENABLE_QT)
     qt_add_dbus_adaptor(SESSION_DATABASE_ADAPTOR
@@ -81,5 +85,7 @@ if(ENABLE_QT)
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
     )
-    catch_discover_tests(test_storage_qt)
+    catch_discover_tests(test_storage_qt
+        DISCOVERY_MODE PRE_TEST
+    )
 endif()

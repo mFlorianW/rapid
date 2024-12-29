@@ -15,4 +15,6 @@ PRIVATE
     Rapid::TestHelper
 )
 
-catch_discover_tests(test_algorithm)
+catch_discover_tests(test_algorithm
+    DISCOVERY_MODE PRE_TEST
+)
