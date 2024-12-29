@@ -2,27 +2,34 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "testhelper/RestSessionDownloaderClient.hpp"
 #include "testhelper/Sessions.hpp"
 #include "workflow/RestSessionDownloader.hpp"
 #include <catch2/catch_all.hpp>
+#include <catch2/trompeloeil.hpp>
+#include <testhelper/RestClientMock.hpp>
+#include <testhelper/SignalSpy.hpp>
 
 using namespace Rapid::Workflow;
 using namespace Rapid::TestHelper;
 using namespace Rapid::Common;
+using namespace Rapid::Rest;
+using namespace trompeloeil;
 
 SCENARIO("The RestSessionDownload shall fetch the stored session count on the laptimer")
 {
     GIVEN("A setuped RestSessionDownload")
     {
-        auto restClient = RestSessionDownloaderClient{};
+        auto restClient = RestClientMock{};
         auto rDl = RestSessionDownloader{restClient};
-        auto fetchSignalEmitted = false;
-        auto fetchStatus = DownloadResult::Error;
-        std::ignore = rDl.sessionCountFetched.connect([&](DownloadResult result) {
-            fetchSignalEmitted = true;
-            fetchStatus = DownloadResult::Ok;
-        });
+        auto fetchedSignalSpy = SignalSpy{rDl.sessionCountFetched};
+        constexpr auto SessionCountJson = R"({"count":2})";
+        auto restCall = std::make_shared<RestCallMock>();
+        restCall->setData(SessionCountJson);
+
+        REQUIRE_CALL(restClient, execute(_))
+            .WITH(_1.getType() == RequestType::Get and _1.getPath() == Path("/sessions"))
+            .SIDE_EFFECT(restCall->setCallResult(RestCallResult::Success))
+            .LR_RETURN(restCall);
 
         WHEN("Fetching the SessionCount on the device")
         {
@@ -30,8 +37,8 @@ SCENARIO("The RestSessionDownload shall fetch the stored session count on the la
             THEN("Then the correct session count shall be returned.")
             {
                 constexpr auto sessionCount = std::size_t{2};
-                REQUIRE(fetchSignalEmitted);
-                REQUIRE(fetchStatus == DownloadResult::Ok);
+                REQUIRE(fetchedSignalSpy.getCount() == 1);
+                REQUIRE(std::get<0>(fetchedSignalSpy.at(0)) == DownloadResult::Ok);
                 REQUIRE(rDl.getSessionCount() == sessionCount);
             }
         }
@@ -42,25 +49,50 @@ SCENARIO("The RestSessionDownload shall download a specific session stored on th
 {
     GIVEN("A setuped RestSessionDownloader")
     {
-        auto restClient = RestSessionDownloaderClient{};
+        auto restClient = RestClientMock{};
         auto rDl = RestSessionDownloader{restClient};
-        auto sessionDownloadedEmitted = false;
-        auto sessionDownloadEmittedIndex = std::size_t{12};
-        std::ignore = rDl.sessionDownloadFinshed.connect([&](std::size_t index, DownloadResult result) {
-            sessionDownloadEmittedIndex = index;
-            sessionDownloadedEmitted = true;
-            REQUIRE(result == DownloadResult::Ok);
-        });
+        auto sessionDownloadSpy = SignalSpy{rDl.sessionDownloadFinshed};
+        auto restCall = std::make_shared<RestCallMock>();
+
+        REQUIRE_CALL(restClient, execute(_))
+            .WITH(_1.getType() == RequestType::Get and _1.getPath() == Path{"/sessions/0/data"})
+            .SIDE_EFFECT(restCall->setCallResult(RestCallResult::Success))
+            .LR_RETURN(restCall);
 
         WHEN("Downloading the session with index 0")
         {
+            restCall->setData(Sessions::getTestSessionAsJson());
             rDl.downloadSession(0);
             THEN("Then correct session shall be downloaded")
             {
-                REQUIRE(sessionDownloadedEmitted);
-                REQUIRE(sessionDownloadEmittedIndex == 0);
+                REQUIRE(sessionDownloadSpy.getCount() == 1);
+                auto [index, downloadResult] = sessionDownloadSpy.at(0);
+                REQUIRE(index == 0);
+                REQUIRE(downloadResult == DownloadResult::Ok);
                 REQUIRE(rDl.getSession(0).value_or(SessionData{}) == Sessions::getTestSession());
             }
         }
     }
+}
+
+TEST_CASE("The RestSessionDownloader shall download session metadata")
+{
+    auto restClient = RestClientMock{};
+    auto rDl = RestSessionDownloader{restClient};
+    auto sessionMetadataDownloadSpy = SignalSpy{rDl.sessionMetadataDownloadFinshed};
+    auto restCall = std::make_shared<RestCallMock>();
+
+    REQUIRE_CALL(restClient, execute(_))
+        .WITH(_1.getType() == RequestType::Get and _1.getPath() == Path{"/sessions/0/metadata"})
+        .SIDE_EFFECT(restCall->setCallResult(RestCallResult::Success))
+        .LR_RETURN(restCall);
+
+    restCall->setData(Sessions::getTestSessionMetaAsJson());
+    rDl.downloadSessionMetadata(0);
+
+    REQUIRE(sessionMetadataDownloadSpy.getCount() == 1);
+    auto [index, downloadResult] = sessionMetadataDownloadSpy.at(0);
+    REQUIRE(index == 0);
+    REQUIRE(downloadResult == DownloadResult::Ok);
+    REQUIRE(rDl.getSessionMetadata(0).value_or(SessionData{}) == Sessions::getTestSessionMetaData());
 }

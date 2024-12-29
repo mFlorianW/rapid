@@ -41,17 +41,38 @@ std::optional<Common::SessionData> RestSessionDownloader::getSession(std::size_t
     return mDownloadedSessions.at(index);
 }
 
+std::optional<Common::SessionMetaData> RestSessionDownloader::getSessionMetadata(std::size_t index) const noexcept
+{
+    if (mDownloadedSessionMetadata.count(index) == 0) {
+        return std::nullopt;
+    }
+    return mDownloadedSessionMetadata.at(index);
+}
+
 void RestSessionDownloader::downloadSession(std::size_t index) noexcept
 {
     std::ostringstream outStream;
-    outStream << "/sessions/" << index;
-    auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, outStream.str()});
-    mDownloadSessionCache.insert({call.get(), {.index = index, .call = call}});
-    if (call->isFinished()) {
-        onSessionDownloadFinished(call.get());
-    } else {
-        std::ignore = call->finished.connect(&RestSessionDownloader::onSessionDownloadFinished, this);
-    }
+    outStream << "/sessions/" << index << "/data";
+    download(outStream.str(), index, mDownloadSessionCache, [this](auto&& call) {
+        onDownloadFinished(call,
+                           mDownloadSessionCache,
+                           mDownloadedSessions,
+                           sessionDownloadFinshed,
+                           &Common::JsonDeserializer::Session::deserialize);
+    });
+}
+
+void RestSessionDownloader::downloadSessionMetadata(std::size_t index) noexcept
+{
+    std::ostringstream outStream;
+    outStream << "/sessions/" << index << "/metadata";
+    download(outStream.str(), index, mSessionMetadataDownloadCache, [this](auto&& call) {
+        onDownloadFinished(call,
+                           mSessionMetadataDownloadCache,
+                           mDownloadedSessionMetadata,
+                           sessionMetadataDownloadFinshed,
+                           &Common::JsonDeserializer::SessionMetaData::deserialize);
+    });
 }
 
 void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) noexcept
@@ -76,27 +97,9 @@ void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) no
     mFetchCounterCache.erase(call);
 }
 
-void RestSessionDownloader::onSessionDownloadFinished(Rest::RestCall* call) noexcept
+void RestSessionDownloader::logError(std::string const& errorMsg) const noexcept
 {
-    if (mDownloadSessionCache.size() > 0 && call != nullptr) {
-        auto const dlResult =
-            call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
-        auto const index = mDownloadSessionCache.at(call).index;
-        if (dlResult == DownloadResult::Ok) {
-            auto session = Common::JsonDeserializer::Session::deserialize(call->getData());
-            if (!session) {
-                spdlog::error("RestSessionDownloader downloadSessionError: DeserializeJson failed.");
-            } else {
-                mDownloadedSessions.insert({index, session.value()});
-            }
-        }
-        try {
-            sessionDownloadFinshed.emit(index, dlResult);
-        } catch (std::exception const& e) {
-            SPDLOG_ERROR("Failed ot emit sessionCountFetched. Error already emitting.");
-        }
-        mDownloadSessionCache.erase(call);
-    }
+    SPDLOG_ERROR(errorMsg);
 }
 
 } // namespace Rapid::Workflow

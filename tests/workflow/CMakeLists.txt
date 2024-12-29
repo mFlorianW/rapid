@@ -24,6 +24,7 @@ if(ENABLE_QT)
         PRIVATE
             test_workflow_qt_main.cpp
             test_SessionAnalyzeWorkflow.cpp
+            test_qt_RestSessionDownloader.cpp
     )
     target_link_libraries(test_workflow_qt
             Catch2::Catch2

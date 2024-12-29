@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
-#include "ISessionDownloader.hpp"
 #include "rest/IRestClient.hpp"
+#include "workflow/ISessionDownloader.hpp"
 
 namespace Rapid::Workflow
 {
-class RestSessionDownloader final : public ISessionDownloader
+class RestSessionDownloader : public ISessionDownloader
 {
 public:
     RestSessionDownloader(Rest::IRestClient& restClient) noexcept;
@@ -54,13 +54,68 @@ public:
     std::optional<Common::SessionData> getSession(std::size_t index) const noexcept override;
 
     /**
+     * @copydoc ISessionDownloader::getSessionMetadata()
+     */
+    std::optional<Common::SessionMetaData> getSessionMetadata(std::size_t index) const noexcept override;
+
+    /**
      * @copydoc ISessionDownloader::downloadSession()
      */
     void downloadSession(std::size_t index) noexcept override;
 
+    /**
+     * @copydoc ISessionDownloader::downloadSessionMetadata
+     */
+    void downloadSessionMetadata(std::size_t index) noexcept override;
+
 private:
     void onFetchSessionCountFinished(Rest::RestCall* call) noexcept;
-    void onSessionDownloadFinished(Rest::RestCall* call) noexcept;
+
+    template <typename Cache>
+    void download(std::string const& path,
+                  std::size_t index,
+                  Cache& cache,
+                  std::function<void(Rest::RestCall*)> handler)
+    {
+        auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, path});
+        cache.insert({call.get(), {.index = index, .call = call}});
+        if (call->isFinished()) {
+            handler(call.get());
+        } else {
+            std::ignore = call->finished.connect(handler);
+        }
+    }
+
+    template <typename Cache, typename ResultCache, typename SignalType, typename Func>
+    void onDownloadFinished(Rest::RestCall* call,
+                            Cache& cache,
+                            ResultCache& resultCache,
+                            SignalType& signal,
+                            Func func) noexcept
+    {
+        if (cache.size() == 0 or call == nullptr) {
+            return;
+        }
+        auto const dlResult =
+            call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
+        auto const index = cache.at(call).index;
+        if (dlResult == DownloadResult::Ok) {
+            auto session = func(call->getData());
+            if (!session) {
+                logError("Download Failure. Error: JSON deserialization failed.");
+            } else {
+                resultCache.insert({index, session.value()});
+            }
+        }
+        try {
+            signal.emit(index, dlResult);
+        } catch (std::exception const& e) {
+            logError("Failed to emit download finished. Error already emitting.");
+        }
+        cache.erase(call);
+    }
+
+    void logError(std::string const& errorMsg) const noexcept;
 
 private:
     struct SessionDownloadCacheEntry
@@ -73,7 +128,9 @@ private:
     std::size_t mSessionCount{0};
     std::unordered_map<Rest::RestCall*, std::shared_ptr<Rest::RestCall>> mFetchCounterCache;
     std::unordered_map<Rest::RestCall*, SessionDownloadCacheEntry> mDownloadSessionCache;
+    std::unordered_map<Rest::RestCall*, SessionDownloadCacheEntry> mSessionMetadataDownloadCache;
     std::unordered_map<std::size_t, Common::SessionData> mDownloadedSessions;
+    std::unordered_map<std::size_t, Common::SessionMetaData> mDownloadedSessionMetadata;
 };
 
 } // namespace Rapid::Workflow

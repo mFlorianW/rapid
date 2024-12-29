@@ -7,12 +7,12 @@
 
 #include "storage/ISessionDatabase.hpp"
 #include <common/SessionMetaData.hpp>
-#include <common/qt/TableModelDataProvider.hpp>
+#include <common/qt/SessionMetadataProvider.hpp>
 
 namespace Rapid::Storage::Qt
 {
 
-class SessionMetaDataProvider : public Common::Qt::TableModelDataProvider<Common::SessionMetaData>
+class SessionMetaDataProvider : public Common::Qt::SessionMetadataProvider
 {
 public:
     SessionMetaDataProvider(ISessionDatabase& sessionDb);
