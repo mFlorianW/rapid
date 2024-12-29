@@ -53,26 +53,18 @@ void RestSessionDownloader::downloadSession(std::size_t index) noexcept
 {
     std::ostringstream outStream;
     outStream << "/sessions/" << index << "/data";
-    auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, outStream.str()});
-    mDownloadSessionCache.insert({call.get(), {.index = index, .call = call}});
-    if (call->isFinished()) {
-        onSessionDownloadFinished(call.get());
-    } else {
-        std::ignore = call->finished.connect(&RestSessionDownloader::onSessionDownloadFinished, this);
-    }
+    download(outStream.str(), index, mDownloadSessionCache, [this](auto&& call) {
+        onSessionDownloadFinished(call);
+    });
 }
 
 void RestSessionDownloader::downloadSessionMetadata(std::size_t index) noexcept
 {
     std::ostringstream outStream;
     outStream << "/sessions/" << index << "/metadata";
-    auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, outStream.str()});
-    mSessionMetadataDownloadCache.insert({call.get(), {.index = index, .call = call}});
-    if (call->isFinished()) {
-        onSessionMetadataDownloadFinished(call.get());
-    } else {
-        std::ignore = call->finished.connect(&RestSessionDownloader::onSessionMetadataDownloadFinished, this);
-    }
+    download(outStream.str(), index, mSessionMetadataDownloadCache, [this](auto&& call) {
+        onSessionMetadataDownloadFinished(call);
+    });
 }
 
 void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) noexcept

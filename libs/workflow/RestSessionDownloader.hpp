@@ -69,6 +69,21 @@ public:
     void downloadSessionMetadata(std::size_t index) noexcept override;
 
 private:
+    template <typename Cache>
+    void download(std::string const& path,
+                  std::size_t index,
+                  Cache& cache,
+                  std::function<void(Rest::RestCall*)> handler)
+    {
+        auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, path});
+        cache.insert({call.get(), {.index = index, .call = call}});
+        if (call->isFinished()) {
+            handler(call.get());
+        } else {
+            std::ignore = call->finished.connect(handler);
+        }
+    }
+
     void onFetchSessionCountFinished(Rest::RestCall* call) noexcept;
     void onSessionDownloadFinished(Rest::RestCall* call) noexcept;
     void onSessionMetadataDownloadFinished(Rest::RestCall* call) noexcept;
