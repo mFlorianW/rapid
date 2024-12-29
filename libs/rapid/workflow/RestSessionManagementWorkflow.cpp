@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "RestSessionDownloader.hpp"
+#include "RestSessionManagementWorkflow.hpp"
 #include <common/JsonDeserializer.hpp>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
@@ -11,29 +11,29 @@
 namespace Rapid::Workflow
 {
 
-RestSessionDownloader::RestSessionDownloader(Rest::IRestClient& restClient) noexcept
-    : ISessionDownloader()
+RestSessionManagementWorkflow::RestSessionManagementWorkflow(Rest::IRestClient& restClient) noexcept
+    : IRestSessionManagementWorkflow()
     , mRestClient{restClient}
 {
 }
 
-std::size_t RestSessionDownloader::getSessionCount() const noexcept
+std::size_t RestSessionManagementWorkflow::getSessionCount() const noexcept
 {
     return mSessionCount;
 }
 
-void RestSessionDownloader::fetchSessionCount() noexcept
+void RestSessionManagementWorkflow::fetchSessionCount() noexcept
 {
     auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, "/sessions"});
     mFetchCounterCache.insert({call.get(), call});
     if (call->isFinished()) {
         onFetchSessionCountFinished(call.get());
     } else {
-        std::ignore = call->finished.connect(&RestSessionDownloader::onFetchSessionCountFinished, this);
+        std::ignore = call->finished.connect(&RestSessionManagementWorkflow::onFetchSessionCountFinished, this);
     }
 }
 
-std::optional<Common::SessionData> RestSessionDownloader::getSession(std::size_t index) const noexcept
+std::optional<Common::SessionData> RestSessionManagementWorkflow::getSession(std::size_t index) const noexcept
 {
     if (mDownloadedSessions.count(index) == 0) {
         return std::nullopt;
@@ -41,7 +41,8 @@ std::optional<Common::SessionData> RestSessionDownloader::getSession(std::size_t
     return mDownloadedSessions.at(index);
 }
 
-std::optional<Common::SessionMetaData> RestSessionDownloader::getSessionMetadata(std::size_t index) const noexcept
+std::optional<Common::SessionMetaData> RestSessionManagementWorkflow::getSessionMetadata(
+    std::size_t index) const noexcept
 {
     if (mDownloadedSessionMetadata.count(index) == 0) {
         return std::nullopt;
@@ -49,7 +50,7 @@ std::optional<Common::SessionMetaData> RestSessionDownloader::getSessionMetadata
     return mDownloadedSessionMetadata.at(index);
 }
 
-void RestSessionDownloader::downloadSession(std::size_t index) noexcept
+void RestSessionManagementWorkflow::downloadSession(std::size_t index) noexcept
 {
     std::ostringstream outStream;
     outStream << "/sessions/" << index << "/data";
@@ -62,7 +63,7 @@ void RestSessionDownloader::downloadSession(std::size_t index) noexcept
     });
 }
 
-void RestSessionDownloader::downloadSessionMetadata(std::size_t index) noexcept
+void RestSessionManagementWorkflow::downloadSessionMetadata(std::size_t index) noexcept
 {
     std::ostringstream outStream;
     outStream << "/sessions/" << index << "/metadata";
@@ -75,7 +76,7 @@ void RestSessionDownloader::downloadSessionMetadata(std::size_t index) noexcept
     });
 }
 
-void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) noexcept
+void RestSessionManagementWorkflow::onFetchSessionCountFinished(Rest::RestCall* call) noexcept
 {
     if (mFetchCounterCache.count(call) > 0) {
         auto const dlResult =
@@ -97,7 +98,7 @@ void RestSessionDownloader::onFetchSessionCountFinished(Rest::RestCall* call) no
     mFetchCounterCache.erase(call);
 }
 
-void RestSessionDownloader::logError(std::string const& errorMsg) const noexcept
+void RestSessionManagementWorkflow::logError(std::string const& errorMsg) const noexcept
 {
     SPDLOG_ERROR(errorMsg);
 }

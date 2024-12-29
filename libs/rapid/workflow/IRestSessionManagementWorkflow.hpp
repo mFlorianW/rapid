@@ -16,34 +16,34 @@ enum class DownloadResult
 };
 
 /**
- * This interface contains the functionality to download the Sessions from a laptimer
- * The session can be downloaded in a index based manner. The first session index starts at 0 and ends at sessionCount
- * - 1.
+ * This interface contains the functionality to manage the Sessions of a laptimer device via the REST interface.
+ * The session can be downloaded in a index based manner.
+ * The first session index starts at 0 and ends at sessionCount - 1.
  */
-class ISessionDownloader
+class IRestSessionManagementWorkflow
 {
 public:
-    virtual ~ISessionDownloader() noexcept = default;
+    virtual ~IRestSessionManagementWorkflow() noexcept = default;
 
     /**
      * Deleted copy constructor
      */
-    ISessionDownloader(ISessionDownloader const&) = delete;
+    IRestSessionManagementWorkflow(IRestSessionManagementWorkflow const&) = delete;
 
     /**
      * Deleted copy operator
      */
-    ISessionDownloader& operator=(ISessionDownloader const&) = delete;
+    IRestSessionManagementWorkflow& operator=(IRestSessionManagementWorkflow const&) = delete;
 
     /**
      * Deleted move constructor
      */
-    ISessionDownloader(ISessionDownloader&&) = delete;
+    IRestSessionManagementWorkflow(IRestSessionManagementWorkflow&&) = delete;
 
     /**
      * Deleted move operator
      */
-    ISessionDownloader& operator=(ISessionDownloader&&) = delete;
+    IRestSessionManagementWorkflow& operator=(IRestSessionManagementWorkflow&&) = delete;
 
     /**
      * Gives the number of stored sessions of the laptimer. The return value is only valid after calling
@@ -113,6 +113,6 @@ public:
     KDBindings::Signal<std::size_t, DownloadResult> sessionMetadataDownloadFinshed;
 
 protected:
-    ISessionDownloader() noexcept = default;
+    IRestSessionManagementWorkflow() noexcept = default;
 };
 } // namespace Rapid::Workflow

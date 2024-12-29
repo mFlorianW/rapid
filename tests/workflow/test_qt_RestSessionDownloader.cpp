@@ -6,7 +6,7 @@
 #include <catch2/trompeloeil.hpp>
 #include <testhelper/RestClientMock.hpp>
 #include <testhelper/Sessions.hpp>
-#include <workflow/qt/RestSessionDownloader.hpp>
+#include <workflow/qt/RestSessionManagementWorkflow.hpp>
 
 using namespace Rapid::Workflow::Qt;
 using namespace Rapid::Rest;
@@ -18,7 +18,7 @@ using namespace Rapid::Common::Qt;
 struct TestFixture
 {
     Rapid::TestHelper::RestClientMock restClient{};
-    RestSessionDownloader rDl{restClient};
+    RestSessionManagementWorkflow rDl{restClient};
     std::shared_ptr<SessionMetadataProvider> provider{rDl.getProvider()};
 };
 

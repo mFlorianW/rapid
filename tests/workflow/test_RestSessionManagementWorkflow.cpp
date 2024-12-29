@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "testhelper/Sessions.hpp"
-#include "workflow/RestSessionDownloader.hpp"
+#include "workflow/RestSessionManagementWorkflow.hpp"
 #include <catch2/catch_all.hpp>
 #include <catch2/trompeloeil.hpp>
 #include <testhelper/RestClientMock.hpp>
@@ -15,12 +15,12 @@ using namespace Rapid::Common;
 using namespace Rapid::Rest;
 using namespace trompeloeil;
 
-SCENARIO("The RestSessionDownload shall fetch the stored session count on the laptimer")
+SCENARIO("The RestSessionManagementWorkflow shall fetch the stored session count on the laptimer")
 {
-    GIVEN("A setuped RestSessionDownload")
+    GIVEN("A setuped RestSessionManagementWorkflow")
     {
         auto restClient = RestClientMock{};
-        auto rDl = RestSessionDownloader{restClient};
+        auto rDl = RestSessionManagementWorkflow{restClient};
         auto fetchedSignalSpy = SignalSpy{rDl.sessionCountFetched};
         constexpr auto SessionCountJson = R"({"count":2})";
         auto restCall = std::make_shared<RestCallMock>();
@@ -45,12 +45,12 @@ SCENARIO("The RestSessionDownload shall fetch the stored session count on the la
     }
 }
 
-SCENARIO("The RestSessionDownload shall download a specific session stored on the device")
+SCENARIO("The RestSessionManagementWorkflow shall download a specific session stored on the device")
 {
     GIVEN("A setuped RestSessionDownloader")
     {
         auto restClient = RestClientMock{};
-        auto rDl = RestSessionDownloader{restClient};
+        auto rDl = RestSessionManagementWorkflow{restClient};
         auto sessionDownloadSpy = SignalSpy{rDl.sessionDownloadFinshed};
         auto restCall = std::make_shared<RestCallMock>();
 
@@ -78,7 +78,7 @@ SCENARIO("The RestSessionDownload shall download a specific session stored on th
 TEST_CASE("The RestSessionDownloader shall download session metadata")
 {
     auto restClient = RestClientMock{};
-    auto rDl = RestSessionDownloader{restClient};
+    auto rDl = RestSessionManagementWorkflow{restClient};
     auto sessionMetadataDownloadSpy = SignalSpy{rDl.sessionMetadataDownloadFinshed};
     auto restCall = std::make_shared<RestCallMock>();
 

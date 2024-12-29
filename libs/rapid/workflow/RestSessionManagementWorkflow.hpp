@@ -4,39 +4,39 @@
 
 #pragma once
 #include "rest/IRestClient.hpp"
-#include "workflow/ISessionDownloader.hpp"
+#include "workflow/IRestSessionManagementWorkflow.hpp"
 
 namespace Rapid::Workflow
 {
-class RestSessionDownloader : public ISessionDownloader
+class RestSessionManagementWorkflow : public IRestSessionManagementWorkflow
 {
 public:
-    RestSessionDownloader(Rest::IRestClient& restClient) noexcept;
+    RestSessionManagementWorkflow(Rest::IRestClient& restClient) noexcept;
 
     /**
      * Default empty destructor
      */
-    ~RestSessionDownloader() noexcept override = default;
+    ~RestSessionManagementWorkflow() noexcept override = default;
 
     /**
      * Deleted copy constructor
      */
-    RestSessionDownloader(RestSessionDownloader const&) = delete;
+    RestSessionManagementWorkflow(RestSessionManagementWorkflow const&) = delete;
 
     /**
      * Deleted copy operator
      */
-    RestSessionDownloader& operator=(RestSessionDownloader const&) = delete;
+    RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow const&) = delete;
 
     /**
      * Deleted move constructor
      */
-    RestSessionDownloader(RestSessionDownloader&&) = delete;
+    RestSessionManagementWorkflow(RestSessionManagementWorkflow&&) = delete;
 
     /**
      * Deleted move operator
      */
-    RestSessionDownloader& operator=(RestSessionDownloader&&) = delete;
+    RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow&&) = delete;
 
     /**
      * @copydoc ISessionDownloader::getSession()

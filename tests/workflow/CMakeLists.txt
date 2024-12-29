@@ -5,7 +5,7 @@ add_executable(test_workflow)
 target_sources(test_workflow
 PRIVATE
     test_ActiveSessionWorkflow.cpp
-    test_RestSessionDownloader.cpp
+    test_RestSessionManagementWorkflow.cpp
     test_TrackDetectionWorkflow.cpp
 )
 
