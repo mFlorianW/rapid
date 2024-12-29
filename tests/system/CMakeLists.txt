@@ -29,7 +29,7 @@ if(ENABLE_QT)
     target_link_libraries(test_system_qt
     PRIVATE
         Catch2::Catch2
-        Rapid::SystemQt
+        Rapid::RapidQt
         Rapid::TestHelper
         Rapid::TestHelperQt
         Qt6::Test

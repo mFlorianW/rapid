@@ -12,8 +12,9 @@ PRIVATE
 target_link_libraries(test_workflow
 PRIVATE
     Catch2::Catch2WithMain
-    Rapid::Workflow
+    Rapid::Rapid
     Rapid::TestHelper
+    spdlog::spdlog
 )
 
 catch_discover_tests(test_workflow)
@@ -28,8 +29,9 @@ if(ENABLE_QT)
     )
     target_link_libraries(test_workflow_qt
             Catch2::Catch2
+            spdlog::spdlog
             Qt6::Test
-            Rapid::WorkflowQt
+            Rapid::RapidQt
             Rapid::TestHelperQt
     )
     catch_discover_tests(test_workflow_qt)

@@ -17,10 +17,7 @@ PRIVATE
     spdlog::spdlog
     Boost::program_options
     Rapid::DatabaseFile
-    Rapid::System
-    Rapid::Positioning
-    Rapid::Storage
-    Rapid::Workflow
+    Rapid::Rapid
 )
 
 install(TARGETS rapid_headless DESTINATION ${BINDIR})

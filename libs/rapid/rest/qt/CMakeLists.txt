@@ -1,0 +1,10 @@
+set(RAPID_REST_QT_PUBLIC_HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/QRestClient.hpp
+)
+install(FILES ${RAPID_REST_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/rest/qt")
+
+target_sources(RapidLibraryQt
+    PRIVATE
+        ${RAPID_REST_QT_PUBLIC_HEADERS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/QRestClient.cpp
+)

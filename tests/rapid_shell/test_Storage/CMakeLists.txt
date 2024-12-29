@@ -1,6 +1,6 @@
 set(TestDBusSrcs)
 qt_add_dbus_interface(TestDBusSrcs
-    ${CMAKE_SOURCE_DIR}/libs/storage/qt/SessionDatabase.xml
+    ${CMAKE_SOURCE_DIR}/libs/rapid/storage/qt/SessionDatabase.xml
     TestSessionDatabaseIpcClient
 )
 

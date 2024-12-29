@@ -20,7 +20,7 @@ PRIVATE
 target_link_libraries(test_common
 PRIVATE
     Catch2::Catch2WithMain
-    Rapid::Common
+    Rapid::Rapid
     Rapid::TestHelper
 )
 
@@ -44,7 +44,7 @@ if(ENABLE_QT)
         PRIVATE
             Catch2::Catch2
             Qt6::Test
-            Rapid::CommonQt
+            Rapid::RapidQt
             Rapid::TestHelperQt
     )
     catch_discover_tests(test_common_qt)

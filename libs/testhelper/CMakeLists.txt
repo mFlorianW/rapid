@@ -32,11 +32,7 @@ PUBLIC
 
 target_link_libraries(TestHelper
 PUBLIC
-    Rapid::CommonObject
-    Rapid::Positioning
-    Rapid::AlgorithmObject
-    Rapid::Storage
-    Rapid::Rest
+    Rapid::Rapid
     Catch2::Catch2
     trompeloeil::trompeloeil
 )

@@ -1,0 +1,10 @@
+set(RAPID_POSITIONING_QT_PUBLIC_HEADS
+        ${CMAKE_CURRENT_SOURCE_DIR}/CsvGpsFileReader.hpp
+)
+install(FILES ${RAPID_COMMON_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/positioning/qt")
+
+target_sources(RapidLibraryQt
+    PRIVATE
+        ${RAPID_POSITIONING_QT_PUBLIC_HEADS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/CsvGpsFileReader.cpp
+)

@@ -11,7 +11,7 @@ PRIVATE
 target_link_libraries(test_algorithm
 PRIVATE
     Catch2::Catch2WithMain
-    Rapid::AlgorithmObject
+    Rapid::Rapid
     Rapid::TestHelper
 )
 

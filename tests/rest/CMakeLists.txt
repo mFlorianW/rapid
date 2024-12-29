@@ -15,7 +15,7 @@ target_link_libraries(test_rest
 PRIVATE
     spdlog::spdlog
     Catch2::Catch2WithMain
-    Rapid::Rest
+    Rapid::Rapid
     Rapid::TestHelper
 )
 
