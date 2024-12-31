@@ -19,7 +19,7 @@ TEST_CASE("Serialize a session to a json string")
 
 TEST_CASE("Serialize a sessionmetadata to a json string")
 {
-    auto const session = Sessions::getTestSession();
-    std::string result = JsonSerializer::Session::serialize(static_cast<SessionMetaData const&>(session));
+    auto const session = Sessions::getTestSessionMetaData();
+    std::string result = JsonSerializer::Session::serialize(session);
     REQUIRE(result == Sessions::getTestSessionMetaAsJson());
 }

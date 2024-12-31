@@ -61,4 +61,16 @@ TrackData getTrackWithoutSector()
     return createTrackWithoutSector();
 }
 
+Common::TrackData getTrack()
+{
+    auto pos = PositionData{52.0, 11.2};
+    auto track = TrackData{};
+    track.setTrackName("Track");
+    track.setStartline(pos);
+    track.setFinishline(pos);
+    track.setSections({pos, pos});
+
+    return track;
+}
+
 } // namespace Rapid::TestHelper::Tracks

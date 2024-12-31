@@ -29,8 +29,8 @@ TEST_CASE_METHOD(TestFixture, "The SessionMetaDataProvider shall give the correc
 
     CHECK(sessionMetaDataProvider.data(0, 0, ::Qt::DisplayRole).toString() == QStringLiteral("01.01.1970"));
     CHECK(sessionMetaDataProvider.data(0, 1, ::Qt::DisplayRole).toString() == QStringLiteral("13:00:00.000"));
-    CHECK(sessionMetaDataProvider.data(0, 2, ::Qt::DisplayRole).toString() == QStringLiteral("Oschersleben"));
+    CHECK(sessionMetaDataProvider.data(0, 2, ::Qt::DisplayRole).toString() == QStringLiteral("Track"));
     CHECK(sessionMetaDataProvider.data(1, 0, ::Qt::DisplayRole).toString() == QStringLiteral("01.01.1970"));
     CHECK(sessionMetaDataProvider.data(1, 1, ::Qt::DisplayRole).toString() == QStringLiteral("13:00:00.000"));
-    CHECK(sessionMetaDataProvider.data(1, 2, ::Qt::DisplayRole).toString() == QStringLiteral("Oschersleben"));
+    CHECK(sessionMetaDataProvider.data(1, 2, ::Qt::DisplayRole).toString() == QStringLiteral("Track"));
 }
