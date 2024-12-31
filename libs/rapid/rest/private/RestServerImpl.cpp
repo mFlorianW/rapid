@@ -148,8 +148,10 @@ public:
         if (mClientConnections.count(connection) > 0) {
             std::ignore = connection->requestReceived.connect([this](auto&& request, auto&& conn) {
                 if (mClientConnections.count(conn) > 0) {
-                    std::lock_guard<std::mutex> guard{mMutex};
-                    mPendingRequests.insert({conn, conn->getRestRequest()});
+                    {
+                        std::lock_guard<std::mutex> guard{mMutex};
+                        mPendingRequests.insert({conn, conn->getRestRequest()});
+                    }
                     System::EventLoop::postEvent(
                         mServer,
                         std::make_unique<System::Event>(System::Event::Type::HttpRequestReceived));
