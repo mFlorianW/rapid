@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -72,7 +72,7 @@ public:
     /**
      * Default empty destructor
      */
-    ~QSettingsBackend() = default;
+    ~QSettingsBackend() override = default;
 
     /**
      * Deleted copy constructor
