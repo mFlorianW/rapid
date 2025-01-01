@@ -49,6 +49,11 @@ public:
 private Q_SLOTS:
     void onDeleteHostSession();
     void onDeviceActivated(qsizetype index);
+    void onDownloadSessionRequest();
+    void onDownloadSessionRequestFinished(qsizetype index, Workflow::DownloadResult result);
+
+private:
+    void writeToDownloadLog(QString const& output);
 
 private:
     std::unique_ptr<Ui::SessionManager> mSessionManager;

@@ -135,7 +135,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="deviceDownloadButton">
+           <widget class="QPushButton" name="DeviceDownloadButton">
             <property name="text">
              <string>Download</string>
             </property>
@@ -146,6 +146,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="DeviceDeleteSession">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="text">
              <string>Delete</string>
             </property>
@@ -171,7 +174,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QTextEdit" name="downloadLog">
+     <widget class="QTextEdit" name="DownloadLog">
       <property name="enabled">
        <bool>true</bool>
       </property>

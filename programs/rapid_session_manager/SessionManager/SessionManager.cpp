@@ -34,6 +34,10 @@ SessionManager::SessionManager()
         mRestSessionManagement->downloadAllSessionMetadata();
     });
     connect(mToolbarDeviceComboBox.get(), &QComboBox::activated, this, &SessionManager::onDeviceActivated);
+    connect(mSessionManager->DeviceDownloadButton,
+            &QPushButton::clicked,
+            this,
+            &SessionManager::onDownloadSessionRequest);
 
     // Menubar
     connect(mSessionManager->actionQuit, &QAction::triggered, this, [] {
@@ -79,7 +83,58 @@ void SessionManager::onDeviceActivated(qsizetype index)
         mRestSessionMetadataProvider = mRestSessionManagement->getProvider();
         mRestSessionModel = std::make_unique<RestSessionModel>(*mRestSessionMetadataProvider);
         mSessionManager->DeviceSessionView->setModel(mRestSessionModel.get());
+        std::ignore =
+            mRestSessionManagement->sessionDownloadFinshed.connect(&SessionManager::onDownloadSessionRequestFinished,
+                                                                   this);
     }
+}
+
+void SessionManager::onDownloadSessionRequest()
+{
+    auto selectedRows = mSessionManager->DeviceSessionView->selectionModel()->selectedRows();
+    if (selectedRows.isEmpty()) {
+        return;
+    }
+    auto const index = selectedRows.first().row();
+    auto const maybeData = mRestSessionManagement->getSessionMetadata(index);
+    if (not maybeData.has_value()) {
+        return;
+    }
+    mRestSessionManagement->downloadSession(index);
+    writeToDownloadLog(
+        QString{"Start download: session %1 %2 %3"}.arg(QString::fromStdString(maybeData->getSessionDate().asString()),
+                                                        QString::fromStdString(maybeData->getSessionTime().asString()),
+                                                        QString::fromStdString(maybeData->getTrack().getTrackName())));
+}
+
+void SessionManager::onDownloadSessionRequestFinished(qsizetype index, Workflow::DownloadResult result)
+{
+    auto log = QString{"Error Download: Session for index %1 unknown error."}.arg(QString::number(index));
+    if (result == Workflow::DownloadResult::Ok) {
+        auto const maybeSession = mRestSessionManagement->getSession(index);
+        if (maybeSession.has_value()) {
+            log = QString{"Finish download: session %1 %2 %3"}.arg(
+                QString::fromStdString(maybeSession->getSessionDate().asString()),
+                QString::fromStdString(maybeSession->getSessionTime().asString()),
+                QString::fromStdString(maybeSession->getTrack().getTrackName()));
+            mSessionDatabase->storeSession(maybeSession.value());
+        }
+    } else {
+        auto metadata = mRestSessionManagement->getSessionMetadata(index);
+        if (metadata.has_value()) {
+            log = QString{"Error download: Session %1 %2 %3"}.arg(
+                QString::fromStdString(metadata->getSessionDate().asString()),
+                QString::fromStdString(metadata->getSessionTime().asString()),
+                QString::fromStdString(metadata->getTrack().getTrackName()));
+        }
+    }
+    writeToDownloadLog(log);
+}
+
+void SessionManager::writeToDownloadLog(QString const& output)
+{
+    mSessionManager->DownloadLog->insertPlainText(output);
+    mSessionManager->DownloadLog->insertPlainText("\n");
 }
 
 } // namespace Rapid::SessionManager
