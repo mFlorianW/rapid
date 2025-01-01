@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -15,6 +15,8 @@ using namespace Rapid::Common;
 using namespace Rapid::Rest;
 using namespace trompeloeil;
 
+constexpr auto SessionCountJson = R"({"count":2})";
+
 SCENARIO("The RestSessionManagementWorkflow shall fetch the stored session count on the laptimer")
 {
     GIVEN("A setuped RestSessionManagementWorkflow")
@@ -22,7 +24,6 @@ SCENARIO("The RestSessionManagementWorkflow shall fetch the stored session count
         auto restClient = RestClientMock{};
         auto rDl = RestSessionManagementWorkflow{restClient};
         auto fetchedSignalSpy = SignalSpy{rDl.sessionCountFetched};
-        constexpr auto SessionCountJson = R"({"count":2})";
         auto restCall = std::make_shared<RestCallMock>();
         restCall->setData(SessionCountJson);
 
@@ -95,4 +96,33 @@ TEST_CASE("The RestSessionManagementWorkflow shall download session metadata")
     REQUIRE(index == 0);
     REQUIRE(downloadResult == DownloadResult::Ok);
     REQUIRE(rDl.getSessionMetadata(0).value_or(SessionData{}) == Sessions::getTestSessionMetaData());
+}
+
+TEST_CASE("The RestSessionManagementWorkflow shall download all session meta data at once")
+{
+    auto restClient = RestClientMock{};
+    auto rDl = RestSessionManagementWorkflow{restClient};
+    auto finishedSpy = SignalSpy{rDl.sessionMetadataDownloadFinished};
+    auto sessionMetadataCall = std::make_shared<RestCallMock>();
+    auto sessionCountCall = std::make_shared<RestCallMock>();
+
+    REQUIRE_CALL(restClient, execute(_))
+        .WITH(_1.getType() == RequestType::Get and _1.getPath() == Path{"/sessions"})
+        .SIDE_EFFECT(sessionCountCall->setCallResult(RestCallResult::Success))
+        .LR_RETURN(sessionCountCall);
+
+    REQUIRE_CALL(restClient, execute(_))
+        .TIMES(2)
+        .WITH(_1.getType() == RequestType::Get)
+        .WITH(_1.getPath() == Path{"/sessions/0/metadata"} or _1.getPath() == Path{"/sessions/1/metadata"})
+        .SIDE_EFFECT(sessionMetadataCall->setCallResult(RestCallResult::Success))
+        .LR_RETURN(sessionMetadataCall);
+
+    sessionCountCall->setData(SessionCountJson);
+    sessionMetadataCall->setData(Sessions::getTestSessionMetaAsJson());
+    rDl.downloadAllSessionMetadata();
+
+    REQUIRE(finishedSpy.getCount() == 2);
+    REQUIRE(rDl.getSessionMetadata(0).value_or(SessionMetaData{}) == Sessions::getTestSessionMetaData());
+    REQUIRE(rDl.getSessionMetadata(1).value_or(SessionMetaData{}) == Sessions::getTestSessionMetaData());
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -85,12 +85,19 @@ public:
     /**
      * @brief Downloads the session metadata from the device
      *
-     * @details The download result is reported with signal @ref sessionMetadataDownloadFinshed
+     * @details The download result is reported with signal @ref sessionMetadataDownloadFinished
      *          The actual metadata then can received the with @ref getSessionMetadatafunction.
      *
      * @param index The index of the session for which the session meta data shall be downloaded.
      */
     virtual void downloadSessionMetadata(std::size_t index) noexcept = 0;
+
+    /**
+     * @brief Downloads all session metadata from the device
+     *
+     * @details The downloaded metadata is reported with the signal @ref sessionMetadataDownloadFinished
+     */
+    virtual void downloadAllSessionMetadata() noexcept = 0;
 
     /**
      * This signal is emitted when the fetchSessionCount operation finshed.

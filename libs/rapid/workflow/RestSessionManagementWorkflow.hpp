@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -68,8 +68,14 @@ public:
      */
     void downloadSessionMetadata(std::size_t index) noexcept override;
 
+    /**
+     * @copydoc IRestSessionManagementWorkflow::downloadAllSessionMetadata
+     */
+    void downloadAllSessionMetadata() noexcept override;
+
 private:
     void onFetchSessionCountFinished(Rest::RestCall* call) noexcept;
+    void onFetchSessionCountAllDownloadFinished(Rest::RestCall* call) noexcept;
 
     template <typename Cache>
     void download(std::string const& path,
@@ -96,8 +102,7 @@ private:
         if (cache.size() == 0 or call == nullptr) {
             return;
         }
-        auto const dlResult =
-            call->getResult() == Rest::RestCallResult::Success ? DownloadResult::Ok : DownloadResult::Error;
+        auto const dlResult = getDownloadResult(*call);
         auto const index = cache.at(call).index;
         if (dlResult == DownloadResult::Ok) {
             auto session = func(call->getData());
@@ -116,6 +121,8 @@ private:
     }
 
     void logError(std::string const& errorMsg) const noexcept;
+    std::optional<std::size_t> parseSessionCountDownload(Rest::RestCall& call) noexcept;
+    DownloadResult getDownloadResult(Rest::RestCall const& call) noexcept;
 
 private:
     struct SessionDownloadCacheEntry
