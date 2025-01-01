@@ -34,6 +34,11 @@ write_basic_package_version_file(
     COMPATIBILITY SameMinorVersion
 )
 
+set_target_properties(RapidLibrary PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+)
+
 install(TARGETS RapidLibrary EXPORT RapidLibraryTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT RapidLibrary_Runtime
@@ -89,6 +94,11 @@ if(ENABLE_QT)
             Qt6::DBus
     )
     target_compile_definitions(RapidLibraryQt PRIVATE QT_NO_KEYWORDS)
+
+    set_target_properties(RapidLibraryQt PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    )
 
     configure_package_config_file(
         RapidQtConfig.cmake.in
