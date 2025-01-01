@@ -155,7 +155,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="RefreshSessionView">
+           <widget class="QPushButton" name="DeviceRefreshSessionView">
             <property name="text">
              <string>Refresh</string>
             </property>

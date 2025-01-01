@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -23,6 +23,19 @@ SessionManager::SessionManager()
     mSessionManager->HostSessionTableView->setSelectionMode(QAbstractItemView::SingleSelection);
     mSessionManager->HostSessionTableView->horizontalHeader()->setStretchLastSection(true);
 
+    connect(mSessionManager->DeleteHostSession, &QPushButton::clicked, this, &SessionManager::onDeleteHostSession);
+
+    // Setup DeviceSessionTableView
+    mSessionManager->DeviceSessionView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    mSessionManager->DeviceSessionView->setSelectionMode(QAbstractItemView::SingleSelection);
+    mSessionManager->DeviceSessionView->horizontalHeader()->setStretchLastSection(true);
+
+    connect(mSessionManager->DeviceRefreshSessionView, &QPushButton::clicked, this, [this] {
+        mRestSessionManagement->downloadAllSessionMetadata();
+    });
+    connect(mToolbarDeviceComboBox.get(), &QComboBox::activated, this, &SessionManager::onDeviceActivated);
+
+    // Menubar
     connect(mSessionManager->actionQuit, &QAction::triggered, this, [] {
         QApplication::exit();
     });
@@ -33,8 +46,6 @@ SessionManager::SessionManager()
         mHostSessionModel = std::make_unique<SessionModel>(*mHostSessionMetaDataProvider);
         mSessionManager->HostSessionTableView->setModel(mHostSessionModel.get());
     });
-
-    connect(mSessionManager->DeleteHostSession, &QPushButton::clicked, this, &SessionManager::onDeleteHostSession);
 
     //Setup Toolbar
     mToolbarDeviceComboBox->setModel(mDeviceSettingsModel.get());
@@ -54,6 +65,21 @@ void SessionManager::onDeleteHostSession()
         return;
     }
     mSessionDatabase->deleteSession(maybeSession->getId());
+}
+
+void SessionManager::onDeviceActivated(qsizetype index)
+{
+    auto const& device = mDeviceSettingsProvider->getItem(index);
+    if (device.has_value()) {
+        mRestClient = std::make_unique<Rest::QRestClient>();
+        mRestClient->setServerAddress(device->ip.toString().toStdString());
+        mRestClient->setServerPort(device->port);
+        mRestSessionManagement = std::make_unique<Workflow::Qt::RestSessionManagementWorkflow>(*mRestClient);
+        mRestSessionManagement->downloadAllSessionMetadata();
+        mRestSessionMetadataProvider = mRestSessionManagement->getProvider();
+        mRestSessionModel = std::make_unique<RestSessionModel>(*mRestSessionMetadataProvider);
+        mSessionManager->DeviceSessionView->setModel(mRestSessionModel.get());
+    }
 }
 
 } // namespace Rapid::SessionManager

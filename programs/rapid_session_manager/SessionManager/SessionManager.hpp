@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -10,8 +10,10 @@
 #include <common/qt/DeviceSettingsProvider.hpp>
 #include <common/qt/GenericTableModel.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
+#include <rest/qt/QRestClient.hpp>
 #include <storage/qt/SessionDatabaseIpcClient.hpp>
 #include <storage/qt/SessionMetaDataProvider.hpp>
+#include <workflow/qt/RestSessionManagementWorkflow.hpp>
 
 namespace Ui
 {
@@ -46,6 +48,7 @@ public:
 
 private Q_SLOTS:
     void onDeleteHostSession();
+    void onDeviceActivated(qsizetype index);
 
 private:
     std::unique_ptr<Ui::SessionManager> mSessionManager;
@@ -58,6 +61,13 @@ private:
     using SessionModel = Common::Qt::GenericTableModel<Storage::Qt::SessionMetaDataProvider>;
     std::unique_ptr<Storage::Qt::SessionMetaDataProvider> mHostSessionMetaDataProvider;
     std::unique_ptr<SessionModel> mHostSessionModel;
+
+    // Rest SessionModel
+    std::unique_ptr<Rest::QRestClient> mRestClient;
+    std::unique_ptr<Workflow::Qt::RestSessionManagementWorkflow> mRestSessionManagement;
+    std::shared_ptr<Common::Qt::SessionMetadataProvider> mRestSessionMetadataProvider;
+    using RestSessionModel = Common::Qt::GenericTableModel<Common::Qt::SessionMetadataProvider>;
+    std::unique_ptr<RestSessionModel> mRestSessionModel;
 
     // Toolbar elements
     std::unique_ptr<Common::Qt::DeviceSettingsProvider> mDeviceSettingsProvider;
