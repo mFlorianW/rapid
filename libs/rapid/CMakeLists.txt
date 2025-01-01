@@ -15,6 +15,8 @@ PRIVATE
     nlohmann_json::nlohmann_json
     Rapid::ThirdParty::UTM
     SQLite::SQLite3
+    cc::comms
+    cc::cc_ublox
 PUBLIC
     KDAB::KDBindings
 )

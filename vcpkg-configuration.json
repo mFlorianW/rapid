@@ -16,7 +16,8 @@
         "repository": "https://github.com/mflorianw/mflorianw-vcpkg-registry",
         "reference": "main",
         "packages": [
-          "trompeloeil"
+          "trompeloeil",
+          "comms-ublox"
         ]
     }
   ]
