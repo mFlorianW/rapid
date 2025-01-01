@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -86,4 +86,17 @@ TEST_CASE_METHOD(TestFixture, "The GenericTable shall correctly notify about del
         REQUIRE(rowsRemovedSpy.at(0).at(1).toInt() == 0);
         REQUIRE(rowsRemovedSpy.at(0).at(2).toInt() == 0);
     }
+}
+
+TEST_CASE_METHOD(TestFixture, "The GenericTable shall correctly notify about updates in the provider")
+{
+    auto dataChangedSpy = QSignalSpy{&model, &QAbstractItemModel::dataChanged};
+
+    dataProvider.updateItem(0, TestData{.data = 123});
+
+    REQUIRE(dataChangedSpy.size() == 1);
+    REQUIRE(dataChangedSpy.at(0).at(0).value<QModelIndex>().row() == 0);
+    REQUIRE(dataChangedSpy.at(0).at(0).value<QModelIndex>().column() == 0);
+    REQUIRE(dataChangedSpy.at(0).at(1).value<QModelIndex>().column() == 0);
+    REQUIRE(dataChangedSpy.at(0).at(1).value<QModelIndex>().column() == 0);
 }
