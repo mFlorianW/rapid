@@ -17,7 +17,9 @@ PRIVATE
     Rapid::TestHelper
 )
 
-catch_discover_tests(test_system)
+catch_discover_tests(test_system
+    DISCOVERY_MODE PRE_TEST
+)
 
 if(ENABLE_QT)
     add_executable(test_system_qt)
@@ -34,5 +36,7 @@ if(ENABLE_QT)
         Rapid::TestHelperQt
         Qt6::Test
     )
-    add_test(test_system_qt test_system_qt)
+    catch_discover_tests(test_system_qt test_system_qt
+        DISCOVERY_MODE PRE_TEST
+    )
 endif()

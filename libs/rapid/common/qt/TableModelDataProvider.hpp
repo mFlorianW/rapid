@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -27,35 +27,39 @@ public:
 
     Q_DISABLE_COPY_MOVE(TableModelDataProviderBase);
 Q_SIGNALS:
-
     /**
-     * This signal is emitted when the a new item is inserted in the @ref TableModelDataProvider
+     * @brief This signal is emitted when the a new item is inserted in the @ref TableModelDataProvider
      * @param index The index of the inserted item.
      */
-    void beginInsertItem(qsizetype index);
+    void beginInsertItem(qsizetype row);
 
     /**
-     * This signal is emitted when the item insertion is done.
+     * @brief This signal is emitted when the item insertion is done.
      */
     void endInsertItem();
 
     /**
      * @brief This signal is emitted when an item in the @ref TableModelDataProvider is removed.
      *
-     * @details The signal contains the row that is removed.
-     *          So the @ref GenericTableModel can use it to update the UI correctly.
+     * @details So the @ref GenericTableModel use it to update the UI correctly.
      *
-     * @param The row which got removed from the model.
+     * @param row The row which got removed from the model.
      */
     void beginRemoveItem(qsizetype row);
 
     /**
      * @brief This signal is emitted when the remove operation of an item in the @ref TableModelDataProvider is done.
-     *
-     * @details The signal contains the row that is removed.
-     *          So the @ref GenericTableModel can use it to update the UI correctly.
      */
     void endRemoveItem();
+
+    /**
+     * @brief Emitted when an item in the @ref TableModelDataProvider is updated.
+     *
+     * @details This signal is used to update the UI without adding or removing an item.
+     *
+     * @param row The row that is updated.
+     */
+    void itemUpdated(qsizetype row);
 
 protected:
     /**
@@ -215,6 +219,14 @@ public:
             return true;
         }
         return false;
+    }
+
+    void updateItem(qsizetype row, T const& item)
+    {
+        if (row < static_cast<qsizetype>(mData.size())) {
+            mData[row] = item;
+            Q_EMIT itemUpdated(row);
+        }
     }
 
 protected:

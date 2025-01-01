@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -16,34 +16,34 @@ enum class DownloadResult
 };
 
 /**
- * This interface contains the functionality to download the Sessions from a laptimer
- * The session can be downloaded in a index based manner. The first session index starts at 0 and ends at sessionCount
- * - 1.
+ * This interface contains the functionality to manage the Sessions of a laptimer device via the REST interface.
+ * The session can be downloaded in a index based manner.
+ * The first session index starts at 0 and ends at sessionCount - 1.
  */
-class ISessionDownloader
+class IRestSessionManagementWorkflow
 {
 public:
-    virtual ~ISessionDownloader() noexcept = default;
+    virtual ~IRestSessionManagementWorkflow() noexcept = default;
 
     /**
      * Deleted copy constructor
      */
-    ISessionDownloader(ISessionDownloader const&) = delete;
+    IRestSessionManagementWorkflow(IRestSessionManagementWorkflow const&) = delete;
 
     /**
      * Deleted copy operator
      */
-    ISessionDownloader& operator=(ISessionDownloader const&) = delete;
+    IRestSessionManagementWorkflow& operator=(IRestSessionManagementWorkflow const&) = delete;
 
     /**
      * Deleted move constructor
      */
-    ISessionDownloader(ISessionDownloader&&) = delete;
+    IRestSessionManagementWorkflow(IRestSessionManagementWorkflow&&) = delete;
 
     /**
      * Deleted move operator
      */
-    ISessionDownloader& operator=(ISessionDownloader&&) = delete;
+    IRestSessionManagementWorkflow& operator=(IRestSessionManagementWorkflow&&) = delete;
 
     /**
      * Gives the number of stored sessions of the laptimer. The return value is only valid after calling
@@ -85,12 +85,19 @@ public:
     /**
      * @brief Downloads the session metadata from the device
      *
-     * @details The download result is reported with signal @ref sessionMetadataDownloadFinshed
+     * @details The download result is reported with signal @ref sessionMetadataDownloadFinished
      *          The actual metadata then can received the with @ref getSessionMetadatafunction.
      *
      * @param index The index of the session for which the session meta data shall be downloaded.
      */
     virtual void downloadSessionMetadata(std::size_t index) noexcept = 0;
+
+    /**
+     * @brief Downloads all session metadata from the device
+     *
+     * @details The downloaded metadata is reported with the signal @ref sessionMetadataDownloadFinished
+     */
+    virtual void downloadAllSessionMetadata() noexcept = 0;
 
     /**
      * This signal is emitted when the fetchSessionCount operation finshed.
@@ -110,9 +117,9 @@ public:
      * @param std::size_t The index of the session which is finished.
      * @param DownloadResult The result of the session download.
      */
-    KDBindings::Signal<std::size_t, DownloadResult> sessionMetadataDownloadFinshed;
+    KDBindings::Signal<std::size_t, DownloadResult> sessionMetadataDownloadFinished;
 
 protected:
-    ISessionDownloader() noexcept = default;
+    IRestSessionManagementWorkflow() noexcept = default;
 };
 } // namespace Rapid::Workflow

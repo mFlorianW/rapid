@@ -5,7 +5,7 @@ add_executable(test_workflow)
 target_sources(test_workflow
 PRIVATE
     test_ActiveSessionWorkflow.cpp
-    test_RestSessionDownloader.cpp
+    test_RestSessionManagementWorkflow.cpp
     test_TrackDetectionWorkflow.cpp
 )
 
@@ -17,7 +17,9 @@ PRIVATE
     spdlog::spdlog
 )
 
-catch_discover_tests(test_workflow)
+catch_discover_tests(test_workflow
+    DISCOVERY_MODE PRE_TEST
+)
 
 if(ENABLE_QT)
     add_executable(test_workflow_qt)
@@ -34,5 +36,7 @@ if(ENABLE_QT)
             Rapid::RapidQt
             Rapid::TestHelperQt
     )
-    catch_discover_tests(test_workflow_qt)
+    catch_discover_tests(test_workflow_qt
+        DISCOVERY_MODE PRE_TEST
+    )
 endif()

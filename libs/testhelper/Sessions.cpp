@@ -214,7 +214,18 @@ Common::SessionMetaData getTestSessionMetaData()
     sessionDate.setDay(1);
     Timestamp sessionTime;
     sessionTime.setHour(13);
-    return SessionMetaData{Tracks::getOscherslebenTrack(), sessionDate, sessionTime, 10};
+    return SessionMetaData{Tracks::getTrack(), sessionDate, sessionTime, 10};
+}
+
+Common::SessionMetaData getTestSessionMetaData2()
+{
+    Date sessionDate;
+    sessionDate.setYear(1970);
+    sessionDate.setMonth(2);
+    sessionDate.setDay(1);
+    Timestamp sessionTime;
+    sessionTime.setHour(13);
+    return SessionMetaData{Tracks::getTrack(), sessionDate, sessionTime, 10};
 }
 
 char const* getTestSessionMetaAsJson()
@@ -226,28 +237,63 @@ char const* getTestSessionMetaAsJson()
             "\"date\":\"01.01.1970\","
             "\"time\":\"13:00:00.000\","
             "\"track\":{"
-                "\"name\":\"Oschersleben\","
+                "\"name\":\"Track\","
                 "\"startline\":{"
-                    "\"latitude\":\"52.025833\","
-                    "\"longitude\":\"11.279166\""
+                    "\"latitude\":\"52\","
+                    "\"longitude\":\"11.2\""
                 "},"
                 "\"finishline\":{"
-                    "\"latitude\":\"52.025833\","
-                    "\"longitude\":\"11.279166\""
+                        "\"latitude\":\"52\","
+                        "\"longitude\":\"11.2\""
                 "},"
                 "\"sectors\":["
                     "{"
-                        "\"latitude\":\"52.025833\","
-                        "\"longitude\":\"11.279166\""
+                        "\"latitude\":\"52\","
+                        "\"longitude\":\"11.2\""
                     "},"
                     "{"
-                        "\"latitude\":\"52.025833\","
-                        "\"longitude\":\"11.279166\""
+                        "\"latitude\":\"52\","
+                        "\"longitude\":\"11.2\""
                     "}"
                 "]"
             "}"
         "}"
     };
+    return TestSessionAsJson;
+}
+
+const char* getTestSessionMetadataAsJson2()
+{
+    // clang-format off
+    static constexpr const char* TestSessionAsJson = {
+        "{"
+            "\"id\":10,"
+            "\"date\":\"01.02.1970\","
+            "\"time\":\"13:00:00.000\","
+            "\"track\":{"
+                "\"name\":\"Track\","
+                "\"startline\":{"
+                    "\"latitude\":\"52\","
+                    "\"longitude\":\"11.2\""
+                "},"
+                "\"finishline\":{"
+                        "\"latitude\":\"52\","
+                        "\"longitude\":\"11.2\""
+                "},"
+                "\"sectors\":["
+                    "{"
+                        "\"latitude\":\"52\","
+                        "\"longitude\":\"11.2\""
+                    "},"
+                    "{"
+                        "\"latitude\":\"52\","
+                        "\"longitude\":\"11.2\""
+                    "}"
+                "]"
+            "}"
+        "}"
+    };
+    // clang-format on
     return TestSessionAsJson;
 }
 

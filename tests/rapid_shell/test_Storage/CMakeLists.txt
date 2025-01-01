@@ -26,4 +26,6 @@ PRIVATE
     Qt6::Test
 )
 
-catch_discover_tests(test_rapid_shell_storage)
+catch_discover_tests(test_rapid_shell_storage
+    DISCOVERY_MODE PRE_TEST
+)

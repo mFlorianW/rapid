@@ -16,7 +16,9 @@ Common::SessionData getTestSession4();
 char const* getTestSessionAsJson();
 
 Common::SessionMetaData getTestSessionMetaData();
+Common::SessionMetaData getTestSessionMetaData2();
 char const* getTestSessionMetaAsJson();
+char const* getTestSessionMetadataAsJson2();
 
 } // namespace Rapid::TestHelper::Sessions
 

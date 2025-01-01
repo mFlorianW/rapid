@@ -14,4 +14,6 @@ PRIVATE
     Rapid::TestHelperQt
 )
 
-catch_discover_tests(test_rapid_shell_settings)
+catch_discover_tests(test_rapid_shell_settings
+    DISCOVERY_MODE PRE_TEST
+)

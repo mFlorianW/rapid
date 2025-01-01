@@ -232,7 +232,7 @@ TEST_CASE_METHOD(TestFixture, "The SessionDatabaseIpcClient shall give the reque
     REQUIRE(sessionMetdaData.getTrack() == expectedMetaData.getTrack());
 }
 
-TEST_CASE_METHOD(TestFixture, "The SessionDataIpcClient shall give the requested session for the meta data")
+TEST_CASE_METHOD(TestFixture, "The SessionDatabaseIpcClient shall give the requested session for the meta data")
 {
     constexpr auto expectedSessionCount = std::size_t{1};
     auto const session = Sessions::getTestSession3();

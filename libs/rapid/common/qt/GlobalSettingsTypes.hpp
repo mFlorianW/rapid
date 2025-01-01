@@ -18,6 +18,9 @@ struct DeviceSettings
     QHostAddress ip;
     quint16 port;
     bool defaultDevice = false;
+
+    bool operator==(DeviceSettings const& rhs) const = default;
+    bool operator!=(DeviceSettings const& rhs) const = default;
 };
 
 } // namespace Rapid::Common::Qt

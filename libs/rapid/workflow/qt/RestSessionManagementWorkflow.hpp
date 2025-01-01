@@ -6,44 +6,44 @@
 #define WORKFLOW_QT_RESTSESSIONDOWNLOADER_HPP
 
 #include <common/qt/SessionMetadataProvider.hpp>
-#include <workflow/RestSessionDownloader.hpp>
+#include <workflow/RestSessionManagementWorkflow.hpp>
 
 namespace Rapid::Workflow::Qt
 {
 
-class RestSessionDownloader : public Workflow::RestSessionDownloader
+class RestSessionManagementWorkflow : public Workflow::RestSessionManagementWorkflow
 {
 public:
     /**
      * Creates an instance of the @ref RestSessionDownloader
      * @param client The REST client that is used for the device communication.
      */
-    explicit RestSessionDownloader(Rest::IRestClient& client);
+    explicit RestSessionManagementWorkflow(Rest::IRestClient& client);
 
     /**
      * Default destructor
      */
-    ~RestSessionDownloader() override;
+    ~RestSessionManagementWorkflow() override;
 
     /**
      * Disabled copy constructor
      */
-    RestSessionDownloader(RestSessionDownloader const&) = delete;
+    RestSessionManagementWorkflow(RestSessionManagementWorkflow const&) = delete;
 
     /**
      * Disabled copy operator
      */
-    RestSessionDownloader& operator=(RestSessionDownloader const&) = delete;
+    RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow const&) = delete;
 
     /**
      * Disabled move constructor
      */
-    RestSessionDownloader(RestSessionDownloader&&) noexcept = delete;
+    RestSessionManagementWorkflow(RestSessionManagementWorkflow&&) noexcept = delete;
 
     /**
      * Disabled move operator
      */
-    RestSessionDownloader& operator=(RestSessionDownloader&&) noexcept = delete;
+    RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow&&) noexcept = delete;
 
     /**
      * @brief Gives the @ref Common::SessionMetadataProvider for the configured device.

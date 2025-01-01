@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -180,5 +180,27 @@ TEST_CASE("The TableModelDataProvider shall support ordered inserts")
         REQUIRE(beginInsertItem.size() == 1);
         REQUIRE(endInsertItem.size() == 1);
         REQUIRE(beginInsertItem.at(0).at(0).value<qsizetype>() == 1);
+    }
+}
+
+TEST_CASE("The TableModelDataProvider shall support item updates")
+{
+    auto const person1 = PersonData{.name = QString{"Name"}, .age = 8};
+    auto const person2 = PersonData{.name = QString{"Name1"}, .age = 9};
+    auto dataProvider = TableModelDataProvider<PersonData>{{"1", "2"}, {person1}};
+    auto updateItemSpy = QSignalSpy{&dataProvider, &TableModelDataProviderBase::itemUpdated};
+
+    SECTION("Invalid row")
+    {
+        dataProvider.updateItem(12345, person2);
+        REQUIRE(updateItemSpy.size() == 0);
+        REQUIRE(dataProvider.getItem(0) == person1);
+    }
+
+    SECTION("valid row")
+    {
+        dataProvider.updateItem(0, person2);
+        REQUIRE(updateItemSpy.size() == 1);
+        REQUIRE(dataProvider.getItem(0) == person2);
     }
 }

@@ -1,12 +1,20 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "JsonSerializer.hpp"
+#include <charconv>
 #include <nlohmann/json.hpp>
 
 namespace Rapid::Common::JsonSerializer
 {
+
+std::string serializePosition(float value)
+{
+    auto buffer = std::array<char, 32>{};
+    auto [ptr, _] = std::to_chars(buffer.data(), buffer.data() + buffer.size(), value);
+    return std::string{buffer.data(), ptr};
+}
 
 namespace Lap
 {
@@ -45,8 +53,8 @@ namespace Position
 nlohmann::ordered_json serialize(PositionData const& position)
 {
     auto json = nlohmann::ordered_json{};
-    json["latitude"] = std::to_string(position.getLatitude());
-    json["longitude"] = std::to_string(position.getLongitude());
+    json["latitude"] = serializePosition(position.getLatitude());
+    json["longitude"] = serializePosition((position.getLongitude()));
     return json;
 }
 

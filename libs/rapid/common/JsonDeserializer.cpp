@@ -12,6 +12,14 @@ namespace Rapid::Common::JsonDeserializer
 namespace
 {
 
+float parsePositionFloat(std::string const& string)
+{
+    auto value = 0.0f;
+    auto stream = std::stringstream{string};
+    stream >> value;
+    return value;
+}
+
 std::optional<PositionData> parsePosition(nlohmann::ordered_json const& jsonPosition)
 {
     if (not jsonPosition.contains("latitude")) {
@@ -22,10 +30,9 @@ std::optional<PositionData> parsePosition(nlohmann::ordered_json const& jsonPosi
         SPDLOG_CRITICAL("Failed to deserialize position. Error: Missing required parameter longitude missing");
         return std::nullopt;
     }
-    std::string positionLatitude = jsonPosition["latitude"];
-    std::string positionLongitude = jsonPosition["longitude"];
-    PositionData position{std::stof(positionLatitude), std::stof(positionLongitude)};
-    return position;
+    auto const positionLatitude = parsePositionFloat(jsonPosition["latitude"].get<std::string>());
+    auto const positionLongitude = parsePositionFloat(jsonPosition["longitude"].get<std::string>());
+    return PositionData{positionLatitude, positionLongitude};
 }
 
 std::optional<TrackData> parseTrack(nlohmann::ordered_json const& jsonTrack)

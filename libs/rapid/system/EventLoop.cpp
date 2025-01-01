@@ -72,8 +72,10 @@ public:
             return;
         }
 
-        std::lock_guard<std::mutex> guard{mMutex};
-        mEventQueue.push_back(EventQueueEntry{.receiver = receiver, .event = std::move(event)});
+        {
+            std::lock_guard<std::mutex> guard{mMutex};
+            mEventQueue.push_back(EventQueueEntry{.receiver = receiver, .event = std::move(event)});
+        }
         mBlocker.notify_all();
     }
 
@@ -147,7 +149,6 @@ public:
 
     bool isRunning()
     {
-        std::lock_guard<std::mutex> guard{mMutex};
         return mRunning;
     }
 
@@ -177,7 +178,7 @@ private:
     std::deque<EventQueueEntry> mEventQueue;
     mutable std::mutex mMutex;
     std::condition_variable mBlocker;
-    bool mRunning = false;
+    std::atomic<bool> mRunning = false;
     std::atomic<bool> mIsWoken = false;
     std::shared_ptr<KDBindings::ConnectionEvaluator> mConnectionEvaluator =
         std::make_shared<ConnectionEvaluator>(*this);

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 All contributors
+// SPDX-FileCopyrightText: 2024 - 2025 All contributors
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -24,6 +24,7 @@ concept DataProvider = requires(T t, qsizetype row, qsizetype column, qint32 rol
     { t.endInsertItem() } -> std::same_as<void>;
     { t.beginRemoveItem(row) } -> std::same_as<void>;
     { t.endInsertItem() } -> std::same_as<void>;
+    { t.itemUpdated(row) } -> std::same_as<void>;
 };
 
 /**
@@ -46,20 +47,24 @@ public:
     GenericTableModel(T& dataProvider)
         : mDataProvider{dataProvider}
     {
-        connect(&mDataProvider, &T::beginInsertItem, this, [this](auto&& index) {
-            beginInsertRows(QModelIndex(), index, index);
+        connect(&mDataProvider, &T::beginInsertItem, this, [this](auto&& row) {
+            beginInsertRows(QModelIndex(), row, row);
         });
 
         connect(&mDataProvider, &T::endInsertItem, this, [this] {
             endInsertRows();
         });
 
-        connect(&mDataProvider, &T::beginRemoveItem, this, [this](auto&& index) {
-            beginRemoveRows(QModelIndex(), index, index);
+        connect(&mDataProvider, &T::beginRemoveItem, this, [this](auto&& row) {
+            beginRemoveRows(QModelIndex(), row, row);
         });
 
         connect(&mDataProvider, &T::endRemoveItem, this, [this] {
             endRemoveRows();
+        });
+
+        connect(&mDataProvider, &T::itemUpdated, this, [this](auto&& row) {
+            Q_EMIT dataChanged(index(row, 0), index(row, mDataProvider.getColumnCount() - 1));
         });
     }
 
