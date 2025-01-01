@@ -49,73 +49,75 @@ install(FILES
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Rapid"
 )
 
-#################################################################################
-# Define Generated DBus Interfaces
-#################################################################################
-qt_add_dbus_interface(SESSION_DBUS_INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/storage/qt/SessionDatabase.xml
-    SessionDatabaseIpcInterface
-)
+if(ENABLE_QT)
+    #################################################################################
+    # Define Generated DBus Interfaces
+    #################################################################################
+    qt_add_dbus_interface(SESSION_DBUS_INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}/storage/qt/SessionDatabase.xml
+        SessionDatabaseIpcInterface
+    )
 
-#################################################################################
-# Define Rapid Library Qt
-#################################################################################
-add_library(RapidLibraryQt SHARED)
-add_library(Rapid::RapidQt ALIAS RapidLibraryQt)
+    #################################################################################
+    # Define Rapid Library Qt
+    #################################################################################
+    add_library(RapidLibraryQt SHARED)
+    add_library(Rapid::RapidQt ALIAS RapidLibraryQt)
 
-target_sources(RapidLibraryQt
-    PRIVATE
-        ${SESSION_DBUS_INTERFACE}
-)
+    target_sources(RapidLibraryQt
+        PRIVATE
+            ${SESSION_DBUS_INTERFACE}
+    )
 
-target_include_directories(RapidLibraryQt
-    PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-)
+    target_include_directories(RapidLibraryQt
+        PRIVATE
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    )
 
-target_link_libraries(RapidLibraryQt
-    PRIVATE
-        spdlog::spdlog
-    PUBLIC
-        Rapid::Rapid
-        Qt6::Core
-        Qt6::Network
-        Qt6::Gui
-        Qt6::GuiPrivate
-        Qt6::Widgets
-        Qt6::DBus
-)
-target_compile_definitions(RapidLibraryQt PRIVATE QT_NO_KEYWORDS)
+    target_link_libraries(RapidLibraryQt
+        PRIVATE
+            spdlog::spdlog
+        PUBLIC
+            Rapid::Rapid
+            Qt6::Core
+            Qt6::Network
+            Qt6::Gui
+            Qt6::GuiPrivate
+            Qt6::Widgets
+            Qt6::DBus
+    )
+    target_compile_definitions(RapidLibraryQt PRIVATE QT_NO_KEYWORDS)
 
-configure_package_config_file(
-    RapidQtConfig.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/RapidQtConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RapidQt
-    PATH_VARS INCLUDE_INSTALL_DIR
-)
+    configure_package_config_file(
+        RapidQtConfig.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/RapidQtConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/RapidQt
+        PATH_VARS INCLUDE_INSTALL_DIR
+    )
 
-write_basic_package_version_file(
-    RapidQtVersion.cmake
-    VERSION "${PROJECT_VERSION}"
-    COMPATIBILITY SameMinorVersion
-)
+    write_basic_package_version_file(
+        RapidQtVersion.cmake
+        VERSION "${PROJECT_VERSION}"
+        COMPATIBILITY SameMinorVersion
+    )
 
-install(TARGETS RapidLibraryQt EXPORT RapidLibraryQtTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    COMPONENT RapidLibraryQt_Runtime
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    COMPONENT RapidLibraryQt_Development
-    NAMELINK_COMPONENT RapidLibraryQt_Development
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+    install(TARGETS RapidLibraryQt EXPORT RapidLibraryQtTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        COMPONENT RapidLibraryQt_Runtime
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        COMPONENT RapidLibraryQt_Development
+        NAMELINK_COMPONENT RapidLibraryQt_Development
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
 
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/RapidQtConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/RapidQtVersion.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/RapidQt"
-)
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/RapidQtConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/RapidQtVersion.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/RapidQt"
+    )
+endif(ENABLE_QT)
 
 #################################################################################
 # Include Sources and Header Install Targets
