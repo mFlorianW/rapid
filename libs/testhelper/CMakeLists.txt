@@ -23,6 +23,7 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionDatabaseMock.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SignalSpy.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RestClientMock.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/UbloxDevice.hpp
 )
 
 target_include_directories(TestHelper

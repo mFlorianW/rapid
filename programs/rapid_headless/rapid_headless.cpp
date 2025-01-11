@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RapidHeadless.hpp"
+#include "positioning/UartUbloxDevice.hpp"
+#include "positioning/UbloxGpsPositionInformationProvider.hpp"
 #include <DatabaseFile.hpp>
 #include <array>
 #include <boost/program_options.hpp>

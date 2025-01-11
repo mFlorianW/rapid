@@ -5,6 +5,8 @@ set(RAPID_POSITIONING_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/StaticGpsInformationProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/StaticPositionDateTimeProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/IUbloxDevice.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/UbloxGpsPositionInformationProvider.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/UbloxGpsPositionInformationProvider.hpp
 )
 
 target_sources(RapidLibrary
