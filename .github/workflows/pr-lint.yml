@@ -22,15 +22,15 @@ jobs:
       uses: lukka/run-vcpkg@v11
     - name: Generate Compile Commands and Build
       run: |
-        cmake --preset github-ci-debug
-        cmake --build --preset github-ci-debug --target all -- -j
+        cmake --preset github
+        cmake --build --preset github --target all -- -j
       env:
         QT_QPA_PLATFORM: offscreen
     - name: Static Code Analysis
       run: |
         files=$(git diff  --diff-filter=ACMR --name-status --dirstat=files origin/${{ github.base_ref }}..origin/${{ github.head_ref }} | awk -F'\t' '{ if(NF==3){ print $3; }else{print $2; }}'| grep -E "(.*)\.(h|cpp|hpp)$" | grep -v thirdparty) || true
         if [[ ! -z ${files} ]]; then
-          clang-tidy -p build/github-ci-debug --export-fixes=clang-tidy-fixes.yml ${files}
+          clang-tidy -p build/github --export-fixes=clang-tidy-fixes.yml ${files}
         else
           echo "No file for checking create empty fix file."
           touch clang-tidy-fixes.yml

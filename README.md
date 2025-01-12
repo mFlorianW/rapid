@@ -56,15 +56,12 @@ Call one the in the project root directory to build the LaptimerCore.
 [VCPKG](https://vcpkg.io/en/) is used for the dependency handling, so vcpkg must be installed and configured.
 Before calling the presets the environment variable "VCPKG_ROOT" must be set.
 
+Enable VCPKG support with the suffix "-vcpkg" to the preset names.
+
 ### Debug
 #### Configure
 ```console
 cmake --preset debug
-```
-
-#### Build
-```console
-cmake --build --preset debug
 ```
 
 ### Release
@@ -82,5 +79,5 @@ camke --build --preset release
 Run all tests in this repository.
 The tests are automatically enabled for debug builds and the preset requires the debug configure preset.
 ``` console
-ctest --preset test --output-on-failure
+ctest --preset debug --output-on-failure
 ```

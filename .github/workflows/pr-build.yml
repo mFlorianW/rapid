@@ -72,8 +72,8 @@ jobs:
         echo "# Start Build Commit ${{ matrix.commits }}"
         echo "###############################################################"
         git checkout ${{ matrix.commits }}
-        cmake --preset github-ci-debug -DENABLE_WARNING_AS_ERROR=ON
-        cmake --build --preset github-ci-debug --target install -- -j
+        cmake --preset github -DENABLE_WARNING_AS_ERROR=ON
+        cmake --build --preset github --target install -- -j
         echo "###############################################################"
         echo "# Finished Build Commit ${{ matrix.commits }}"
         echo "###############################################################"
@@ -85,7 +85,7 @@ jobs:
         echo "###############################################################"
         echo "# Start Tests Commit ${{ matrix.commits }}"
         echo "###############################################################"
-        ctest --preset github-ci-test --output-on-failure --output-junit test_results.xml
+        ctest --preset github --output-on-failure --output-junit test_results.xml
         echo "###############################################################"
         echo "# Finished Tests Commit ${{ matrix.commits }}"
         echo "###############################################################"
