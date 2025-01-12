@@ -5,6 +5,7 @@ add_executable(test_positioning)
 target_sources(test_positioning
     PRIVATE
         test_ConstantGpsPositionProvider.cpp
+        test_UbloxGpsPositionInformationProvider.cpp
 )
 
 target_link_libraries(test_positioning

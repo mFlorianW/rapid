@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RapidHeadless.hpp"
+#include "positioning/UartUbloxDevice.hpp"
+#include "positioning/UbloxGpsPositionInformationProvider.hpp"
 #include <DatabaseFile.hpp>
 #include <array>
 #include <boost/program_options.hpp>
@@ -11,6 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <positioning/ConstantGpsPositionProvider.hpp>
+#include <positioning/UartUbloxDevice.hpp>
 #include <pwd.h>
 #include <spdlog/spdlog.h>
 #include <sstream>
@@ -113,6 +116,7 @@ int main(int argc, char** argv)
         ("help,h", "Show options overivew")
         ("gps-fake,g", "Enables a fake GPS source (useful for testing)")
         ("gps-source-file,f", value<std::string>(&gpsSourceFile), "Path to CSV file that contains GPS positions (useful for testing)")
+        ("gps-source,s", value<std::string>(&gpsSourceFile), "Name of a UBX compatible device. Typically /dev/ttyUSB0")
     ;
     // clang-format on
     variables_map optionsMap;
@@ -127,28 +131,48 @@ int main(int argc, char** argv)
         printHelp(options);
         return 0;
     }
+    bool useFakeSource = optionsMap.contains("gps-fake") > 0;
+    bool useRealSource = optionsMap.contains("gps-source") > 0;
 
     if (optionsMap.contains("gps-source-file") > 0) {
         gpsSourceFile = optionsMap["gps-source-file"].as<std::string>();
     }
 
-    if (optionsMap.count("gps-fake") > 0 and gpsSourceFile.empty()) {
-        SPDLOG_ERROR("Fake GPS enabled but no GPS position source file passed.");
+    if (useFakeSource and useRealSource) {
+        SPDLOG_ERROR("gps-source and gps-fake can't be used at the same time");
         printHelp(options);
         return 0;
     }
 
-    if (gpsSourceFile.empty()) {
-        SPDLOG_ERROR("No GPS position source file passed.");
+    std::unique_ptr<IGpsPositionProvider> positionProvider;
+    if (useFakeSource) {
+        gpsSourceFile = optionsMap["gps-source-file"].as<std::string>();
+        if (gpsSourceFile.empty()) {
+            SPDLOG_ERROR("Fake GPS enabled but no GPS position source file passed.");
+            printHelp(options);
+            return 0;
+        }
+
+        auto positions = loadCsvPositions(gpsSourceFile);
+        auto fakeProv = std::make_unique<ConstantGpsPositionProvider>(positions);
+        fakeProv->setVelocityInMeterPerSecond(80.3333);
+        fakeProv->start();
+        positionProvider = std::move(fakeProv);
+    } else if (useRealSource) {
+        auto device = optionsMap["gps-source"].as<std::string>();
+        if (device.empty()) {
+            SPDLOG_ERROR("No device passed \"gps-source\" option.");
+            printHelp(options);
+            return 0;
+        }
+        SPDLOG_INFO("Use {} device as GPS source", device);
+        auto ubloxDevice = std::make_unique<UartUbloxDevice>(device);
+        positionProvider = std::make_unique<UbloxGpsPositionInformationProvider>(std::move(ubloxDevice));
+    } else {
+        SPDLOG_ERROR("No GPS source specified. Please specify fake or real GPS source");
         printHelp(options);
         return 0;
     }
-
-    // Load GPS position file
-    auto positions = loadCsvPositions(gpsSourceFile);
-    auto positionProvider = ConstantGpsPositionProvider{positions};
-    positionProvider.setVelocityInMeterPerSecond(80.3333);
-    positionProvider.start();
 
     // Setup session database
     auto const maybeDbFile = setupDatabase();
@@ -161,7 +185,7 @@ int main(int argc, char** argv)
     auto trackDatabase = SqliteTrackDatabase{maybeDbFile.value()};
 
     // Setup headless laptimer
-    auto laptimer = LappyHeadless{positionProvider, sessionDatabase, trackDatabase};
+    auto laptimer = LappyHeadless{*positionProvider, sessionDatabase, trackDatabase};
 
     eventLoop.exec();
     return 0;

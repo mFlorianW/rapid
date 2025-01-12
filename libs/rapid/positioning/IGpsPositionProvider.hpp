@@ -40,7 +40,7 @@ public:
     IGpsPositionProvider& operator=(IGpsPositionProvider&&) noexcept = default;
 
     /**
-     * This property holds current PostionDateTimeData
+     * This property holds current @ref Common::GpsPositionData
      */
     KDBindings::Property<Common::GpsPositionData> gpsPosition;
 
