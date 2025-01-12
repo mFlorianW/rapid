@@ -1,4 +1,4 @@
-# Rapid Laptimer
+# Rapid Laptimer [![Build](https://github.com/mFlorianW/rapid/actions/workflows/build.yml/badge.svg)](https://github.com/mFlorianW/rapid/actions/workflows/build.yml)
 This repository contains source to create motorcycle laptimer for race tracks action.
 Everything has the WIP status and is not ready to use.
 
@@ -31,21 +31,26 @@ That folder contains specific files for the github.
 The project needs the dependencies:
 
 ### Required
-* KDBindings
-* Sqlite3
-* Boost
+* [KDBindings](https://github.com/KDAB/KDBindings)
+* [Sqlite3](https://github.com/sqlite/sqlite)
+* [Boost Beast](https://github.com/boostorg/beast)
+* [Boost Program Options](https://github.com/boostorg/program_options)
+* [nlohmann-json](https://github.com/nlohmann/json)
+* [spdlog](https://github.com/gabime/spdlog)
+* [comms](https://github.com/commschamp/comms)
+* [comms-ublox](https://github.com/commschamp/cc.ublox.commsdsl)
 
 ### Optional For Tests
-* catch2
-* trompeloeil
+* [catch2](https://github.com/catchorg/Catch2)
+* [trompeloeil](https://github.com/rollbear/trompeloeil)
 
 ### Optional for Desktop Applications
-* Qt6.5
+* [Qt6.5](https://download.qt.io/official_releases/qt/6.5/)
 
-Without the Qt dependency the project builds only the laptimer
+With disabled the Qt dependency the project builds only the laptimer
 
 ## Build
-There two configure and build presets for CMake.
+There are two configure and build presets for CMake.
 Call one the in the project root directory to build the LaptimerCore.
 
 [VCPKG](https://vcpkg.io/en/) is used for the dependency handling, so vcpkg must be installed and configured.
