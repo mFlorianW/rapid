@@ -1,0 +1,41 @@
+---
+BasedOnStyle: Microsoft
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterNamespace: true
+  AfterStruct: true
+  AfterCaseLabel: false
+  AfterClass: true
+  AfterControlStatement: Never
+  AfterEnum: true
+  AfterFunction: true
+  AfterObjCDeclaration: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+AlignAfterOpenBracket: Align
+AlignConsecutiveMacros: 'false'
+AlignConsecutiveAssignments: 'false'
+AlignConsecutiveDeclarations: 'false'
+AlignEscapedNewlines: DontAlign
+AlignTrailingComments: 'false'
+AllowAllArgumentsOnNextLine: 'false'
+AllowAllParametersOfDeclarationOnNextLine: 'false'
+AllowShortBlocksOnASingleLine: 'false'
+BinPackArguments: 'false'
+BinPackParameters: 'false'
+ColumnLimit: '120'
+Cpp11BracedListStyle: 'true'
+Language: Cpp
+PointerAlignment: Left
+AccessModifierOffset: '-4'
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: '4'
+AlwaysBreakTemplateDeclarations: 'true'
+AllowShortLambdasOnASingleLine: None
+QualifierAlignment: Right
+ReflowComments: false
+...

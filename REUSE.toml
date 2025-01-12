@@ -1,0 +1,10 @@
+version = 1
+SPDX-PackageName = "Rapid"
+SPDX-PackageSupplier = "Florian Weßel <florianwessel@gmx.net>"
+SPDX-PackageDownloadLocation = "https://github.com/mFlorianW/rapid"
+
+[[annotations]]
+path = [ "**.session", "**.xml", "**.sh", "**.ui", "REUSE.toml", "**.json.in", "laps/**", ".gitignore", "doc/**", "db/", "**.sql", "**.json", "**.qrc", "**.md", ".github/**", ".pre-commit-config.yaml", "**CMakeLists.txt", "**.cmake.in", "CMakePresets.json", ".clang-format", ".clang-tidy", "**.svg", "docs/**.in", "format.sh", "configuration/**.cmake", "configuration/**.sh", "docs/style/README.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2020 - 2024 All contributors"
+SPDX-License-Identifier = "GPL-2.0-or-later"

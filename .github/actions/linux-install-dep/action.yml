@@ -1,0 +1,21 @@
+name: "linux-install-dep"
+description: "Install dependencies for Linux"
+inputs:
+  os:
+    description: 'Runner OS'
+    required: false
+    default: 'default'
+runs:
+  using: "composite"
+  steps:
+    - name: "Install clazy ppa"
+      if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
+      shell: bash
+      run: |
+        sudo add-apt-repository ppa:daschuer/clazy
+    - name: "Install Qt for Linux"
+      if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install doxygen clazy meson doxygen-latex graphviz xapian-tools python3-jinja2 gperf libx11-dev libxft-dev libxext-dev libwayland-dev libxkbcommon-dev libegl1-mesa-dev libltdl-dev

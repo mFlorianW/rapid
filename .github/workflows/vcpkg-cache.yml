@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2024 Florian Weßel <florianwessel@gmx.net>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+name: Generate VCPKG Cache
+
+on:
+  workflow_call:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  Update_VCPKG_Cache:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: GCC
+            cxx: g++
+            cc: gcc
+          - compiler: Clang
+            cxx: clang++
+            cc: clang
+    name: ${{matrix.compiler}}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
+    - name: Install Dependencies
+      uses: ./.github/actions/linux-install-dep
+    - name: Install Qt
+      uses: ./.github/actions/linux-install-qt
+    - name: Setup default compiler
+      run: |
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/${{ matrix.cc }} 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/${{ matrix.cxx }} 100
+        echo "###############################################################"
+        echo "Compiler CC"
+        echo "$(cc --version)"
+        echo "###############################################################"
+        echo "###############################################################"
+        echo "Compiler CXX"
+        echo "$(cxx --version)"
+        echo "###############################################################"
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        runVcpkgInstall: true

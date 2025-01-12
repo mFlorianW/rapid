@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2023 Florian Weßel <florianwessel@gmx.net>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+name: Clang-Tidy
+
+on:
+  workflow_call:
+
+jobs:
+  Clang-Tidy:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
+    - name: Install Qt
+      uses: ./.github/actions/linux-install-qt
+    - name: Install Dependencies
+      uses: ./.github/actions/linux-install-dep
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+    - name: Generate Compile Commands and Build
+      run: |
+        cmake --preset github-ci-debug
+        cmake --build --preset github-ci-debug --target all -- -j
+      env:
+        QT_QPA_PLATFORM: offscreen
+    - name: Static Code Analysis
+      run: |
+        files=$(git diff  --diff-filter=ACMR --name-status --dirstat=files origin/${{ github.base_ref }}..origin/${{ github.head_ref }} | awk -F'\t' '{ if(NF==3){ print $3; }else{print $2; }}'| grep -E "(.*)\.(h|cpp|hpp)$" | grep -v thirdparty) || true
+        if [[ ! -z ${files} ]]; then
+          clang-tidy -p build/github-ci-debug --export-fixes=clang-tidy-fixes.yml ${files}
+        else
+          echo "No file for checking create empty fix file."
+          touch clang-tidy-fixes.yml
+        fi
+    - name: Publish Static Code Results
+      uses: platisd/clang-tidy-pr-comments@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        clang_tidy_fixes: clang-tidy-fixes.yml
+        request_changes: true
+    - name: Publish Static Code Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: clang-tidy-results@${{ github.sha }}.yml
+        path: clang-tidy-fixes.yml
+    - name: Check Clang-Tidy Warnings
+      if: always()
+      run: |
+        if [ -e clang-tidy-fixes.yml ]; then
+          filesize=$(stat -c '%s' clang-tidy-fixes.yml)
+          if [ $filesize -gt 0 ]; then
+            echo "clang-tidy warnings found."
+            exit 1
+          else
+            exit 0
+          fi
+        fi

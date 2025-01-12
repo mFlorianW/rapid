@@ -1,0 +1,72 @@
+CREATE TABLE IF NOT EXISTS Position
+(
+  PositionId INTEGER NOT NULL UNIQUE,
+  Longitude  REAL    NOT NULL,
+  Latitude   REAL    NOT NULL,
+  PRIMARY KEY (PositionId AUTOINCREMENT)
+);
+
+CREATE TABLE IF NOT EXISTS Track
+(
+  TrackId    INTEGER NOT NULL UNIQUE,
+  Name       TEXT    NOT NULL,
+  Finishline INTEGER NOT NULL,
+  Startline  INTEGER NULL    ,
+  PRIMARY KEY (TrackId AUTOINCREMENT),
+  FOREIGN KEY (Finishline) REFERENCES Position (PositionId) ON DELETE CASCADE,
+  FOREIGN KEY (Startline) REFERENCES Position (PositionId) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Session
+(
+  SessionId INTEGER NOT NULL UNIQUE,
+  TrackId   INTEGER NOT NULL,
+  -- Date of Session
+  Date      TEXT    NOT NULL,
+  -- time of session
+  Time      TEXT    NOT NULL,
+  PRIMARY KEY (SessionId AUTOINCREMENT),
+  FOREIGN KEY (TrackId) REFERENCES Track (TrackId) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Lap
+(
+  LapId     INTEGER NOT NULL UNIQUE,
+  SessionId INTEGER NOT NULL,
+  LapIndex  INTEGER NOT NULL,
+  PRIMARY KEY (LapId AUTOINCREMENT),
+  FOREIGN KEY (SessionId) REFERENCES Session (SessionId) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS Sektor
+(
+  PositionId  INTEGER NOT NULL UNIQUE,
+  TrackId     INTEGER NOT NULL,
+  SektorIndex INTEGER NOT NULL,
+  PRIMARY KEY (PositionId, TrackId),
+  FOREIGN KEY (PositionId) REFERENCES Position (PositionId) ON DELETE CASCADE,
+  FOREIGN KEY (TrackId) REFERENCES Track (TrackId) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS SektorTime
+(
+  SektorTimeId INTEGER NOT NULL UNIQUE,
+  LapId        INTEGER NOT NULL,
+  SektorIndex  INTEGER NOT NULL,
+  Time         TEXT    NOT NULL,
+  PRIMARY KEY (SektorTimeId AUTOINCREMENT),
+  FOREIGN KEY (LapId) REFERENCES Lap (LapId) ON DELETE CASCADE
+);
+
+CREATE TABLE LogPoint
+(
+  Idx       INTEGER NOT NULL,
+  LapId       INTEGER NOT NULL,
+  Velocity    REAL    NOT NULL DEFAULT 0,
+  Longitude   REAL    NOT NULL DEFAULT 0,
+  Latitude    REAL    NOT NULL DEFAULT 0,
+  Date      TEXT    NOT NULL,
+  Time      TEXT    NOT NULL,
+  PRIMARY KEY (Idx, LapId),
+  FOREIGN KEY (LapId) REFERENCES Lap (LapId) ON DELETE CASCADE
+);

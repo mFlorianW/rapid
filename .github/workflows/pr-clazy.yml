@@ -1,0 +1,57 @@
+# SPDX-FileCopyrightText: 2023 Florian Weßel <florianwessel@gmx.net>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+name: Clazy
+
+on:
+  workflow_call:
+
+jobs:
+  Clazy:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
+    - name: Install Qt
+      uses: ./.github/actions/linux-install-qt
+    - name: Install Dependencies
+      uses: ./.github/actions/linux-install-dep
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+    - name: Generate Compile Commands and Build
+      run: |
+        cmake --preset github-ci-debug
+        cmake --build --preset github-ci-debug
+      env:
+        QT_QPA_PLATFORM: offscreen
+    - name: Clazy-Standalone
+      run: |
+        files=$(git diff  --diff-filter=ACMR --name-status --dirstat=files origin/${{ github.base_ref }}..origin/${{ github.head_ref }} | awk -F'\t' '{ if(NF==3){ print $3; }else{print $2; }}'| grep -E "(.*)\.(h|cpp|hpp)$" | grep -v thirdparty) || true
+        if [[ ! -z ${files} ]]; then
+          export CLAZY_CHECKS="level1,no-non-pod-global-static"
+          clazy-standalone -p build/github-ci-debug --ignore-included-files --export-fixes=clazy-fixes.yml ${files} 2>&1 | tee clazy.log
+        else
+          echo "No file for checking create empty log file."
+          touch clazy.log
+        fi
+    - name: Publish Clazy Fixes
+      uses: actions/upload-artifact@v4
+      with:
+        name: clazy-fixes@${{ github.sha }}.yml
+        path: clazy-fixes.yml
+    - name: Publish Clazy Log
+      uses: actions/upload-artifact@v4
+      with:
+        name: clazy.log@${{ github.sha }}.yml
+        path: clazy.log
+    - name: Check Clazy Warnings
+      id: clazy-check
+      shell: bash
+      run: |
+        error=$(grep -c -E "error:|warning:" clazy.log || true)
+        echo "clazy found ${error} Warnings or Errors"
+        if [ ${error} -gt 0 ];then
+          exit 1
+        fi

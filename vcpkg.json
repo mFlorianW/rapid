@@ -1,0 +1,62 @@
+{
+  "dependencies": [
+    "boost-beast",
+    "catch2",
+    "kdbindings",
+    "nlohmann-json",
+    {
+      "name": "sdl2",
+      "default-features": false,
+      "features": [
+        "wayland",
+        "x11"
+      ]
+    },
+    "spdlog",
+    "sqlite3",
+    "trompeloeil",
+    "boost-program-options"
+  ],
+  "overrides": [
+    {
+      "name": "catch2",
+      "version": "3.7.1"
+    },
+    {
+      "name": "spdlog",
+      "version": "1.15.0"
+    },
+    {
+      "name": "trompeloeil",
+      "version": "49"
+    },
+    {
+      "name": "sdl2",
+      "version": "2.30.6"
+    },
+    {
+      "name": "boost-beast",
+      "version": "1.85.0#2"
+    },
+    {
+      "name": "sqlite3",
+      "version": "3.46.1"
+    },
+    {
+      "name": "kdbindings",
+      "version": "1.1.0"
+    },
+    {
+      "name": "lvgl-ssd1322",
+      "version": "7.5.0"
+    },
+    {
+      "name": "lvgl-ssd1322-drivers",
+      "version": "7.5.0"
+    },
+    {
+      "name": "nlohmann-json",
+      "version": "3.11.3"
+    }
+  ]
+}

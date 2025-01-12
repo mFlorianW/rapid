@@ -1,0 +1,8 @@
+// SPDX-FileCopyrightText: 2024 All contributors
+//
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#pragma once
+
+constexpr auto DUMMY_PROCESS_BINARY_PATH = "@DUMMY_PROCESS_BINARY_PATH@";
+constexpr auto DUMMY_PROCESS_BINARY_NAME = "@DUMMY_PROCESS_BINARY_NAME@";

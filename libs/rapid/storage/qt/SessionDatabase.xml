@@ -1,0 +1,37 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/de/rapid/shell">
+	<interface name="de.rapid.shell.SessionDatabase">
+		<method name="GetSessionCount">
+            <arg name="count" type="u" direction="out"/>
+        </method>
+		<method name="GetSessionByIndex">
+            <arg name="index" type="u" direction="in"/>
+            <arg name="sessionPath" type="s" direction="out"/>
+        </method>
+		<method name="GetSessionByMetaData">
+            <arg name="sessionMetaDataPath" type="s" direction="in"/>
+            <arg name="sessionPath" type="s" direction="out"/>
+        </method>
+		<method name="GetSessionMetaDataByIndex">
+            <arg name="index" type="u" direction="in"/>
+            <arg name="sessionMetaDataPath" type="s" direction="out"/>
+        </method>
+		<method name="DeleteSessionByIndex">
+            <arg name="index" type="u" direction="in"/>
+        </method>
+		<method name="StoreSession">
+            <arg name="sessionPath" type="s" direction="in"/>
+            <arg name="success" type="b" direction="out"/>
+        </method>
+        <signal name="SessionAdded">
+            <arg name="index" type="u" direction="out"/>
+        </signal>
+        <signal name="SessionDeleted">
+            <arg name="index" type="u" direction="out"/>
+        </signal>
+        <signal name="SessionUpdated">
+            <arg name="index" type="u" direction="out"/>
+        </signal>
+	</interface>
+</node>
+

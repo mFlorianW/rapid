@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2021 Florian Weßel <florianwessel@gmx.net>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+
+name: Blabby CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [Clang, GCC]
+        include:
+          - compiler: GCC
+            cxx: g++
+            cc: gcc
+          - compiler: Clang
+            cxx: clang++
+            cc: clang
+    name: ${{matrix.compiler}}
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: Install Qt
+      uses: ./.github/actions/linux-install-qt
+    - name: Install Dependencies
+      uses: ./.github/actions/linux-install-dep
+    - name: Setup default compiler
+      run: |
+        sudo update-alternatives --install /usr/bin/cc cc /usr/bin/${{ matrix.cc }} 100
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/${{ matrix.cxx }} 100
+        echo "###############################################################"
+        echo "Compiler CC"
+        echo "$(cc --version)"
+        echo "###############################################################"
+        echo "###############################################################"
+        echo "Compiler CXX"
+        echo "$(c++ --version)"
+        echo "###############################################################"
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+    - name: build and test
+      run: |
+        cmake --preset github-ci-debug
+        cmake --build --preset github-ci-debug --target install -- -j
+        ctest --preset github-ci-test --output-on-failure
+      env:
+        QT_QPA_PLATFORM: offscreen

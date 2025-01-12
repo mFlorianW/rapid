@@ -1,0 +1,14 @@
+:title-page:
+:listing-caption: Listing
+:toc: left
+:sectnums:
+:imagesdir: images
+
+= LaptimerCore
+Leonhardt Stutz; Florian Weßel florianwessel@gmx.net
+
+include::chapter/introduction.adoc[]
+
+include::chapter/user_stories.adoc[]
+
+include::chapter/architecture.adoc[]

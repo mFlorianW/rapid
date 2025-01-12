@@ -1,0 +1,23 @@
+{
+  "default-registry": {
+    "kind": "git",
+    "baseline": "73964f854d0d6424f335e9515b61b3a2dad5e15b",
+    "repository": "https://github.com/microsoft/vcpkg"
+  },
+  "registries": [
+    {
+      "kind": "artifact",
+      "location": "https://github.com/microsoft/vcpkg-ce-catalog/archive/refs/heads/main.zip",
+      "name": "microsoft"
+    },
+    {
+        "kind": "git",
+        "baseline": "8c55ceb6d15bec025f63738e4ee33f03374cddee",
+        "repository": "https://github.com/mflorianw/mflorianw-vcpkg-registry",
+        "reference": "main",
+        "packages": [
+          "trompeloeil"
+        ]
+    }
+  ]
+}

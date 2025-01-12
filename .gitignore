@@ -1,0 +1,7 @@
+*.html
+build
+install
+CMakeUserPresets.json
+.vscode
+.*
+*.user

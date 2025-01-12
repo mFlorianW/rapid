@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2023 Florian Weßel <florianwessel@gmx.net>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  Generates_VCPKG_Cache:
+    uses: ./.github/workflows/vcpkg-cache.yml
+
+  Build_And_Test:
+    needs: [Generates_VCPKG_Cache]
+    uses: ./.github/workflows/pr-build.yml
+
+  Linting_Clang_Tidy:
+    needs: [Generates_VCPKG_Cache]
+    uses: ./.github/workflows/pr-lint.yml
+
+  Linting_Clazy:
+    needs: [Generates_VCPKG_Cache]
+    uses: ./.github/workflows/pr-clazy.yml

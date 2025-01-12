@@ -1,0 +1,70 @@
+{
+  "uuid": "f0e37ab6-df08-42cc-8a9c-07ad69f0b414",
+  "lastMigration": 24,
+  "name": "Restgpssource",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "127.0.0.1",
+  "routes": [
+    {
+      "uuid": "bc7c1c5e-55c2-4cf4-9d53-052fc360fc12",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "position",
+      "responses": [
+        {
+          "uuid": "199ee865-e219-4f14-ac0a-c6a0933901e3",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": []
+}

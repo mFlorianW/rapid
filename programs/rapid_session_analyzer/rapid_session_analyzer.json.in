@@ -1,0 +1,6 @@
+{
+    "name": "Session Analyzer",
+    "executable": "@TEST@/rapid_session_analyzer",
+    "iconUrl": "@ICON_URL@/rapid_session_analyzer.svg",
+    "version": "0.1.0"
+}

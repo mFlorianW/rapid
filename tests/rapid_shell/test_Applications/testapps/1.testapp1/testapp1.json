@@ -1,0 +1,6 @@
+{
+    "name": "Testapp1",
+    "executable": "/usr/bin/test",
+    "iconUrl": "/usr/share/lappy/test/icon.png",
+    "version": "1.2.3"
+}

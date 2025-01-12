@@ -1,0 +1,8 @@
+// SPDX-FileCopyrightText: 2024 All contributors
+//
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#pragma once
+
+constexpr auto CONFIG_FILE_PATH = "@CONFIG_FILE_PATH@";
+constexpr auto CONFIG_APP_PATH = "@CONFIG_APP_PATH@";
