@@ -5,6 +5,7 @@
 #include "system/Timer.hpp"
 #include "testhelper/CompareHelper.hpp"
 #include <catch2/catch_all.hpp>
+#include <testhelper/SignalSpy.hpp>
 
 using namespace Rapid::System;
 using namespace Rapid::Testhelper;
@@ -42,4 +43,14 @@ TEST_CASE("The timer shall emit the timeout event after the elapsed time set by 
     timer1.start();
     REQUIRE_COMPARE_WITH_TIMEOUT(timeout1EventEmitted, true, std::chrono::milliseconds{1000});
     CHECK_THAT(timeout1Time, IsBetweenMatcher(4, 6));
+}
+
+TEST_CASE("Restart active timer on additional start call", "[TIMER]")
+{
+    auto timer = Timer{};
+    Rapid::TestHelper::SignalSpy timeoutSpy = Rapid::TestHelper::SignalSpy{timer.timeout};
+    timer.setInterval(std::chrono::milliseconds{100});
+    timer.start();
+    timer.start();
+    REQUIRE_COMPARE_WITH_TIMEOUT(timeoutSpy.getCount(), 1, std::chrono::milliseconds{1000});
 }

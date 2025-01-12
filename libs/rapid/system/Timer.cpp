@@ -43,6 +43,9 @@ Timer::~Timer()
 
 void Timer::start()
 {
+    if (mD->mRunning) {
+        stop();
+    }
     mD->mTimer.setTimerInterval(std::chrono::duration_cast<std::chrono::nanoseconds>(mD->mInterval));
     mD->mRunning = true;
 }
