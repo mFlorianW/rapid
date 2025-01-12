@@ -41,43 +41,25 @@
         },
         {
             "name": "debug",
-            "inherits": "base-debug-vcpkg",
-            "displayName": "debug configure preset",
-            "description": "Debug build"
-        },
-        {
-            "name": "debug-without-vcpkg",
             "inherits": "base-debug",
             "displayName": "debug configure preset",
             "description": "Debug build"
         },
         {
-            "name": "github-ci-debug",
+            "name": "debug-vcpkg",
+            "inherits": "base-debug",
+            "displayName": "debug configure preset",
+            "description": "Debug build"
+        },
+        {
+            "name": "github",
             "inherits": "base-debug-vcpkg",
             "displayName": "Github CI configure preset",
             "description": "Debug build for the Github CI",
             "generator": "Unix Makefiles"
         },
         {
-            "name": "device-debug-without-vcpkg",
-            "inherits": "base-debug",
-            "displayName": "debug configure preset",
-            "description": "Debug build",
-            "cacheVariables": {
-                "ENABLE_QT": "OFF"
-            }
-        },
-        {
             "name": "release",
-            "inherits": "base-vcpkg",
-            "displayName": "Relase configure preset",
-            "description": "Release Build",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
-        },
-        {
-            "name": "release-without-vcpkg",
             "inherits": "base",
             "displayName": "Relase configure preset",
             "description": "Release Build",
@@ -86,13 +68,12 @@
             }
         },
         {
-            "name": "device-release-without-vcpkg",
+            "name": "release-vcpkg",
             "inherits": "base",
             "displayName": "Relase configure preset",
             "description": "Release Build",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "ENABLE_QT": "OFF"
+                "CMAKE_BUILD_TYPE": "Release"
             }
         }
     ],
@@ -102,50 +83,42 @@
             "configurePreset": "debug"
         },
         {
-            "name": "debug-without-vcpkg",
-            "configurePreset": "debug-without-vcpkg"
+            "name": "debug-vcpkg",
+            "configurePreset": "debug-vcpkg"
         },
         {
-            "name": "github-ci-debug",
-            "configurePreset": "github-ci-debug"
-        },
-        {
-            "name": "device-debug-without-vcpkg",
-            "configurePreset": "device-debug-without-vcpkg"
+            "name": "github",
+            "configurePreset": "github"
         },
         {
             "name": "release",
             "configurePreset": "release"
         },
         {
-            "name": "release-without-vcpkg",
-            "configurePreset": "release-without-vcpkg"
-        },
-        {
-            "name": "device-release-without-vcpkg",
-            "configurePreset": "device-release-without-vcpkg"
+            "name": "release-vcpkg",
+            "configurePreset": "release-vcpkg"
         }
     ],
     "testPresets": [
         {
-            "name": "test",
+            "name": "debug",
             "configurePreset": "debug"
         },
         {
-            "name": "test-without-vcpkg",
-            "configurePreset": "debug-without-vcpkg"
+            "name": "debug-vcpkg",
+            "configurePreset": "debug-vcpkg"
         },
         {
             "name": "release",
             "configurePreset": "release"
         },
         {
-            "name": "release-without-vcpkg",
-            "configurePreset": "release-without-vcpkg"
+            "name": "release-vcpkg",
+            "configurePreset": "release-vcpkg"
         },
         {
-            "name": "github-ci-test",
-            "configurePreset": "github-ci-debug"
+            "name": "github",
+            "configurePreset": "github"
         }
     ]
 }

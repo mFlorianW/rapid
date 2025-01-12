@@ -22,8 +22,8 @@ jobs:
       uses: lukka/run-vcpkg@v11
     - name: Generate Compile Commands and Build
       run: |
-        cmake --preset github-ci-debug
-        cmake --build --preset github-ci-debug
+        cmake --preset github
+        cmake --build --preset github
       env:
         QT_QPA_PLATFORM: offscreen
     - name: Clazy-Standalone
@@ -31,7 +31,7 @@ jobs:
         files=$(git diff  --diff-filter=ACMR --name-status --dirstat=files origin/${{ github.base_ref }}..origin/${{ github.head_ref }} | awk -F'\t' '{ if(NF==3){ print $3; }else{print $2; }}'| grep -E "(.*)\.(h|cpp|hpp)$" | grep -v thirdparty) || true
         if [[ ! -z ${files} ]]; then
           export CLAZY_CHECKS="level1,no-non-pod-global-static"
-          clazy-standalone -p build/github-ci-debug --ignore-included-files --export-fixes=clazy-fixes.yml ${files} 2>&1 | tee clazy.log
+          clazy-standalone -p build/github --ignore-included-files --export-fixes=clazy-fixes.yml ${files} 2>&1 | tee clazy.log
         else
           echo "No file for checking create empty log file."
           touch clazy.log
