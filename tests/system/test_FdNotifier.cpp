@@ -79,3 +79,38 @@ TEST_CASE_METHOD(TestFixture, "The FdNotifier shall support READ and WRITE for o
     REQUIRE(bytes == 1);
     REQUIRE_COMPARE_WITH_TIMEOUT(readNotifierSpy.getCount(), 1, timeout);
 }
+
+TEST_CASE_METHOD(TestFixture, "The FdNotifier shall be createable without file descriptor")
+{
+    SECTION("Set FD after constructor")
+    {
+        auto readNotifier = FdNotifier{FdNotifierType::Read};
+        auto readNotifierSpy = SignalSpy{readNotifier.notify};
+
+        // No FD set so notifier shoudl be false.
+        auto buffer = std::uint8_t{10};
+        auto bytes = write(fd, &buffer, sizeof(buffer));
+        REQUIRE(bytes == 1);
+        REQUIRE_COMPARE_WITH_TIMEOUT(readNotifierSpy.getCount(), 0, timeout);
+
+        // FD is set now the notify event must be emitted.
+        readNotifier.setFd(fd);
+        REQUIRE_COMPARE_WITH_TIMEOUT(readNotifierSpy.getCount(), 1, timeout);
+    }
+
+    SECTION("Replace FD with an other one")
+    {
+        auto devNull = open("/dev/random", O_RDONLY);
+        REQUIRE(devNull > 0);
+
+        auto readNotifier = FdNotifier{devNull, FdNotifierType::Read};
+        auto readNotifierSpy = SignalSpy{readNotifier.notify};
+        REQUIRE_COMPARE_WITH_TIMEOUT(readNotifierSpy.getCount(), 1, timeout);
+
+        readNotifier.setFd(fd);
+        auto buffer = std::uint8_t{10};
+        auto bytes = write(fd, &buffer, sizeof(buffer));
+        REQUIRE(bytes == 1);
+        REQUIRE_COMPARE_WITH_TIMEOUT(readNotifierSpy.getCount(), 2, timeout);
+    }
+}

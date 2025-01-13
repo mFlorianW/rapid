@@ -36,6 +36,16 @@ class FdNotifier : public System::EventHandler
 {
 public:
     /**
+     * @brief Creates an instance of the @ref FdNotifier with @ref FdNotifierType type
+     *
+     * @details This constructor allows delay activation of the @ref FdNotifier.
+     *          By setting the file descriptor with @ref FdNotifier::setFd activates the notification of the @ref FdNotifier.
+     *
+     * @param type The type of the file descriptor that shall be observed.
+     */
+    FdNotifier(FdNotifierType type);
+
+    /**
      * Construct a @ref FdNotifier instance.
      * @param fd The file descriptor itself.
      * @param type The type of the file descriptor that shall be observed.
@@ -73,6 +83,15 @@ public:
     int getFd() const noexcept;
 
     /**
+     * @brief Sets the file descriptor and activities the notification for the file descriptor.
+     *
+     * @details The notification of previous set file descriptors are disabled.
+     *
+     * @param fd The new file descriptor that shall be observed for changes.
+     */
+    void setFd(int fd);
+
+    /**
      * @brief Gives the observed type of the file descriptor.
      */
     FdNotifierType getType() const noexcept;
@@ -89,7 +108,8 @@ protected:
     bool handleEvent(Event* event) override;
 
 private:
-    int mFd;
+    static constexpr auto INVALID_SOCKET = int{-1};
+    int mFd = INVALID_SOCKET;
     FdNotifierType mType;
 };
 
