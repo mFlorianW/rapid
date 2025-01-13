@@ -3,57 +3,74 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Timer.hpp"
-#ifdef WITH_BOOST
-#include "private/BoostTimer.hpp"
-#else
-#include "private/PosixTimer.hpp"
+#ifdef __linux__
+#include "system/private/linux/Timer.hpp"
+#elif
+#error "Unsupported platform"
 #endif
 
 namespace Rapid::System
 {
+#ifdef __linux__
+
+class TimerPrivate
+{
+public:
+    TimerPrivate(Timer* timer)
+        : mQ{timer}
+    {
+    }
+
+    Timer* mQ;
+    std::chrono::milliseconds mInterval{0};
+    bool mRunning{false};
+    Private::Linux::Timer mTimer{mQ};
+};
+
+#endif
 
 Timer::Timer()
-    : mTimer{std::make_unique<Private::TimerImpl>(*this)}
+    : mD{std::make_unique<TimerPrivate>(this)}
 {
 }
 
 Timer::~Timer()
 {
-    if (mRunning) {
+    if (mD->mRunning) {
         stop();
     }
 }
 
 void Timer::start()
 {
-    mTimer->setTimerInterval(std::chrono::duration_cast<std::chrono::nanoseconds>(mInterval));
-    mRunning = true;
+    mD->mTimer.setTimerInterval(std::chrono::duration_cast<std::chrono::nanoseconds>(mD->mInterval));
+    mD->mRunning = true;
 }
 
 void Timer::stop()
 {
-    mTimer->setTimerInterval(std::chrono::nanoseconds(0));
-    mRunning = false;
+    mD->mTimer.setTimerInterval(std::chrono::nanoseconds(0));
+    mD->mRunning = false;
 }
 
 void Timer::setInterval(std::chrono::milliseconds interval)
 {
-    mInterval = interval;
+    mD->mInterval = interval;
 }
 
 std::chrono::milliseconds Timer::getInterval()
 {
-    return mInterval;
+    return mD->mInterval;
 }
 
 bool Timer::isRunning()
 {
-    return mRunning;
+    return mD->mRunning;
 }
 
 bool Timer::handleEvent(Event* event)
 {
-    if (mRunning and event->getEventType() == Event::Type::Timeout) {
+    if (mD->mRunning and event->getEventType() == Event::Type::Timeout) {
         timeout.emit();
         return true;
     }

@@ -72,10 +72,8 @@ public:
             return;
         }
 
-        {
-            std::lock_guard<std::mutex> guard{mMutex};
-            mEventQueue.push_back(EventQueueEntry{.receiver = receiver, .event = std::move(event)});
-        }
+        std::lock_guard<std::recursive_mutex> guard{mMutex};
+        mEventQueue.push_back(EventQueueEntry{.receiver = receiver, .event = std::move(event)});
         mBlocker.notify_all();
     }
 
@@ -99,7 +97,7 @@ public:
             if (not mRunning) {
                 break;
             }
-            std::unique_lock uLock{mMutex};
+            std::unique_lock<std::recursive_mutex> uLock{mMutex};
             mBlocker.wait(uLock);
             processEvents();
         }
@@ -113,7 +111,7 @@ public:
     void stopEventLoop()
     {
         {
-            std::lock_guard<std::mutex> guard{mMutex};
+            std::lock_guard<std::recursive_mutex> guard{mMutex};
             mRunning = false;
         }
         mBlocker.notify_one();
@@ -134,7 +132,7 @@ public:
         auto iter = mEventQueue.begin();
         while (iter != mEventQueue.end()) {
             if (iter->receiver == eventHandler) {
-                std::lock_guard<std::mutex> guard{mMutex};
+                std::lock_guard<std::recursive_mutex> guard{mMutex};
                 iter = mEventQueue.erase(iter);
             } else {
                 ++iter;
@@ -176,8 +174,8 @@ private:
         std::unique_ptr<Event> event;
     };
     std::deque<EventQueueEntry> mEventQueue;
-    mutable std::mutex mMutex;
-    std::condition_variable mBlocker;
+    mutable std::recursive_mutex mMutex;
+    std::condition_variable_any mBlocker;
     std::atomic<bool> mRunning = false;
     std::atomic<bool> mIsWoken = false;
     std::shared_ptr<KDBindings::ConnectionEvaluator> mConnectionEvaluator =

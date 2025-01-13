@@ -17,6 +17,8 @@ namespace Private
 class TimerImpl;
 }
 
+class TimerPrivate;
+
 class Timer final : public EventHandler
 {
 public:
@@ -89,9 +91,7 @@ public:
     KDBindings::Signal<> timeout;
 
 private:
-    std::chrono::milliseconds mInterval{0};
-    bool mRunning{false};
-    std::unique_ptr<Private::TimerImpl> mTimer;
+    std::unique_ptr<TimerPrivate> mD;
 };
 
 } // namespace Rapid::System
