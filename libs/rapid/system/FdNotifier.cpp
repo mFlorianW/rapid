@@ -11,6 +11,11 @@ using namespace Rapid::System::Private::Linux;
 namespace Rapid::System
 {
 
+FdNotifier::FdNotifier(FdNotifierType type)
+    : mType{type}
+{
+}
+
 FdNotifier::FdNotifier(int fd, FdNotifierType type)
     : mFd{fd}
     , mType{type}
@@ -26,6 +31,15 @@ FdNotifier::~FdNotifier()
 int FdNotifier::getFd() const noexcept
 {
     return mFd;
+}
+
+void FdNotifier::setFd(int fd)
+{
+    if (mFd != INVALID_SOCKET) {
+        FdNotifierImpl::getInstance().unregisterNotifier(this);
+    }
+    mFd = fd;
+    FdNotifierImpl::getInstance().registerNotifier(this, mType);
 }
 
 FdNotifierType FdNotifier::getType() const noexcept
