@@ -89,6 +89,7 @@ public:
             SPDLOG_INFO("Successfull send UBX-CFG-PRT message. UBlox device ready for use.");
             initialized = true;
             mReceiver.ready.emit();
+            initializeTimer.stop();
         }
     }
 
@@ -138,6 +139,7 @@ public:
     bool initialized{false};
     int uartFd{-1};
     std::unique_ptr<System::FdNotifier> readNotifier;
+    System::Timer initializeTimer;
 
 private:
     UartUbloxDevice& mReceiver;
@@ -173,6 +175,12 @@ UartUbloxDevice::UartUbloxDevice(std::string uart)
         SPDLOG_ERROR("Failed to set exclusive lock on the UART {}. Error: {}", mD->device, strerror(errno));
     }
 
+    mD->initializeTimer.setInterval(std::chrono::milliseconds{3000});
+    std::ignore = mD->initializeTimer.timeout.connect([this] {
+        SPDLOG_ERROR("UBlox device not initialized after {} seconds. Restarting initialization",
+                     mD->initializeTimer.getInterval().count() / 1000);
+        startBaudrateDetection();
+    });
     startBaudrateDetection();
 }
 
@@ -228,6 +236,7 @@ void UartUbloxDevice::startBaudrateDetection()
     }
     requestUartConfig();
     mD->baudrateDetectionTimer.start();
+    mD->initializeTimer.start();
 }
 
 bool UartUbloxDevice::setupUart(std::uint32_t baudrate) noexcept
@@ -253,7 +262,7 @@ bool UartUbloxDevice::setupUart(std::uint32_t baudrate) noexcept
         return false;
     }
 
-    if (tcsetattr(mD->uartFd, TCSADRAIN, &options) < 0) {
+    if (tcsetattr(mD->uartFd, TCSAFLUSH, &options) < 0) {
         SPDLOG_ERROR("Failed to set UBlox UART options. Error: {}", strerror(errno));
         return false;
     }
