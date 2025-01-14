@@ -15,7 +15,7 @@ TEST_CASE("The timer shall emit the timeout event after the elapsed time set by 
 {
     auto timeoutEventEmitted = false;
     auto timer = Timer{};
-    timer.setInterval(std::chrono::milliseconds(3));
+    timer.setInterval(std::chrono::milliseconds(1000));
     auto timeoutTime = long{0};
     auto timerStartMs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     std::ignore = timer.timeout.connect([&]() {
@@ -27,7 +27,7 @@ TEST_CASE("The timer shall emit the timeout event after the elapsed time set by 
     timer.start();
     REQUIRE(timer.isRunning());
     REQUIRE_COMPARE_WITH_TIMEOUT(timeoutEventEmitted, true, std::chrono::milliseconds{1000});
-    CHECK_THAT(timeoutTime, IsBetweenMatcher(2, 4));
+    CHECK_THAT(timeoutTime, IsBetweenMatcher(999, 1001));
 
     auto timeout1EventEmitted = true;
     auto timer1 = Timer{};

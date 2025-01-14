@@ -25,19 +25,25 @@ Timer::Timer(Rapid::System::Timer* timer)
 
 void Timer::setTimerInterval(std::chrono::nanoseconds interval) noexcept
 {
+    bool useSeconds = false;
+    if (interval >= std::chrono::seconds{1}) {
+        useSeconds = true;
+    }
     auto timerConfig = itimerspec{};
     if (interval > std::chrono::nanoseconds{0}) {
-        timerConfig.it_interval.tv_sec = 0;
-        timerConfig.it_interval.tv_nsec = interval.count();
-        timerConfig.it_value.tv_sec = 0;
-        timerConfig.it_value.tv_nsec = interval.count();
+        timerConfig.it_interval.tv_sec = useSeconds ? interval.count() / 1'000'000'000 : 0;
+        timerConfig.it_interval.tv_nsec = not useSeconds ? interval.count() : 0;
+        timerConfig.it_value.tv_sec = useSeconds ? interval.count() / 1'000'000'000 : 0;
+        timerConfig.it_value.tv_nsec = not useSeconds ? interval.count() : 0;
     } else {
         timerConfig.it_interval.tv_sec = 0;
         timerConfig.it_interval.tv_nsec = 0;
         timerConfig.it_value.tv_sec = 0;
         timerConfig.it_value.tv_nsec = 0;
     }
-    timerfd_settime(mTimerFd, 0, &timerConfig, nullptr);
+    if (timerfd_settime(mTimerFd, 0, &timerConfig, nullptr) < 0) {
+        SPDLOG_ERROR("Failed to setup timer. Error: {}", strerror(errno));
+    }
 }
 
 } // namespace Rapid::System::Private::Linux
