@@ -17,6 +17,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+using namespace std::chrono_literals;
+
 namespace Rapid::Positioning
 {
 
@@ -89,6 +91,7 @@ public:
             SPDLOG_INFO("Successfull send UBX-CFG-PRT message. UBlox device ready for use.");
             initialized = true;
             mReceiver.ready.emit();
+            initializeTimer.stop();
         }
     }
 
@@ -138,6 +141,9 @@ public:
     bool initialized{false};
     int uartFd{-1};
     std::unique_ptr<System::FdNotifier> readNotifier;
+    System::Timer initializeTimer;
+    System::Timer baudrateActivationTimer;
+    KDBindings::ScopedConnection baudrateActivationTimerConnection;
 
 private:
     UartUbloxDevice& mReceiver;
@@ -173,7 +179,15 @@ UartUbloxDevice::UartUbloxDevice(std::string uart)
         SPDLOG_ERROR("Failed to set exclusive lock on the UART {}. Error: {}", mD->device, strerror(errno));
     }
 
+    mD->initializeTimer.setInterval(std::chrono::milliseconds{3000});
+    std::ignore = mD->initializeTimer.timeout.connect([this] {
+        SPDLOG_ERROR("UBlox device not initialized after {} seconds. Restarting initialization",
+                     mD->initializeTimer.getInterval().count() / 1000);
+        startBaudrateDetection();
+    });
     startBaudrateDetection();
+
+    mD->baudrateActivationTimer.setInterval(50ms);
 }
 
 UartUbloxDevice::~UartUbloxDevice()
@@ -228,6 +242,7 @@ void UartUbloxDevice::startBaudrateDetection()
     }
     requestUartConfig();
     mD->baudrateDetectionTimer.start();
+    mD->initializeTimer.start();
 }
 
 bool UartUbloxDevice::setupUart(std::uint32_t baudrate) noexcept
@@ -253,12 +268,19 @@ bool UartUbloxDevice::setupUart(std::uint32_t baudrate) noexcept
         return false;
     }
 
-    if (tcsetattr(mD->uartFd, TCSADRAIN, &options) < 0) {
-        SPDLOG_ERROR("Failed to set UBlox UART options. Error: {}", strerror(errno));
-        return false;
-    }
-    mD->lastUsedBaudrate = baudrate;
-    SPDLOG_INFO("Setup UBlox UART with {} baud", baudRateToString(baudrate));
+    // directly switching the baudrate causes problems on the PI3.
+    // Even with TCSAFLUSH or TCSADRAIN the data are not correctly send.
+    // An extra delay of 50ms makes sure that the data is correctly send.
+    mD->baudrateActivationTimerConnection = mD->baudrateActivationTimer.timeout.connect([this, options, baudrate] {
+        if (tcsetattr(mD->uartFd, TCSAFLUSH, &options) < 0) {
+            SPDLOG_ERROR("Failed to set UBlox UART options. Error: {}", strerror(errno));
+            return;
+        }
+        mD->lastUsedBaudrate = baudrate;
+        mD->baudrateActivationTimer.stop();
+        SPDLOG_INFO("Setup UBlox UART with {} baud", baudRateToString(baudrate));
+    });
+    mD->baudrateActivationTimer.start();
     return true;
 }
 
