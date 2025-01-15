@@ -28,6 +28,18 @@ std::string getReturnType(RestRequest const& request)
     return std::string{"text/plain"};
 }
 
+RequestType getRequestType(Http::request<Http::string_body> const& request)
+{
+    switch (request.method()) {
+    case Http::verb::get:
+        return RequestType::Get;
+    case Http::verb::delete_:
+        return RequestType::Delete;
+    default:
+        return RequestType::Get;
+    }
+}
+
 } // namespace
 
 class ClientConnection
@@ -60,7 +72,7 @@ public:
     void handleConnection()
     {
         Http::async_read(mSocket, mReceiveBuffer, mRequest, [this](Beast::error_code const& ec, std::size_t bytes) {
-            mRestRequest = RestRequest{RequestType::Get, std::string{mRequest.target()}, mRequest.body()};
+            mRestRequest = RestRequest{getRequestType(mRequest), std::string{mRequest.target()}, mRequest.body()};
             requestReceived.emit(mRestRequest, this);
         });
     }
@@ -227,6 +239,16 @@ void RestServerImpl::registerGetHandler(std::string const& root, IRestRequestHan
     });
 }
 
+void RestServerImpl::registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept
+{
+    auto entry = std::make_unique<HandlerEntry>();
+    entry->handler = handler;
+    entry->mFinishedConnection = handler->finished.connect([this](auto&& result, auto&& restRequest) {
+        handleDeleteFinishedDeleteRequest(result, restRequest);
+    });
+    mDeleteHandler.emplace(root, std::move(entry));
+}
+
 bool RestServerImpl::handleEvent(System::Event* event) noexcept
 {
     if (event->getEventType() == System::Event::Type::HttpRequestReceived) {
@@ -236,6 +258,8 @@ bool RestServerImpl::handleEvent(System::Event* event) noexcept
             auto request = std::get<1>(nextRequest);
             if (request.getType() == Rest::RequestType::Get) {
                 handleGetRequest(request, conn);
+            } else if (request.getType() == Rest::RequestType::Delete) {
+                handleDeleteRequest(request, conn);
             }
         }
         return true;
@@ -260,6 +284,23 @@ void RestServerImpl::handleGetRequest(RestRequest& request, ClientConnection* co
     }
 }
 
+void RestServerImpl::handleDeleteRequest(RestRequest& request, ClientConnection* conn) noexcept
+{
+    try {
+        auto const path = request.getPath();
+        for (auto& [path, handler] : mDeleteHandler) {
+            if (path.rfind("path")) {
+                mProcessingDeleteRequests.insert({request.getPath().getPath(), conn});
+                handler->handler->handleRestRequest(request);
+                return;
+            }
+        }
+        conn->sendResponse(RequestHandleResult::Error, std::string{request.getReturnBody()}, getReturnType(request));
+    } catch (std::exception const& e) {
+        SPDLOG_ERROR("Failed to handle request for unexpected exception: {}", e.what());
+    }
+}
+
 void RestServerImpl::handleFinishedGetRequest(RequestHandleResult result, RestRequest const& request)
 {
     try {
@@ -271,6 +312,10 @@ void RestServerImpl::handleFinishedGetRequest(RequestHandleResult result, RestRe
     } catch (...) {
         SPDLOG_ERROR("Failed to send response for request for {}", request.getPath().getPath());
     }
+}
+
+void RestServerImpl::handleDeleteFinishedDeleteRequest(RequestHandleResult& result, RestRequest const& request) noexcept
+{
 }
 
 } // namespace Rapid::Rest::Private

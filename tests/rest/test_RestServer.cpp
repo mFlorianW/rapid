@@ -108,10 +108,15 @@ public:
     void handleRestRequest(RestRequest& request) noexcept override
     {
         try {
-            mHandlerCalled = true;
-            request.setReturnBody(mBody);
-            request.setReturnType(mReturnType);
-            finished.emit(RequestHandleResult::Ok, request);
+            if (request.getType() == RequestType::Get) {
+                mHandlerCalled = true;
+                request.setReturnBody(mBody);
+                request.setReturnType(mReturnType);
+                finished.emit(RequestHandleResult::Ok, request);
+            } else if (request.getType() == RequestType::Delete) {
+                mDeleteHandlerCalled = true;
+                finished.emit(RequestHandleResult::Ok, request);
+            }
         } catch (std::exception const& e) {
             SPDLOG_ERROR("Failed to emit finished signal already emitting. Error: {}", e.what());
         }
@@ -120,6 +125,11 @@ public:
     bool isHandlerCalled() const noexcept
     {
         return mHandlerCalled;
+    }
+
+    bool isDeleteHandlerCalled() const noexcept
+    {
+        return mDeleteHandlerCalled;
     }
 
     void setReturnBody(std::string const& body) noexcept
@@ -134,6 +144,7 @@ public:
 
 private:
     bool mHandlerCalled = false;
+    bool mDeleteHandlerCalled = false;
     std::string mBody;
     RequestReturnType mReturnType = RequestReturnType::Txt;
 };
@@ -282,5 +293,24 @@ SCENARIO("The running server shall send the HTTP JSON response body for a valid 
                 // NOLINTEND(bugprone-unchecked-optional-access)
             }
         }
+    }
+}
+
+TEST_CASE("The RestServer shall handle DELETE requests", "[REST_SERVER]")
+{
+    auto handler = TestRequestHandler{};
+    auto restServer = RestServer{};
+    SECTION("The DELETE request is forwarded the registered handler")
+    {
+        restServer.registerDeleteHandler("/test", &handler);
+
+        auto result = restServer.start();
+        REQUIRE(result == ServerStartResult::Ok);
+
+        auto request = Request{"localhost", "27018"};
+        request.setVerb(Http::verb::delete_);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(handler.isDeleteHandlerCalled(), true, timeout);
     }
 }

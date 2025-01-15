@@ -34,4 +34,9 @@ void RestServer::registerGetHandler(std::string const& root, IRestRequestHandler
     mRestServerImpl->registerGetHandler(root, handler);
 }
 
+void RestServer::registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept
+{
+    mRestServerImpl->registerDeleteHandler(root, handler);
+}
+
 } // namespace Rapid::Rest

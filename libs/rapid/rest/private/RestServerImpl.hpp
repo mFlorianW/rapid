@@ -44,24 +44,29 @@ public:
     RestServerImpl& operator=(RestServerImpl const&& other) = delete;
 
     /**
-     * @copydoc RestServerImpl::start
+     * @copydoc IRestServer::start
      */
     [[nodiscard]] ServerStartResult start() noexcept override;
 
     /**
-     * @copydoc RestServerImpl::stop
+     * @copydoc IRestServer::stop
      */
     void stop() noexcept override;
 
     /**
-     * @copydoc RestServerImpl::registerPostHandler
+     * @copydoc IRestServer::registerPostHandler
      */
     void registerPostHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
 
     /**
-     * copydoc RestServerImpl::registerGetHandler
+     * copydoc IRestServer::registerGetHandler
      */
     void registerGetHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
+
+    /**
+     * copydoc IRestServer::registerGetHandler
+     */
+    void registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
 
     /**
      * @copydoc Rapid::System::EventHandler
@@ -70,12 +75,24 @@ public:
 
 private:
     void handleGetRequest(RestRequest& request, ClientConnection* connection) noexcept;
+    void handleDeleteRequest(RestRequest& request, ClientConnection* connection) noexcept;
     void handleFinishedGetRequest(RequestHandleResult result, RestRequest const& request);
+    void handleDeleteFinishedDeleteRequest(RequestHandleResult& result, RestRequest const& request) noexcept;
 
     std::thread mServerThread;
     BoostServer* mBoostServer = nullptr;
+
+    struct HandlerEntry
+    {
+        IRestRequestHandler* handler = nullptr;
+        KDBindings::ScopedConnection mFinishedConnection;
+    };
+    using HandlerEntryPtr = std::unique_ptr<HandlerEntry>;
+
     std::unordered_map<std::string, IRestRequestHandler*> mGetHandlers;
+    std::unordered_map<std::string, HandlerEntryPtr> mDeleteHandler;
     std::unordered_map<std::string_view, ClientConnection*> mProcessingGetRequests;
+    std::unordered_map<std::string_view, ClientConnection*> mProcessingDeleteRequests;
 };
 
 } // namespace Rapid::Rest::Private
