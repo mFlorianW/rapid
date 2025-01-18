@@ -70,7 +70,7 @@ IsBetweenMatcher<T> IsBetween(T begin, T end)
         } \
     } \
     \
-    REQUIRE(success); \
+    CHECK(success); \
 }
 
 //clang-fomrat on
