@@ -110,8 +110,8 @@ public:
         try {
             if (request.getType() == RequestType::Get) {
                 mHandlerCalled = true;
-                request.setReturnBody(mBody);
                 request.setReturnType(mReturnType);
+                request.setReturnBody(mBody);
                 finished.emit(RequestHandleResult::Ok, request);
             } else if (request.getType() == RequestType::Delete) {
                 mDeleteHandlerCalled = true;
@@ -155,6 +155,7 @@ public:
     TestRequestHandler handler;
     RestServer restServer;
     Request request{"localhost", "27018"};
+    std::string const expBody{"{}"};
 
     TestFixture()
     {
@@ -167,31 +168,15 @@ public:
 
 constexpr auto timeout = std::chrono::milliseconds{100};
 
-SCENARIO("The running RestServer shall be connectable.", "[REST_SERVER_BASIC]")
+TEST_CASE_METHOD(TestFixture, "The running RestServer shall be connectable.", "[REST_SERVER_BASIC]")
 {
-    GIVEN("A running RestServer")
-    {
-        auto restserver = RestServer{};
-        auto result = restserver.start();
-        REQUIRE(result == ServerStartResult::Ok);
-        WHEN("A connection to the is requested.")
-        {
-            auto request = Request{"localhost", "27018"};
-            auto connected = request.connect();
-            THEN("The connection shall be successful.")
-            {
-                REQUIRE(connected);
-            }
-        }
-    }
+    auto request = Request{"localhost", "27018"};
+    auto connected = request.connect();
+    REQUIRE(connected);
 }
 
-TEST_CASE("The running RestServer shall send response.", "[REST_SERVER_BASIC]")
+TEST_CASE_METHOD(TestFixture, "The running RestServer shall send response.", "[REST_SERVER_BASIC]")
 {
-    auto restServer = RestServer{};
-    auto result = restServer.start();
-    REQUIRE(result == ServerStartResult::Ok);
-
     auto request = Request{"localhost", "27018"};
     request.connect();
     request.send();
@@ -199,30 +184,18 @@ TEST_CASE("The running RestServer shall send response.", "[REST_SERVER_BASIC]")
     REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
 }
 
-SCENARIO("The running RestServer shall handle multiple requests.", "[REST_SERVER_BASIC]")
+TEST_CASE_METHOD(TestFixture, "The running RestServer shall handle multiple requests.", "[REST_SERVER_BASIC]")
 {
-    GIVEN("A running RestServer")
-    {
-        auto restServer = RestServer{};
-        auto result = restServer.start();
-        REQUIRE(result == ServerStartResult::Ok);
-        WHEN("Multiple request is send.")
-        {
-            auto request1 = Request{"localhost", "27018"};
-            request1.connect();
-            request1.send();
+    auto request1 = Request{"localhost", "27018"};
+    request1.connect();
+    request1.send();
 
-            auto request2 = Request{"localhost", "27018"};
-            request2.connect();
-            request2.send();
+    auto request2 = Request{"localhost", "27018"};
+    request2.connect();
+    request2.send();
 
-            THEN("All requests shall receive a response.")
-            {
-                REQUIRE_COMPARE_WITH_TIMEOUT(request1.read().has_value(), true, timeout);
-                REQUIRE_COMPARE_WITH_TIMEOUT(request2.read().has_value(), true, timeout);
-            }
-        }
-    }
+    REQUIRE_COMPARE_WITH_TIMEOUT(request1.read().has_value(), true, timeout);
+    REQUIRE_COMPARE_WITH_TIMEOUT(request2.read().has_value(), true, timeout);
 }
 
 TEST_CASE_METHOD(TestFixture, "The RestServer shall be start and stopable multiple times", "[REST_SERVER_STOP]")
@@ -246,88 +219,29 @@ TEST_CASE_METHOD(TestFixture, "The RestServer shall be start and stopable multip
     }
 }
 
-SCENARIO("The running server shall forward HTTP GET request to the suitable request handler.", "[REST_SERVER_GET]")
+TEST_CASE_METHOD(TestFixture, "The running server shall handle HTTP GET request.", "[REST_SERVER_GET]")
 {
-    GIVEN("A running RestServer")
-    {
-        auto handler = TestRequestHandler{};
-        auto restServer = RestServer{};
-        restServer.registerGetHandler("/test", &handler);
-        auto result = restServer.start();
-        REQUIRE(result == ServerStartResult::Ok);
-        WHEN("The GET HTTP request is sent to the server")
-        {
-            auto request = Request{"localhost", "27018"};
-            request.setVerb(Http::verb::get);
-            request.connect();
-            request.send();
+    restServer.registerGetHandler("/test", std::addressof(handler));
 
-            THEN("The RequestHandler shall be called.")
-            {
-                REQUIRE_COMPARE_WITH_TIMEOUT(handler.isHandlerCalled(), true, timeout);
-            }
-        }
+    SECTION("The GET request is forwarded the registered handler")
+    {
+        request.setVerb(Http::verb::get);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(handler.isHandlerCalled(), true, timeout);
     }
-}
 
-SCENARIO("The running server shall send the HTTP TXT response body for a valid request.", "[REST_SERVER_GET]")
-{
-    GIVEN("A running RestServer")
+    SECTION("The GET request shall return with 200 when body exists")
     {
-        auto const expBody = std::string{"Hello World!"};
-        auto handler = TestRequestHandler{};
         handler.setReturnBody(expBody);
-        auto restServer = RestServer{};
-        restServer.registerGetHandler("/test", &handler);
-        auto result = restServer.start();
-        REQUIRE(result == ServerStartResult::Ok);
-        WHEN("The GET HTTP request is sent to the server")
-        {
-            auto request = Request{"localhost", "27018"};
-            request.setVerb(Http::verb::get);
-            request.connect();
-            request.send();
-
-            THEN("The RequestHandler shall be called.")
-            {
-                REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
-                // NOLINTBEGIN(bugprone-unchecked-optional-access)
-                REQUIRE(request.read().value()[Http::field::content_type] == "text/plain");
-                REQUIRE(request.read().value().body() == expBody);
-                // NOLINTEND(bugprone-unchecked-optional-access)
-            }
-        }
-    }
-}
-
-SCENARIO("The running server shall send the HTTP JSON response body for a valid request.", "[REST_SERVER_GET]")
-{
-    GIVEN("A running RestServer")
-    {
-        auto const expBody = std::string{"{}"};
-        auto handler = TestRequestHandler{};
-        handler.setReturnBody(expBody);
-        handler.setRequestReturnType(RequestReturnType::Json);
-        auto restServer = RestServer{};
-        restServer.registerGetHandler("/test", &handler);
-        auto result = restServer.start();
-        REQUIRE(result == ServerStartResult::Ok);
-        WHEN("The GET HTTP request is sent to the server")
-        {
-            auto request = Request{"localhost", "27018"};
-            request.setVerb(Http::verb::get);
-            request.connect();
-            request.send();
-
-            THEN("The RequestHandler shall be called.")
-            {
-                REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
-                // NOLINTBEGIN(bugprone-unchecked-optional-access)
-                REQUIRE(request.read().value()[Http::field::content_type] == "application/json");
-                REQUIRE(request.read().value().body() == expBody);
-                // NOLINTEND(bugprone-unchecked-optional-access)
-            }
-        }
+        request.setVerb(Http::verb::get);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+        auto response = request.read().value_or(Http::response<Http::string_body>{});
+        CHECK(response.result() == Http::status::ok);
+        CHECK(response[Http::field::content_type] == "text/plain");
+        REQUIRE(response.body() == expBody);
     }
 }
 
