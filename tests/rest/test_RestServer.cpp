@@ -5,10 +5,12 @@
 #include "rest/RestServer.hpp"
 #include <boost/beast.hpp>
 #include <catch2/catch_all.hpp>
+#include <catch2/trompeloeil.hpp>
 #include <spdlog/spdlog.h>
 #include <testhelper/CompareHelper.hpp>
 
 using namespace Rapid::Rest;
+using namespace trompeloeil;
 namespace Http = boost::beast::http;
 namespace Asio = boost::asio;
 namespace Ip = boost::asio::ip;
@@ -105,57 +107,7 @@ private:
 class TestRequestHandler : public IRestRequestHandler
 {
 public:
-    void handleRestRequest(RestRequest& request) noexcept override
-    {
-        request.setReturnType(mReturnType);
-        request.setReturnBody(mBody);
-        try {
-            if (request.getType() == RequestType::Get) {
-                mHandlerCalled = true;
-                finished.emit(RequestHandleResult::Ok, request);
-            } else if (request.getType() == RequestType::Delete) {
-                mDeleteHandlerCalled = true;
-                finished.emit(RequestHandleResult::Ok, request);
-            } else if (request.getType() == RequestType::Post) {
-                mPostHandlerCalled = true;
-                finished.emit(RequestHandleResult::Ok, request);
-            }
-        } catch (std::exception const& e) {
-            SPDLOG_ERROR("Failed to emit finished signal already emitting. Error: {}", e.what());
-        }
-    }
-
-    bool isHandlerCalled() const noexcept
-    {
-        return mHandlerCalled;
-    }
-
-    bool isDeleteHandlerCalled() const noexcept
-    {
-        return mDeleteHandlerCalled;
-    }
-
-    bool isPostHandlerCalled() const noexcept
-    {
-        return mPostHandlerCalled;
-    }
-
-    void setReturnBody(std::string const& body) noexcept
-    {
-        mBody = body;
-    }
-
-    void setRequestReturnType(RequestReturnType returnType) noexcept
-    {
-        mReturnType = returnType;
-    }
-
-private:
-    bool mHandlerCalled = false;
-    bool mDeleteHandlerCalled = false;
-    bool mPostHandlerCalled = false;
-    std::string mBody;
-    RequestReturnType mReturnType = RequestReturnType::Txt;
+    MAKE_MOCK(handleRestRequest, auto(RestRequest& request)->void, noexcept override);
 };
 
 class TestFixture
@@ -191,6 +143,8 @@ TEST_CASE_METHOD(TestFixture, "The running RestServer shall send response.", "[R
     request.send();
 
     REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+    auto response = request.read().value_or(Http::response<Http::string_body>{});
+    REQUIRE(response.result() == Http::status::internal_server_error);
 }
 
 TEST_CASE_METHOD(TestFixture, "The running RestServer shall handle multiple requests.", "[REST_SERVER_BASIC]")
@@ -234,15 +188,23 @@ TEST_CASE_METHOD(TestFixture, "The running server shall handle HTTP GET request.
 
     SECTION("The GET request is forwarded the registered handler")
     {
+        bool handlerCalled = false;
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Get)
+            .LR_SIDE_EFFECT(handlerCalled = true);
         request.setVerb(Http::verb::get);
         request.connect();
         request.send();
-        REQUIRE_COMPARE_WITH_TIMEOUT(handler.isHandlerCalled(), true, timeout);
+        REQUIRE_COMPARE_WITH_TIMEOUT(handlerCalled, true, timeout);
     }
 
     SECTION("The GET request shall return with 200 when body exists")
     {
-        handler.setReturnBody(expBody);
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Get)
+            .LR_SIDE_EFFECT(_1.setReturnBody(expBody))
+            .LR_SIDE_EFFECT(_1.setReturnType(RequestReturnType::Txt))
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Ok, _1));
         request.setVerb(Http::verb::get);
         request.connect();
         request.send();
@@ -260,14 +222,21 @@ TEST_CASE_METHOD(TestFixture, "The RestServer shall handle DELETE requests", "[R
 
     SECTION("The DELETE request is forwarded the registered handler")
     {
+        bool handlerCalled = false;
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Delete)
+            .LR_SIDE_EFFECT(handlerCalled = true);
         request.setVerb(Http::verb::delete_);
         request.connect();
         request.send();
-        REQUIRE_COMPARE_WITH_TIMEOUT(handler.isDeleteHandlerCalled(), true, timeout);
+        REQUIRE_COMPARE_WITH_TIMEOUT(handlerCalled, true, timeout);
     }
 
     SECTION("The DELETE shall return with 204 without response body")
     {
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Delete)
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Ok, _1));
         request.setVerb(Http::verb::delete_);
         request.connect();
         request.send();
@@ -278,7 +247,11 @@ TEST_CASE_METHOD(TestFixture, "The RestServer shall handle DELETE requests", "[R
 
     SECTION("The DELETE shall return with 200 with response body")
     {
-        handler.setReturnBody(expBody);
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Delete)
+            .LR_SIDE_EFFECT(_1.setReturnBody(expBody))
+            .LR_SIDE_EFFECT(_1.setReturnType(RequestReturnType::Txt))
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Ok, _1));
         request.setVerb(Http::verb::delete_);
         request.connect();
         request.send();
@@ -295,9 +268,13 @@ TEST_CASE_METHOD(TestFixture, "The REST server shall handle POST requests", "[RE
 
     SECTION("The POST request is forwarded the registered handler")
     {
+        bool handlerCalled = false;
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Post)
+            .LR_SIDE_EFFECT(handlerCalled = true);
         request.setVerb(Http::verb::post);
         request.connect();
         request.send();
-        REQUIRE_COMPARE_WITH_TIMEOUT(handler.isPostHandlerCalled(), true, timeout);
+        REQUIRE_COMPARE_WITH_TIMEOUT(handlerCalled, true, timeout);
     }
 }
