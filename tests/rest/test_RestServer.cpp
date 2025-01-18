@@ -342,4 +342,14 @@ TEST_CASE_METHOD(TestFixture, "The RestServer shall handle DELETE requests", "[R
         request.send();
         REQUIRE_COMPARE_WITH_TIMEOUT(handler.isDeleteHandlerCalled(), true, timeout);
     }
+
+    SECTION("The DELETE shall return with 204 without response body")
+    {
+        request.setVerb(Http::verb::delete_);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+        auto response = request.read().value_or(Http::response<Http::string_body>{});
+        REQUIRE(response.result() == Http::status::no_content);
+    }
 }

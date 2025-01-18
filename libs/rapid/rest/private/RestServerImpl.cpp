@@ -84,18 +84,21 @@ public:
 
     void sendResponse(RequestHandleResult result, std::string const& body, std::string const& bodyType)
     {
-        auto status = result == RequestHandleResult::Ok ? Http::status::ok : Http::status::bad_request;
         mResponse.set(Http::field::host, "lappy.org");
         mResponse.set(Http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-        mResponse.result(status);
         mResponse.keep_alive(false);
         mResponse.prepare_payload();
 
+        auto status = Http::status{};
         if (not body.empty()) {
+            status = result == RequestHandleResult::Ok ? Http::status::ok : Http::status::bad_request;
             mResponse.body() = body;
             mResponse.set(Http::field::content_type, bodyType);
             mResponse.content_length(mResponse.body().size());
+        } else {
+            status = result == RequestHandleResult::Ok ? Http::status::no_content : Http::status::bad_request;
         }
+        mResponse.result(status);
         Http::async_write(mSocket, mResponse, [this](Beast::error_code errorCode, std::size_t) {
             if (errorCode) {
                 spdlog::error("Failed to send response. Error code: {}", errorCode.value());
@@ -264,7 +267,7 @@ void RestServerImpl::registerGetHandler(std::string const& root, IRestRequestHan
 {
     mGetHandlers.insert({root, handler});
     std::ignore = handler->finished.connect([this](auto&& result, auto&& restRequest) {
-        handleFinishedGetRequest(result, restRequest);
+        handleFinishedRequest(result, restRequest, mProcessingGetRequests);
     });
 }
 
@@ -273,7 +276,7 @@ void RestServerImpl::registerDeleteHandler(std::string const& root, IRestRequest
     auto entry = std::make_unique<HandlerEntry>();
     entry->handler = handler;
     entry->mFinishedConnection = handler->finished.connect([this](auto&& result, auto&& restRequest) {
-        handleDeleteFinishedDeleteRequest(result, restRequest);
+        handleFinishedRequest(result, restRequest, mProcessingDeleteRequests);
     });
     mDeleteHandler.emplace(root, std::move(entry));
 }
@@ -330,21 +333,19 @@ void RestServerImpl::handleDeleteRequest(RestRequest& request, ClientConnection*
     }
 }
 
-void RestServerImpl::handleFinishedGetRequest(RequestHandleResult result, RestRequest const& request)
+void RestServerImpl::handleFinishedRequest(RequestHandleResult& result,
+                                           RestRequest const& request,
+                                           auto& requestCache) noexcept
 {
     try {
-        auto conn = mProcessingGetRequests.at(request.getPath().getPath());
+        auto conn = requestCache.at(request.getPath().getPath());
         conn->sendResponse(result, std::string{request.getReturnBody()}, getReturnType(request));
-        mProcessingGetRequests.erase(request.getPath().getPath());
+        requestCache.erase(request.getPath().getPath());
     } catch (std::out_of_range const& e) {
         SPDLOG_ERROR("No connection found for rquest on \"{}\"", request.getPath().getPath());
     } catch (...) {
         SPDLOG_ERROR("Failed to send response for request for {}", request.getPath().getPath());
     }
-}
-
-void RestServerImpl::handleDeleteFinishedDeleteRequest(RequestHandleResult& result, RestRequest const& request) noexcept
-{
 }
 
 } // namespace Rapid::Rest::Private

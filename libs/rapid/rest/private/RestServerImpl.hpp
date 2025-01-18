@@ -76,8 +76,7 @@ public:
 private:
     void handleGetRequest(RestRequest& request, ClientConnection* connection) noexcept;
     void handleDeleteRequest(RestRequest& request, ClientConnection* connection) noexcept;
-    void handleFinishedGetRequest(RequestHandleResult result, RestRequest const& request);
-    void handleDeleteFinishedDeleteRequest(RequestHandleResult& result, RestRequest const& request) noexcept;
+    void handleFinishedRequest(RequestHandleResult& result, RestRequest const& request, auto& requestCache) noexcept;
 
     std::thread mServerThread;
     BoostServer* mBoostServer = nullptr;
