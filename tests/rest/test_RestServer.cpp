@@ -277,4 +277,33 @@ TEST_CASE_METHOD(TestFixture, "The REST server shall handle POST requests", "[RE
         request.send();
         REQUIRE_COMPARE_WITH_TIMEOUT(handlerCalled, true, timeout);
     }
+
+    SECTION("The POST request shall return 204 with empty return body")
+    {
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Post)
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Ok, _1));
+        request.setVerb(Http::verb::post);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+        auto response = request.read().value_or(Http::response<Http::string_body>{});
+        REQUIRE(response.result() == Http::status::no_content);
+    }
+
+    SECTION("The POST request shall return 200 with empty return body")
+    {
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Post)
+            .LR_SIDE_EFFECT(_1.setReturnBody(expBody))
+            .LR_SIDE_EFFECT(_1.setReturnType(RequestReturnType::Txt))
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Ok, _1));
+        request.setVerb(Http::verb::post);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+        auto response = request.read().value_or(Http::response<Http::string_body>{});
+        REQUIRE(response.result() == Http::status::ok);
+        REQUIRE(response.body() == expBody);
+    }
 }
