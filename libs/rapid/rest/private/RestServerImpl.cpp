@@ -82,32 +82,17 @@ void RestServerImpl::stop() noexcept
 
 void RestServerImpl::registerPostHandler(std::string const& root, IRestRequestHandler* handler) noexcept
 {
-    auto entry = std::make_unique<HandlerEntry>();
-    entry->handler = handler;
-    entry->mFinishedConnection = handler->finished.connect([this](auto&& result, auto&& restRequest) {
-        handleFinishedRequest(result, restRequest, mProcessingPostRequests);
-    });
-    mPostHandlers.emplace(root, std::move(entry));
+    registerHandler(root, handler, mPostHandlers, mProcessingPostRequests);
 }
 
 void RestServerImpl::registerGetHandler(std::string const& root, IRestRequestHandler* handler) noexcept
 {
-    auto entry = std::make_unique<HandlerEntry>();
-    entry->handler = handler;
-    entry->mFinishedConnection = handler->finished.connect([this](auto&& result, auto&& restRequest) {
-        handleFinishedRequest(result, restRequest, mProcessingGetRequests);
-    });
-    mGetHandlers.emplace(root, std::move(entry));
+    registerHandler(root, handler, mGetHandlers, mProcessingGetRequests);
 }
 
 void RestServerImpl::registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept
 {
-    auto entry = std::make_unique<HandlerEntry>();
-    entry->handler = handler;
-    entry->mFinishedConnection = handler->finished.connect([this](auto&& result, auto&& restRequest) {
-        handleFinishedRequest(result, restRequest, mProcessingDeleteRequests);
-    });
-    mDeleteHandlers.emplace(root, std::move(entry));
+    registerHandler(root, handler, mDeleteHandlers, mProcessingDeleteRequests);
 }
 
 void RestServerImpl::registerPutHandler(std::string const& root, IRestRequestHandler* handler) noexcept
