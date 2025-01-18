@@ -22,6 +22,7 @@ ServerStartResult RestServer::start() noexcept
 
 void RestServer::stop() noexcept
 {
+    mRestServerImpl->stop();
 }
 
 void RestServer::registerPostHandler(std::string const& root, IRestRequestHandler* handler) noexcept

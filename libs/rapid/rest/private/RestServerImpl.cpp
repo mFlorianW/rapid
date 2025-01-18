@@ -131,6 +131,12 @@ public:
         mTcpSocket = std::make_unique<Ip::tcp::socket>(*mContext);
     }
 
+    ~BoostServer() = default;
+    BoostServer(BoostServer const&) = delete;
+    BoostServer& operator=(BoostServer const&) = delete;
+    BoostServer(BoostServer&&) noexcept = delete;
+    BoostServer& operator=(BoostServer&&) noexcept = delete;
+
     void start()
     {
         // create first client connection and for a connection
@@ -204,27 +210,50 @@ private:
 
 RestServerImpl::RestServerImpl() = default;
 
-RestServerImpl::~RestServerImpl()
+RestServerImpl::~RestServerImpl() noexcept
 {
-    if (mBoostServer != nullptr && mServerThread.joinable()) {
-        mBoostServer->stop();
-        mServerThread.join();
-    }
+    stop();
 }
 
 ServerStartResult RestServerImpl::start() noexcept
 {
-    mServerThread = std::thread{[this]() {
+    if (mRunning) {
+        return ServerStartResult::Ok;
+    }
+    mServerThread = std::thread([this]() {
         auto server = BoostServer{this};
         mBoostServer = &server;
+        // Stop was called during startup.
+        // To avoid a deadlock don't call start at all.
+        if (not mRunning) {
+            auto guard = std::lock_guard(mMutex);
+            mBoostServer = nullptr;
+            return;
+        }
         mBoostServer->start();
-    }};
+        auto guard = std::lock_guard(mMutex);
+        mBoostServer = nullptr;
+        mRunning = false;
+    });
+    mRunning = true;
     return ServerStartResult::Ok;
 }
 
 void RestServerImpl::stop() noexcept
 {
-    mBoostServer->stop();
+    mRunning = false;
+    {
+        auto guard = std::lock_guard(mMutex);
+        // It can happen that stop is called and start function is not completed yet.
+        // Then the boost server is not set and is still nullptr.
+        if (mBoostServer != nullptr and mServerThread.joinable()) {
+            mBoostServer->stop();
+            mBoostServer = nullptr;
+        }
+    }
+    if (mServerThread.joinable()) {
+        mServerThread.join();
+    }
 }
 
 void RestServerImpl::registerPostHandler(std::string const& root, IRestRequestHandler* handler) noexcept

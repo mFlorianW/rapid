@@ -21,27 +21,27 @@ public:
     /**
      * Default destructor
      */
-    ~RestServerImpl() override;
+    ~RestServerImpl() noexcept override;
 
     /**
      * Deleted copy constructor.
      */
     RestServerImpl(RestServerImpl const& other) = delete;
+    RestServerImpl(RestServerImpl&& other) = delete;
 
     /**
      * Deleted copy assignment operator
      */
     RestServerImpl& operator=(RestServerImpl const& other) = delete;
+    RestServerImpl& operator=(RestServerImpl const&& other) = delete;
 
     /**
      * Deleted move constructor
      */
-    RestServerImpl(RestServerImpl&& other) = delete;
 
     /**
      * Deleted move assignment operator
      */
-    RestServerImpl& operator=(RestServerImpl const&& other) = delete;
 
     /**
      * @copydoc IRestServer::start
@@ -81,6 +81,8 @@ private:
 
     std::thread mServerThread;
     BoostServer* mBoostServer = nullptr;
+    std::atomic<bool> mRunning;
+    std::mutex mMutex;
 
     struct HandlerEntry
     {

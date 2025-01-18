@@ -149,11 +149,25 @@ private:
     RequestReturnType mReturnType = RequestReturnType::Txt;
 };
 
+class TestFixture
+{
+public:
+    TestRequestHandler handler;
+    RestServer restServer;
+    Request request{"localhost", "27018"};
+
+    TestFixture()
+    {
+        auto result = restServer.start();
+        REQUIRE(result == ServerStartResult::Ok);
+    }
+};
+
 } // namespace
 
 constexpr auto timeout = std::chrono::milliseconds{100};
 
-SCENARIO("The running RestServer shall be connectable.")
+SCENARIO("The running RestServer shall be connectable.", "[REST_SERVER_BASIC]")
 {
     GIVEN("A running RestServer")
     {
@@ -172,7 +186,7 @@ SCENARIO("The running RestServer shall be connectable.")
     }
 }
 
-TEST_CASE("The running RestServer shall send response.")
+TEST_CASE("The running RestServer shall send response.", "[REST_SERVER_BASIC]")
 {
     auto restServer = RestServer{};
     auto result = restServer.start();
@@ -185,7 +199,7 @@ TEST_CASE("The running RestServer shall send response.")
     REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
 }
 
-SCENARIO("The running RestServer shall handle multiple requests.")
+SCENARIO("The running RestServer shall handle multiple requests.", "[REST_SERVER_BASIC]")
 {
     GIVEN("A running RestServer")
     {
@@ -211,7 +225,28 @@ SCENARIO("The running RestServer shall handle multiple requests.")
     }
 }
 
-SCENARIO("The running server shall forward HTTP GET request to the suitable request handler.")
+TEST_CASE_METHOD(TestFixture, "The RestServer shall be start and stopable multiple times", "[REST_SERVER_STOP]")
+{
+    SECTION("Call start multiple times")
+    {
+        auto result = restServer.start();
+        REQUIRE(result == ServerStartResult::Ok);
+        result = restServer.start();
+        REQUIRE(result == ServerStartResult::Ok);
+    }
+
+    SECTION("Call start and stop multiple times")
+    {
+        auto result = restServer.start();
+        REQUIRE(result == ServerStartResult::Ok);
+        restServer.stop();
+        result = restServer.start();
+        REQUIRE(result == ServerStartResult::Ok);
+        restServer.stop();
+    }
+}
+
+SCENARIO("The running server shall forward HTTP GET request to the suitable request handler.", "[REST_SERVER_GET]")
 {
     GIVEN("A running RestServer")
     {
@@ -235,7 +270,7 @@ SCENARIO("The running server shall forward HTTP GET request to the suitable requ
     }
 }
 
-SCENARIO("The running server shall send the HTTP TXT response body for a valid request.")
+SCENARIO("The running server shall send the HTTP TXT response body for a valid request.", "[REST_SERVER_GET]")
 {
     GIVEN("A running RestServer")
     {
@@ -265,7 +300,7 @@ SCENARIO("The running server shall send the HTTP TXT response body for a valid r
     }
 }
 
-SCENARIO("The running server shall send the HTTP JSON response body for a valid request.")
+SCENARIO("The running server shall send the HTTP JSON response body for a valid request.", "[REST_SERVER_GET]")
 {
     GIVEN("A running RestServer")
     {
@@ -296,18 +331,12 @@ SCENARIO("The running server shall send the HTTP JSON response body for a valid 
     }
 }
 
-TEST_CASE("The RestServer shall handle DELETE requests", "[REST_SERVER]")
+TEST_CASE_METHOD(TestFixture, "The RestServer shall handle DELETE requests", "[REST_SERVER_DELETE]")
 {
-    auto handler = TestRequestHandler{};
-    auto restServer = RestServer{};
+    restServer.registerDeleteHandler("/test", &handler);
+
     SECTION("The DELETE request is forwarded the registered handler")
     {
-        restServer.registerDeleteHandler("/test", &handler);
-
-        auto result = restServer.start();
-        REQUIRE(result == ServerStartResult::Ok);
-
-        auto request = Request{"localhost", "27018"};
         request.setVerb(Http::verb::delete_);
         request.connect();
         request.send();
