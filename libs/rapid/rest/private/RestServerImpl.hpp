@@ -74,8 +74,7 @@ public:
     bool handleEvent(System::Event* event) noexcept override;
 
 private:
-    void handleGetRequest(RestRequest& request, ClientConnection* connection) noexcept;
-    void handleDeleteRequest(RestRequest& request, ClientConnection* connection) noexcept;
+    void handleRequest(RestRequest& request, ClientConnection* connection, auto& requestCache, auto& processingCache);
     void handleFinishedRequest(RequestHandleResult& result, RestRequest const& request, auto& requestCache) noexcept;
 
     std::thread mServerThread;
@@ -90,10 +89,12 @@ private:
     };
     using HandlerEntryPtr = std::unique_ptr<HandlerEntry>;
 
-    std::unordered_map<std::string, IRestRequestHandler*> mGetHandlers;
-    std::unordered_map<std::string, HandlerEntryPtr> mDeleteHandler;
+    std::unordered_map<std::string, HandlerEntryPtr> mGetHandlers;
+    std::unordered_map<std::string, HandlerEntryPtr> mDeleteHandlers;
+    std::unordered_map<std::string, HandlerEntryPtr> mPostHandlers;
     std::unordered_map<std::string_view, ClientConnection*> mProcessingGetRequests;
     std::unordered_map<std::string_view, ClientConnection*> mProcessingDeleteRequests;
+    std::unordered_map<std::string_view, ClientConnection*> mProcessingPostRequests;
 };
 
 } // namespace Rapid::Rest::Private

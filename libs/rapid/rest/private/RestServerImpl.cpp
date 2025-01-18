@@ -82,14 +82,22 @@ void RestServerImpl::stop() noexcept
 
 void RestServerImpl::registerPostHandler(std::string const& root, IRestRequestHandler* handler) noexcept
 {
+    auto entry = std::make_unique<HandlerEntry>();
+    entry->handler = handler;
+    entry->mFinishedConnection = handler->finished.connect([this](auto&& result, auto&& restRequest) {
+        handleFinishedRequest(result, restRequest, mProcessingPostRequests);
+    });
+    mPostHandlers.emplace(root, std::move(entry));
 }
 
 void RestServerImpl::registerGetHandler(std::string const& root, IRestRequestHandler* handler) noexcept
 {
-    mGetHandlers.insert({root, handler});
-    std::ignore = handler->finished.connect([this](auto&& result, auto&& restRequest) {
+    auto entry = std::make_unique<HandlerEntry>();
+    entry->handler = handler;
+    entry->mFinishedConnection = handler->finished.connect([this](auto&& result, auto&& restRequest) {
         handleFinishedRequest(result, restRequest, mProcessingGetRequests);
     });
+    mGetHandlers.emplace(root, std::move(entry));
 }
 
 void RestServerImpl::registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept
@@ -99,7 +107,7 @@ void RestServerImpl::registerDeleteHandler(std::string const& root, IRestRequest
     entry->mFinishedConnection = handler->finished.connect([this](auto&& result, auto&& restRequest) {
         handleFinishedRequest(result, restRequest, mProcessingDeleteRequests);
     });
-    mDeleteHandler.emplace(root, std::move(entry));
+    mDeleteHandlers.emplace(root, std::move(entry));
 }
 
 bool RestServerImpl::handleEvent(System::Event* event) noexcept
@@ -110,9 +118,11 @@ bool RestServerImpl::handleEvent(System::Event* event) noexcept
             auto conn = std::get<0>(nextRequest);
             auto request = std::get<1>(nextRequest);
             if (request.getType() == Rest::RequestType::Get) {
-                handleGetRequest(request, conn);
+                handleRequest(request, conn, mGetHandlers, mProcessingGetRequests);
             } else if (request.getType() == Rest::RequestType::Delete) {
-                handleDeleteRequest(request, conn);
+                handleRequest(request, conn, mDeleteHandlers, mProcessingDeleteRequests);
+            } else if (request.getType() == Rest::RequestType::Post) {
+                handleRequest(request, conn, mPostHandlers, mProcessingPostRequests);
             }
         }
         return true;
@@ -120,35 +130,23 @@ bool RestServerImpl::handleEvent(System::Event* event) noexcept
     return false;
 }
 
-void RestServerImpl::handleGetRequest(RestRequest& request, ClientConnection* conn) noexcept
+void RestServerImpl::handleRequest(RestRequest& request,
+                                   ClientConnection* connection,
+                                   auto& requestCache,
+                                   auto& processingCache)
 {
     try {
         auto const path = request.getPath();
-        for (auto& [path, handler] : mGetHandlers) {
+        for (auto& [path, handler] : requestCache) {
             if (path.rfind("path")) {
-                mProcessingGetRequests.insert({request.getPath().getPath(), conn});
-                handler->handleRestRequest(request);
-                return;
-            }
-        }
-        conn->sendResponse(RequestHandleResult::Error, std::string{request.getReturnBody()}, getReturnType(request));
-    } catch (std::exception const& e) {
-        SPDLOG_ERROR("Failed to handle request for unexpected exception: {}", e.what());
-    }
-}
-
-void RestServerImpl::handleDeleteRequest(RestRequest& request, ClientConnection* conn) noexcept
-{
-    try {
-        auto const path = request.getPath();
-        for (auto& [path, handler] : mDeleteHandler) {
-            if (path.rfind("path")) {
-                mProcessingDeleteRequests.insert({request.getPath().getPath(), conn});
+                processingCache.insert({request.getPath().getPath(), connection});
                 handler->handler->handleRestRequest(request);
                 return;
             }
         }
-        conn->sendResponse(RequestHandleResult::Error, std::string{request.getReturnBody()}, getReturnType(request));
+        connection->sendResponse(RequestHandleResult::Error,
+                                 std::string{request.getReturnBody()},
+                                 getReturnType(request));
     } catch (std::exception const& e) {
         SPDLOG_ERROR("Failed to handle request for unexpected exception: {}", e.what());
     }

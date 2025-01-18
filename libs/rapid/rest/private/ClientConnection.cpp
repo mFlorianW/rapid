@@ -18,6 +18,8 @@ RequestType getRequestType(boost::beast::http::request<boost::beast::http::strin
         return RequestType::Get;
     case boost::beast::http::verb::delete_:
         return RequestType::Delete;
+    case boost::beast::http::verb::post:
+        return RequestType::Post;
     default:
         return RequestType::Get;
     }

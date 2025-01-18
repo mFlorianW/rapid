@@ -116,6 +116,9 @@ public:
             } else if (request.getType() == RequestType::Delete) {
                 mDeleteHandlerCalled = true;
                 finished.emit(RequestHandleResult::Ok, request);
+            } else if (request.getType() == RequestType::Post) {
+                mPostHandlerCalled = true;
+                finished.emit(RequestHandleResult::Ok, request);
             }
         } catch (std::exception const& e) {
             SPDLOG_ERROR("Failed to emit finished signal already emitting. Error: {}", e.what());
@@ -132,6 +135,11 @@ public:
         return mDeleteHandlerCalled;
     }
 
+    bool isPostHandlerCalled() const noexcept
+    {
+        return mPostHandlerCalled;
+    }
+
     void setReturnBody(std::string const& body) noexcept
     {
         mBody = body;
@@ -145,6 +153,7 @@ public:
 private:
     bool mHandlerCalled = false;
     bool mDeleteHandlerCalled = false;
+    bool mPostHandlerCalled = false;
     std::string mBody;
     RequestReturnType mReturnType = RequestReturnType::Txt;
 };
@@ -277,5 +286,18 @@ TEST_CASE_METHOD(TestFixture, "The RestServer shall handle DELETE requests", "[R
         auto response = request.read().value_or(Http::response<Http::string_body>{});
         REQUIRE(response.result() == Http::status::ok);
         REQUIRE(response.body() == expBody);
+    }
+}
+
+TEST_CASE_METHOD(TestFixture, "The REST server shall handle POST requests", "[REST_SERVER_POST]")
+{
+    restServer.registerPostHandler("/test", &handler);
+
+    SECTION("The POST request is forwarded the registered handler")
+    {
+        request.setVerb(Http::verb::post);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(handler.isPostHandlerCalled(), true, timeout);
     }
 }
