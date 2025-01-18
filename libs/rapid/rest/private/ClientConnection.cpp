@@ -71,13 +71,13 @@ void ClientConnection::sendResponse(RequestHandleResult result, std::string cons
     auto status = boost::beast::http::status{};
     if (not body.empty()) {
         status = result == RequestHandleResult::Ok ? boost::beast::http::status::ok
-                                                   : boost::beast::http::status::bad_request;
+                                                   : boost::beast::http::status::internal_server_error;
         mResponse.body() = body;
         mResponse.set(boost::beast::http::field::content_type, bodyType);
         mResponse.content_length(mResponse.body().size());
     } else {
         status = result == RequestHandleResult::Ok ? boost::beast::http::status::no_content
-                                                   : boost::beast::http::status::bad_request;
+                                                   : boost::beast::http::status::internal_server_error;
     }
     mResponse.result(status);
     boost::beast::http::async_write(mSocket, mResponse, [this](boost::beast::error_code errorCode, std::size_t) {
