@@ -72,6 +72,11 @@ public:
      */
     void registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
 
+    /**
+     * copydoc IRestServer::registerPutHandler
+     */
+    void registerPutHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
+
 private:
     std::unique_ptr<Private::RestServerImpl> mRestServerImpl;
 };

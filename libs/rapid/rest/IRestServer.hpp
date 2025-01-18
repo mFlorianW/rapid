@@ -106,6 +106,21 @@ public:
      */
     virtual void registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept = 0;
 
+    /**
+     * @brief Registers a PUT handler in the server which is called on request of the passed root dir.
+     *
+     * @details The handler is called when a request for the registered root is received.
+     *          The Server can only have one handler for each route at the time.
+     *          The last set handler for a route is called by the server.
+     *
+     * @note The Server doesn't take any ownership about the handler object.
+     *       The caller must guarantee that object lives as long as the server.
+     *
+     * @param type The root route for the to register the handler.
+     * @param handler The handler object that is called when the type receives a request.
+     */
+    virtual void registerPutHandler(std::string const& root, IRestRequestHandler* handler) noexcept = 0;
+
 protected:
     IRestServer() = default;
 };

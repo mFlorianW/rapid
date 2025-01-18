@@ -69,11 +69,17 @@ public:
     void registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
 
     /**
+     * copydoc IRestServer::registerPostHandler
+     */
+    void registerPutHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
+
+    /**
      * @copydoc Rapid::System::EventHandler
      */
     bool handleEvent(System::Event* event) noexcept override;
 
 private:
+    void registerHandler(std::string const& root, IRestRequestHandler* handler, auto& handlerCache, auto& processCache);
     void handleRequest(RestRequest& request, ClientConnection* connection, auto& requestCache, auto& processingCache);
     void handleFinishedRequest(RequestHandleResult& result, RestRequest const& request, auto& requestCache) noexcept;
 
@@ -92,9 +98,11 @@ private:
     std::unordered_map<std::string, HandlerEntryPtr> mGetHandlers;
     std::unordered_map<std::string, HandlerEntryPtr> mDeleteHandlers;
     std::unordered_map<std::string, HandlerEntryPtr> mPostHandlers;
+    std::unordered_map<std::string, HandlerEntryPtr> mPutHandlers;
     std::unordered_map<std::string_view, ClientConnection*> mProcessingGetRequests;
     std::unordered_map<std::string_view, ClientConnection*> mProcessingDeleteRequests;
     std::unordered_map<std::string_view, ClientConnection*> mProcessingPostRequests;
+    std::unordered_map<std::string_view, ClientConnection*> mProcessingPutRequests;
 };
 
 } // namespace Rapid::Rest::Private

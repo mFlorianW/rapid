@@ -198,7 +198,7 @@ TEST_CASE_METHOD(TestFixture, "The running server shall handle HTTP GET request.
         REQUIRE_COMPARE_WITH_TIMEOUT(handlerCalled, true, timeout);
     }
 
-    SECTION("The GET request shall return with 200 when body exists")
+    SECTION("The GET request shall return with 200 with response body")
     {
         REQUIRE_CALL(handler, handleRestRequest(_))
             .WITH(_1.getType() == RequestType::Get)
@@ -236,7 +236,7 @@ TEST_CASE_METHOD(TestFixture, "The RestServer shall handle DELETE requests", "[R
     {
         REQUIRE_CALL(handler, handleRestRequest(_))
             .WITH(_1.getType() == RequestType::Delete)
-            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Ok, _1));
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::NoContent, _1));
         request.setVerb(Http::verb::delete_);
         request.connect();
         request.send();
@@ -282,7 +282,7 @@ TEST_CASE_METHOD(TestFixture, "The REST server shall handle POST requests", "[RE
     {
         REQUIRE_CALL(handler, handleRestRequest(_))
             .WITH(_1.getType() == RequestType::Post)
-            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Ok, _1));
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::NoContent, _1));
         request.setVerb(Http::verb::post);
         request.connect();
         request.send();
@@ -291,7 +291,7 @@ TEST_CASE_METHOD(TestFixture, "The REST server shall handle POST requests", "[RE
         REQUIRE(response.result() == Http::status::no_content);
     }
 
-    SECTION("The POST request shall return 200 with empty return body")
+    SECTION("The POST request shall return 200 with response body")
     {
         REQUIRE_CALL(handler, handleRestRequest(_))
             .WITH(_1.getType() == RequestType::Post)
@@ -304,6 +304,68 @@ TEST_CASE_METHOD(TestFixture, "The REST server shall handle POST requests", "[RE
         REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
         auto response = request.read().value_or(Http::response<Http::string_body>{});
         REQUIRE(response.result() == Http::status::ok);
+        REQUIRE(response.body() == expBody);
+    }
+}
+
+TEST_CASE_METHOD(TestFixture, "The REST server shall handle PUT requests", "[REST_SERVER_PUT]")
+{
+    restServer.registerPutHandler("/test", std::addressof(handler));
+
+    SECTION("The PUT request is forwarded the registered handler")
+    {
+        bool handlerCalled = false;
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Put)
+            .LR_SIDE_EFFECT(handlerCalled = true);
+        request.setVerb(Http::verb::put);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(handlerCalled, true, timeout);
+    }
+
+    SECTION("The PUT request shall return 204 with empty return body")
+    {
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Put)
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::NoContent, _1));
+        request.setVerb(Http::verb::put);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+        auto response = request.read().value_or(Http::response<Http::string_body>{});
+        REQUIRE(response.result() == Http::status::no_content);
+    }
+
+    SECTION("The PUT request shall return 200 with response body")
+    {
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Put)
+            .LR_SIDE_EFFECT(_1.setReturnBody(expBody))
+            .LR_SIDE_EFFECT(_1.setReturnType(RequestReturnType::Txt))
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Ok, _1));
+        request.setVerb(Http::verb::put);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+        auto response = request.read().value_or(Http::response<Http::string_body>{});
+        REQUIRE(response.result() == Http::status::ok);
+        REQUIRE(response.body() == expBody);
+    }
+
+    SECTION("The PUT request shall return 201 when the resource is created")
+    {
+        REQUIRE_CALL(handler, handleRestRequest(_))
+            .WITH(_1.getType() == RequestType::Put)
+            .LR_SIDE_EFFECT(_1.setReturnBody(expBody))
+            .LR_SIDE_EFFECT(_1.setReturnType(RequestReturnType::Txt))
+            .LR_SIDE_EFFECT(handler.finished.emit(RequestHandleResult::Created, _1));
+        request.setVerb(Http::verb::put);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+        auto response = request.read().value_or(Http::response<Http::string_body>{});
+        REQUIRE(response.result() == Http::status::created);
         REQUIRE(response.body() == expBody);
     }
 }

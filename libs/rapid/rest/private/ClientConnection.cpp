@@ -20,6 +20,8 @@ RequestType getRequestType(boost::beast::http::request<boost::beast::http::strin
         return RequestType::Delete;
     case boost::beast::http::verb::post:
         return RequestType::Post;
+    case boost::beast::http::verb::put:
+        return RequestType::Put;
     default:
         return RequestType::Get;
     }
@@ -70,18 +72,12 @@ void ClientConnection::sendResponse(RequestHandleResult result, std::string cons
     mResponse.keep_alive(false);
     mResponse.prepare_payload();
 
-    auto status = boost::beast::http::status{};
     if (not body.empty()) {
-        status = result == RequestHandleResult::Ok ? boost::beast::http::status::ok
-                                                   : boost::beast::http::status::internal_server_error;
         mResponse.body() = body;
         mResponse.set(boost::beast::http::field::content_type, bodyType);
         mResponse.content_length(mResponse.body().size());
-    } else {
-        status = result == RequestHandleResult::Ok ? boost::beast::http::status::no_content
-                                                   : boost::beast::http::status::internal_server_error;
     }
-    mResponse.result(status);
+    mResponse.result(static_cast<std::uint32_t>(result));
     boost::beast::http::async_write(mSocket, mResponse, [this](boost::beast::error_code errorCode, std::size_t) {
         if (errorCode) {
             SPDLOG_ERROR("Failed to send response. Error code: {}", errorCode.value());

@@ -110,6 +110,11 @@ void RestServerImpl::registerDeleteHandler(std::string const& root, IRestRequest
     mDeleteHandlers.emplace(root, std::move(entry));
 }
 
+void RestServerImpl::registerPutHandler(std::string const& root, IRestRequestHandler* handler) noexcept
+{
+    registerHandler(root, handler, mPutHandlers, mProcessingPutRequests);
+}
+
 bool RestServerImpl::handleEvent(System::Event* event) noexcept
 {
     if (event->getEventType() == System::Event::Type::HttpRequestReceived) {
@@ -123,11 +128,26 @@ bool RestServerImpl::handleEvent(System::Event* event) noexcept
                 handleRequest(request, conn, mDeleteHandlers, mProcessingDeleteRequests);
             } else if (request.getType() == Rest::RequestType::Post) {
                 handleRequest(request, conn, mPostHandlers, mProcessingPostRequests);
+            } else if (request.getType() == RequestType::Put) {
+                handleRequest(request, conn, mPutHandlers, mProcessingPutRequests);
             }
         }
         return true;
     }
     return false;
+}
+
+void RestServerImpl::registerHandler(std::string const& root,
+                                     IRestRequestHandler* handler,
+                                     auto& handlerCache,
+                                     auto& processCache)
+{
+    auto entry = std::make_unique<HandlerEntry>();
+    entry->handler = handler;
+    entry->mFinishedConnection = handler->finished.connect([this, &processCache](auto&& result, auto&& restRequest) {
+        this->handleFinishedRequest(result, restRequest, processCache);
+    });
+    handlerCache.emplace(root, std::move(entry));
 }
 
 void RestServerImpl::handleRequest(RestRequest& request,

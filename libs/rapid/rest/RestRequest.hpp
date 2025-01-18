@@ -16,6 +16,7 @@ enum class RequestType
     Get,
     Post,
     Delete,
+    Put
 };
 
 enum class RequestReturnType

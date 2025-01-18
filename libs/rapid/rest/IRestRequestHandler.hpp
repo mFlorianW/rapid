@@ -12,8 +12,10 @@ namespace Rapid::Rest
 
 enum class RequestHandleResult
 {
-    Ok,
-    Error
+    Ok = 200,
+    Created = 201,
+    NoContent = 204,
+    Error = 500
 };
 
 class IRestRequestHandler
