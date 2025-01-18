@@ -107,11 +107,11 @@ class TestRequestHandler : public IRestRequestHandler
 public:
     void handleRestRequest(RestRequest& request) noexcept override
     {
+        request.setReturnType(mReturnType);
+        request.setReturnBody(mBody);
         try {
             if (request.getType() == RequestType::Get) {
                 mHandlerCalled = true;
-                request.setReturnType(mReturnType);
-                request.setReturnBody(mBody);
                 finished.emit(RequestHandleResult::Ok, request);
             } else if (request.getType() == RequestType::Delete) {
                 mDeleteHandlerCalled = true;
@@ -265,5 +265,17 @@ TEST_CASE_METHOD(TestFixture, "The RestServer shall handle DELETE requests", "[R
         REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
         auto response = request.read().value_or(Http::response<Http::string_body>{});
         REQUIRE(response.result() == Http::status::no_content);
+    }
+
+    SECTION("The DELETE shall return with 200 with response body")
+    {
+        handler.setReturnBody(expBody);
+        request.setVerb(Http::verb::delete_);
+        request.connect();
+        request.send();
+        REQUIRE_COMPARE_WITH_TIMEOUT(request.read().has_value(), true, timeout);
+        auto response = request.read().value_or(Http::response<Http::string_body>{});
+        REQUIRE(response.result() == Http::status::ok);
+        REQUIRE(response.body() == expBody);
     }
 }
