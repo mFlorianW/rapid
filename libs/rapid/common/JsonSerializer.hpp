@@ -7,21 +7,37 @@
 
 #include "SessionData.hpp"
 
-namespace Rapid::Common::JsonSerializer::Session
+namespace Rapid::Common::JsonSerializer
+{
+
+namespace Session
 {
 
 /**
- * Serialize the passed session meta data into a JSON string.
- * return string with JSON content.
+ * @brief Serialize the passed session meta data into a JSON string.
+ * @return string with JSON content.
  */
 std::string serialize(SessionMetaData const& sessionMetaData);
 
 /**
- * Serialize the passed session into a JSON string.
- * return string with JSON content.
+ * @brief Serialize the passed session into a JSON string.
+ * @return string with JSON content.
  */
 std::string serialize(SessionData const& session);
 
-} // namespace Rapid::Common::JsonSerializer::Session
+} // namespace Session
+
+namespace Track
+{
+
+/**
+ * @brief Serialize the passed track into a JSON string.
+ * @return string with the JSON content.
+ */
+std::string serialize(TrackData const& trackData);
+
+} // namespace Track
+
+} // namespace Rapid::Common::JsonSerializer
 
 #endif // JSONSERIALIZER_HPP

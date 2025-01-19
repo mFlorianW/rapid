@@ -5,6 +5,7 @@
 #include "TestFile.hpp"
 #include "common/JsonDeserializer.hpp"
 #include "testhelper/Sessions.hpp"
+#include "testhelper/Tracks.hpp"
 #include <catch2/catch_all.hpp>
 #include <fstream>
 #include <iostream>
@@ -13,7 +14,7 @@
 using namespace Rapid::Common;
 using namespace Rapid::TestHelper;
 
-TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a SessionData")
+TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a SessionData", "[JSONDESERIALIZER_SESSION]")
 {
     auto expectedSession = Sessions::getTestSession();
     auto result = JsonDeserializer::Session::deserialize(Sessions::getTestSessionAsJson());
@@ -26,7 +27,8 @@ TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a Ses
     // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
-TEST_CASE("The JsonDeserializer shall deserialize a real world json string into a SessionData")
+TEST_CASE("The JsonDeserializer shall deserialize a real world json string into a SessionData",
+          "[JSONDESERIALIZER_SESSION]")
 {
     std::ifstream file(TEST_FILE_PATH);
     REQUIRE(file.is_open());
@@ -40,7 +42,8 @@ TEST_CASE("The JsonDeserializer shall deserialize a real world json string into 
     // NOLINTEND(bugprone-unchecked-optional-access)
 }
 
-TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a SessionMetaData")
+TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a SessionMetaData",
+          "[JSONDESERIALIZER_SESSION]")
 {
     auto expectedSession = Sessions::getTestSessionMetaData();
     auto result = JsonDeserializer::SessionMetaData::deserialize(Sessions::getTestSessionMetaAsJson());
@@ -50,4 +53,12 @@ TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a Ses
     CHECK(result.value().getSessionTime() == expectedSession.getSessionTime());
     REQUIRE(result.value().getTrack() == expectedSession.getTrack());
     // NOLINTEND(bugprone-unchecked-optional-access)
+}
+
+TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a TrackData", "[JSONDESERIALIZER_TRACK]")
+{
+    auto expTrack = Tracks::getTrack();
+    auto track = JsonDeserializer::Track::derserialize(Tracks::getTrackAsJson());
+    REQUIRE(track.has_value());
+    REQUIRE(track.value_or(TrackData{}) == expTrack);
 }

@@ -13,6 +13,7 @@ Common::TrackData getTrackWithoutSector();
 Common::TrackData getOscherslebenTrack();
 Common::TrackData getOscherslebenTrack2();
 Common::TrackData getTrack();
+std::string getTrackAsJson();
 } // namespace Rapid::TestHelper::Tracks
 
 #endif //! TRACKS_HPP

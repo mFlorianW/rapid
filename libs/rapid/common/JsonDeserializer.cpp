@@ -172,4 +172,18 @@ std::optional<Common::SessionMetaData> deserialize(std::string const& rawData)
 
 } // namespace SessionMetaData
 
+namespace Track
+{
+std::optional<Common::TrackData> derserialize(std::string rawData)
+{
+    try {
+        auto json = nlohmann::ordered_json{};
+        return parseTrack(json.parse(rawData));
+    } catch (nlohmann::json::exception const& e) {
+        SPDLOG_CRITICAL("Failed to deserialize track. {}", e.what());
+        return std::nullopt;
+    }
+}
+} // namespace Track
+
 } // namespace Rapid::Common::JsonDeserializer
