@@ -22,6 +22,7 @@ ServerStartResult RestServer::start() noexcept
 
 void RestServer::stop() noexcept
 {
+    mRestServerImpl->stop();
 }
 
 void RestServer::registerPostHandler(std::string const& root, IRestRequestHandler* handler) noexcept
@@ -32,6 +33,16 @@ void RestServer::registerPostHandler(std::string const& root, IRestRequestHandle
 void RestServer::registerGetHandler(std::string const& root, IRestRequestHandler* handler) noexcept
 {
     mRestServerImpl->registerGetHandler(root, handler);
+}
+
+void RestServer::registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept
+{
+    mRestServerImpl->registerDeleteHandler(root, handler);
+}
+
+void RestServer::registerPutHandler(std::string const& root, IRestRequestHandler* handler) noexcept
+{
+    mRestServerImpl->registerPutHandler(root, handler);
 }
 
 } // namespace Rapid::Rest

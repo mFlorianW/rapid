@@ -48,24 +48,34 @@ public:
     RestServer& operator=(RestServer const&& other) = delete;
 
     /**
-     * @copydoc RestServer::start
+     * @copydoc IRestServer::start
      */
     [[nodiscard]] ServerStartResult start() noexcept override;
 
     /**
-     * @copydoc RestServer::stop
+     * @copydoc IRestServer::stop
      */
     void stop() noexcept override;
 
     /**
-     * @copydoc RestServer::registerPostHandler
+     * @copydoc IRestServer::registerPostHandler
      */
     void registerPostHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
 
     /**
-     * copydoc RestServer::registerGetHandler
+     * copydoc IRestServer::registerGetHandler
      */
     void registerGetHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
+
+    /**
+     * copydoc IRestServer::registerDeleteHandler
+     */
+    void registerDeleteHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
+
+    /**
+     * copydoc IRestServer::registerPutHandler
+     */
+    void registerPutHandler(std::string const& root, IRestRequestHandler* handler) noexcept override;
 
 private:
     std::unique_ptr<Private::RestServerImpl> mRestServerImpl;

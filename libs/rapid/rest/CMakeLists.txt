@@ -10,11 +10,6 @@ set(RAPID_REST_PUBLIC_HEADERS
 )
 install(FILES ${RAPID_REST_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/rest")
 
-set(RAPID_REST_PRIVATE_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/private/RestServerImpl.hpp
-)
-install(FILES ${RAPID_REST_PRIVATE_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/rest/private")
-
 target_sources(RapidLibrary
     PRIVATE
         ${RAPID_REST_PUBLIC_HEADERS}
@@ -27,6 +22,11 @@ target_sources(RapidLibrary
         ${CMAKE_CURRENT_SOURCE_DIR}/RestCall.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RestServer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/private/RestServerImpl.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/private/RestServerImpl.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/private/ClientConnection.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/private/ClientConnection.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/private/BoostServer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/private/BoostServer.hpp
 )
 
 if(ENABLE_QT)
