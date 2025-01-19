@@ -56,6 +56,15 @@ public:
     virtual void setTrack(Common::TrackData const& track) noexcept = 0;
 
     /**
+     * @brief Gives the track that is used in the active session.
+     *
+     * @details The IActiveSessionWorkflow can only return a track when a track was set with @ref IActiveSessionWorkflow::setTrack.
+     *
+     * @return The track when set or a nullopt when no track is present.
+     */
+    virtual std::optional<Common::TrackData> getTrack() const noexcept = 0;
+
+    /**
      * Gives the currently active session.
      * Only returns a valid session if startActiveSession is called.
      * @return The currently active session.

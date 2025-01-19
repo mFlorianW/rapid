@@ -41,6 +41,11 @@ public:
     void setTrack(Common::TrackData const& track) noexcept override;
 
     /**
+     * @copydoc IActiveSessionWorkflow::getTrack()
+     */
+    std::optional<Common::TrackData> getTrack() const noexcept override;
+
+    /**
      * @copydoc IActiveSessionWorkflow::getActiveSession()
      */
     std::optional<Common::SessionData> getSession() const noexcept override;
@@ -73,7 +78,7 @@ private:
     Algorithm::ILaptimer& mLaptimer;
     Storage::ISessionDatabase& mDatabase;
     std::optional<Common::SessionData> mSession;
-    Common::TrackData mTrack;
+    std::optional<Common::TrackData> mTrack;
     Common::LapData mCurrentLap;
     bool mLapActive = false;
 
