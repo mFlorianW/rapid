@@ -73,4 +73,33 @@ Common::TrackData getTrack()
     return track;
 }
 
+std::string getTrackAsJson()
+{
+    // clang-format off
+    constexpr auto json =
+        "{"
+            "\"name\":\"Track\","
+            "\"startline\":{"
+                "\"latitude\":\"52\","
+                "\"longitude\":\"11.2\""
+            "},"
+            "\"finishline\":{"
+                "\"latitude\":\"52\","
+                "\"longitude\":\"11.2\""
+            "},"
+            "\"sectors\":["
+                "{"
+                   "\"latitude\":\"52\","
+                   "\"longitude\":\"11.2\""
+                "},"
+                "{"
+                   "\"latitude\":\"52\","
+                   "\"longitude\":\"11.2\""
+                "}"
+            "]"
+        "}";
+    // clang-format on
+    return json;
+}
+
 } // namespace Rapid::TestHelper::Tracks

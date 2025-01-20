@@ -29,7 +29,7 @@ void ActiveSessionWorkflow::startActiveSession() noexcept
         std::ignore =
             mLaptimer.currentSectorTime.valueChanged().connect(&ActiveSessionWorkflow::onCurrentSectorTimeChanged,
                                                                this);
-        mLaptimer.setTrack(mTrack);
+        mLaptimer.setTrack(mTrack.value_or(TrackData{}));
         std::ignore = mLaptimer.lapStarted.connect([this]() {
             mLapActive = true;
         });
@@ -41,7 +41,7 @@ void ActiveSessionWorkflow::startActiveSession() noexcept
             }
         });
         auto dateTime = mDateTimeProvider.gpsPosition.get();
-        mSession = Common::SessionData{mTrack, dateTime.getDate(), dateTime.getTime()};
+        mSession = Common::SessionData{mTrack.value_or(TrackData{}), dateTime.getDate(), dateTime.getTime()};
         lapCount.set(0);
     } catch (std::exception const& e) {
         spdlog::error("Unknow Error on starting active session. Error: {}", e.what());
@@ -61,6 +61,14 @@ void ActiveSessionWorkflow::stopActiveSession() noexcept
 void ActiveSessionWorkflow::setTrack(Common::TrackData const& track) noexcept
 {
     mTrack = track;
+}
+
+std::optional<Common::TrackData> ActiveSessionWorkflow::getTrack() const noexcept
+{
+    if (mTrack.has_value()) {
+        return mTrack;
+    }
+    return std::nullopt;
 }
 
 std::optional<Common::SessionData> ActiveSessionWorkflow::getSession() const noexcept

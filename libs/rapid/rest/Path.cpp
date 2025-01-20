@@ -94,4 +94,14 @@ bool operator!=(Path const& lhs, Path const& rhs)
     return !(lhs == rhs);
 }
 
+bool Path::operator==(char const* rhs) const noexcept
+{
+    return mData->mPath == rhs;
+}
+
+bool Path::operator!=(char const* rhs) const noexcept
+{
+    return !(*this == rhs);
+}
+
 } // namespace Rapid::Rest

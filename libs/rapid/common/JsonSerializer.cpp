@@ -63,7 +63,7 @@ nlohmann::ordered_json serialize(PositionData const& position)
 namespace Track
 {
 
-nlohmann::ordered_json serialize(TrackData const& track)
+nlohmann::ordered_json serializeTrack(TrackData const& track)
 {
     auto json = nlohmann::ordered_json{};
     json["name"] = track.getTrackName();
@@ -80,6 +80,11 @@ nlohmann::ordered_json serialize(TrackData const& track)
     return json;
 }
 
+std::string serialize(TrackData const& trackData)
+{
+    return serializeTrack(trackData).dump();
+}
+
 } // namespace Track
 
 namespace Session
@@ -91,7 +96,7 @@ nlohmann::ordered_json serializeSessionMetaData(SessionMetaData const& session)
     json["id"] = session.getId();
     json["date"] = session.getSessionDate().asString();
     json["time"] = session.getSessionTime().asString();
-    json["track"] = Track::serialize(session.getTrack());
+    json["track"] = Track::serializeTrack(session.getTrack());
 
     return json;
 }

@@ -22,6 +22,11 @@ namespace SessionMetaData
 std::optional<Common::SessionMetaData> deserialize(std::string const& rawData);
 }
 
+namespace Track
+{
+std::optional<Common::TrackData> derserialize(std::string rawData);
+}
+
 } // namespace Rapid::Common::JsonDeserializer
 
 #endif // JSONDESERIALIZER_HPP
