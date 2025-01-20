@@ -93,6 +93,20 @@ public:
      */
     friend bool operator!=(Path const& lhs, Path const& rhs);
 
+    /**
+     * @brief Equal operator for const char*
+     * @return true The two objects are the same.
+     * @return false The two objects are not the same.
+     */
+    bool operator==(char const* rhs) const noexcept;
+
+    /**
+     * @brief Not equal operator for const char*
+     * @return true The two objects are the same.
+     * @return false The two objects are not the same.
+     */
+    bool operator!=(char const* rhs) const noexcept;
+
 private:
     Common::SharedDataPointer<SharedPath> mData;
 };

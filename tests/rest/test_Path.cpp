@@ -135,3 +135,21 @@ SCENARIO("The Path shall return the whole path as string")
         }
     }
 }
+
+TEST_CASE("The Path shall be comparable with a strings")
+{
+    auto const path = Path{"/test/1234"};
+    SECTION("Compare with char*")
+    {
+        auto const* str = "/test/1234";
+        REQUIRE(path == str);
+        REQUIRE_FALSE(path != str);
+    }
+
+    SECTION("Compare with string")
+    {
+        auto const str = std::string{"/test/1234"};
+        REQUIRE(path == str);
+        REQUIRE_FALSE(path != str);
+    }
+}
