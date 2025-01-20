@@ -32,7 +32,12 @@ LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvid
     mTrackDetectionWorkflow.startDetection();
 
     mRestServer.registerGetHandler(std::string{"/sessions"}, &mSessionEndpoint);
-    (void)mRestServer.start();
+    mRestServer.registerGetHandler(std::string{"/activeSession"}, std::addressof(mActiveSessionEndpoint));
+    if (mRestServer.start() == Rest::ServerStartResult::Ok) {
+        SPDLOG_INFO("Succesful start REST server");
+    } else {
+        SPDLOG_ERROR("Failed to start REST server");
+    }
 }
 
 } // namespace Rapid::LappyHeadless

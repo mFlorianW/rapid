@@ -11,6 +11,7 @@
 #include <rest/SessionEndpoint.hpp>
 #include <storage/ISessionDatabase.hpp>
 #include <storage/ITrackDatabase.hpp>
+#include <workflow/ActiveSessionEndpoint.hpp>
 #include <workflow/ActiveSessionWorkflow.hpp>
 #include <workflow/TrackDetectionWorkflow.hpp>
 
@@ -34,6 +35,7 @@ private:
     Rapid::Workflow::ActiveSessionWorkflow mActiveSessionWorkflow{mPositionProvider, mSimpleLaptimer, mSessionDatabase};
     Rapid::Rest::SessionEndpoint mSessionEndpoint{mSessionDatabase};
     Rapid::Rest::RestServer mRestServer;
+    Rapid::Workflow::ActiveSessionEndpoint mActiveSessionEndpoint{std::addressof(mActiveSessionWorkflow)};
 };
 
 } // namespace Rapid::LappyHeadless
