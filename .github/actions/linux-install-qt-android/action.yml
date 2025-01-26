@@ -1,0 +1,46 @@
+name: "linux-install-qt-android"
+description: "Install Qt for Linux in a specific version"
+inputs:
+  os:
+    description: 'Runner OS'
+    required: false
+    default: 'default'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Java
+      if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 28
+        ndk-version: 26.3.11579264
+
+    - name: Install Android CMake
+      if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
+      shell: bash
+      run: |
+        sdkmanager "cmake;3.31.1"
+
+    - name: Install VCPKG
+      if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
+      uses: lukka/run-vcpkg@v11
+
+    - name: Install Qt
+      if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
+      uses: jurplel/install-qt-action@v4
+      with:
+        aqtversion: '==3.1.*'
+        version: '6.8.1'
+        host: 'linux'
+        target: 'android'
+        arch: ${{matrix.abi}}
+        modules: 'qtlocation qtpositioning'
+        setup-python: false
+

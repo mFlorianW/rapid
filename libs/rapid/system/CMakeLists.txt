@@ -31,6 +31,6 @@ target_sources(RapidLibrary
         ${CMAKE_CURRENT_SOURCE_DIR}/FdNotifier.cpp
 )
 
-if(ENABLE_QT)
+if(ENABLE_DESKTOP OR ENABLE_ANDROID)
     add_subdirectory(qt)
 endif()

@@ -5,6 +5,7 @@
 #include "PositionData.hpp"
 #include <cmath>
 #include <limits>
+#include <utility>
 
 namespace Rapid::Common
 {

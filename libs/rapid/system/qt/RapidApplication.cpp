@@ -29,14 +29,5 @@ RapidGuiApplication::RapidGuiApplication(int& argc, char** argv)
 
 RapidGuiApplication::~RapidGuiApplication() = default;
 
-RapidApplication::RapidApplication(int& argc, char** argv)
-    : QApplication(argc, argv)
-{
-    if (not EventLoopIntegration::makeEventLoopIntegration()) {
-        SPDLOG_CRITICAL("Faild to setup rapid eventloop integration.");
-    }
-}
-
-RapidApplication::~RapidApplication() = default;
 
 } // namespace Rapid::System::Qt

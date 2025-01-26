@@ -1,3 +1,9 @@
+set(DB_FILE ${CMAKE_CURRENT_BINARY_DIR}/rapid.db CACHE STRING "Clean Database File")
+# Create empty database on first CMake configure run
+if(NOT EXISTS ${DB_FILE})
+    execute_process(COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/rapid.db")
+endif()
+
 # Create empty database on every build
 add_custom_command(OUTPUT rapid.db
     COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/rapid.db && sqlite3 rapid.db < "${CMAKE_CURRENT_SOURCE_DIR}/schema.sql"
@@ -5,7 +11,6 @@ add_custom_command(OUTPUT rapid.db
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/schema.sql
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/track.sql
     VERBATIM)
-
 add_custom_target(db ALL DEPENDS rapid.db)
 
 set(DATABASE_FILE ${CMAKE_INSTALL_PREFIX}/${SHARED_DATADIR}/rapid.db)
@@ -20,4 +25,4 @@ INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/rapid.db DESTINATION ${SHARED_DATADIR} RENAME rapid.db)
+install(FILES ${DB_FILE} DESTINATION ${SHARED_DATADIR} RENAME rapid.db)

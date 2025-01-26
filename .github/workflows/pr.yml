@@ -15,6 +15,9 @@ jobs:
     needs: [Generates_VCPKG_Cache]
     uses: ./.github/workflows/pr-build.yml
 
+  Build_Android:
+    uses: ./.github/workflows/pr-build-android.yml
+
   Linting_Clang_Tidy:
     needs: [Generates_VCPKG_Cache]
     uses: ./.github/workflows/pr-lint.yml

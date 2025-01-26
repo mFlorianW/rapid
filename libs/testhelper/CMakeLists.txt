@@ -39,6 +39,6 @@ PUBLIC
     trompeloeil::trompeloeil
 )
 
-if(ENABLE_QT)
+if(ENABLE_DESKTOP)
     add_subdirectory(qt)
 endif()

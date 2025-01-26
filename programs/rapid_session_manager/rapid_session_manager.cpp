@@ -5,11 +5,11 @@
 #include <QTimer>
 #include <SessionManager.hpp>
 #include <system/EventLoop.hpp>
-#include <system/qt/RapidApplication.hpp>
+#include <system/qt/RapidQApplication.hpp>
 
 int main(int argc, char** argv)
 {
-    auto app = Rapid::System::Qt::RapidApplication{argc, argv};
+    auto app = Rapid::System::Qt::RapidQApplication{argc, argv};
     app.setApplicationName("lappy");
     app.setOrganizationName("Lappy");
     app.setOrganizationDomain("de.lappy");

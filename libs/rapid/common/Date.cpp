@@ -8,6 +8,7 @@
 #include <ctime>
 #include <iomanip>
 #include <spdlog/spdlog.h>
+#include <sstream>
 
 namespace Rapid::Common
 {

@@ -8,8 +8,7 @@
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "1",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}-install",
-                "ENABLE_BOOST": "ON"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}-install"
             }
         },
         {
@@ -47,16 +46,61 @@
         },
         {
             "name": "debug-vcpkg",
-            "inherits": "base-debug",
+            "inherits": "base-debug-vcpkg",
             "displayName": "debug configure preset",
             "description": "Debug build"
+        },
+        {
+            "name": "debug-desktop",
+            "inherits": "base-debug",
+            "displayName": "debug configure preset",
+            "description": "Debug build",
+            "cacheVariables": {
+                "ENABLE_DESKTOP": "ON"
+            }
+        },
+        {
+            "name": "debug-desktop-vcpkg",
+            "inherits": "base-debug-vcpkg",
+            "displayName": "debug configure preset",
+            "description": "Debug build",
+            "cacheVariables": {
+                "ENABLE_DESKTOP": "ON"
+            }
+        },
+        {
+            "name": "debug-android-x86_64",
+            "inherits": "base-debug",
+            "displayName": "debug configure preset",
+            "description": "Debug build for Android",
+            "cacheVariables": {
+                "ENABLE_TEST": "OFF",
+                "ENABLE_ANDROID": "ON",
+                "CMAKE_TOOLCHAIN_FILE": "$env{QT_ANDROID_ROOT}/lib/cmake/Qt6/qt.toolchain.cmake",
+                "VCPKG_TRIPLET": "x64-android"
+            }
         },
         {
             "name": "github",
             "inherits": "base-debug-vcpkg",
             "displayName": "Github CI configure preset",
             "description": "Debug build for the Github CI",
-            "generator": "Unix Makefiles"
+            "cacheVariables": {
+                "ENABLE_DESKTOP": "ON"
+            }
+        },
+        {
+            "name": "github-android-x86_64",
+            "inherits": "base-debug",
+            "displayName": "debug configure preset",
+            "description": "Github debug build for Android",
+            "cacheVariables": {
+                "ENABLE_TEST": "OFF",
+                "ENABLE_ANDROID": "ON",
+                "CMAKE_TOOLCHAIN_FILE": "$env{QT_ANDROID_ROOT}/lib/cmake/Qt6/qt.toolchain.cmake",
+                "QT_HOST_PATH": "$env{QT_HOST_PATH}",
+                "VCPKG_TRIPLET": "x64-android"
+            }
         },
         {
             "name": "release",
@@ -64,7 +108,8 @@
             "displayName": "Relase configure preset",
             "description": "Release Build",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+                "ENABLE_DESKTOP": "ON"
             }
         },
         {
@@ -73,7 +118,8 @@
             "displayName": "Relase configure preset",
             "description": "Release Build",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+                "ENABLE_DESKTOP": "ON"
             }
         }
     ],
@@ -87,8 +133,24 @@
             "configurePreset": "debug-vcpkg"
         },
         {
+            "name": "debug-desktop",
+            "configurePreset": "debug-desktop"
+        },
+        {
+            "name": "debug-desktop-vcpkg",
+            "configurePreset": "debug-desktop-vcpkg"
+        },
+        {
+            "name": "debug-android-x86_64",
+            "configurePreset": "debug-android-x86_64"
+        },
+        {
             "name": "github",
             "configurePreset": "github"
+        },
+        {
+            "name": "github-android-x86_64",
+            "configurePreset": "github-android-x86_64"
         },
         {
             "name": "release",
@@ -107,6 +169,14 @@
         {
             "name": "debug-vcpkg",
             "configurePreset": "debug-vcpkg"
+        },
+        {
+            "name": "debug-desktop",
+            "configurePreset": "debug-desktop"
+        },
+        {
+            "name": "debug-desktop-vcpkg",
+            "configurePreset": "debug-desktop-vcpkg"
         },
         {
             "name": "release",

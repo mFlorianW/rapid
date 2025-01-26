@@ -18,6 +18,6 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ActiveSessionEndpoint.cpp
 )
 
-if(ENABLE_QT)
+if(ENABLE_DESKTOP OR ENABLE_ANDROID)
     add_subdirectory(qt)
 endif()

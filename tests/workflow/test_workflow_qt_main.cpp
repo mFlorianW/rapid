@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <catch2/catch_session.hpp>
-#include <system/qt/RapidApplication.hpp>
+#include <system/qt/RapidQApplication.hpp>
 #include <testhelper/qt/QtTestHelper.hpp>
 
 QT_CATCH2_TEST_MAIN();

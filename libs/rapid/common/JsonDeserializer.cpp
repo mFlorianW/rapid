@@ -5,6 +5,7 @@
 #include "JsonDeserializer.hpp"
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <sstream>
 
 namespace Rapid::Common::JsonDeserializer
 {

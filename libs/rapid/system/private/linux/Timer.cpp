@@ -7,6 +7,7 @@
 #include <ctime>
 #include <spdlog/spdlog.h>
 #include <sys/timerfd.h>
+#include <unistd.h>
 
 namespace Rapid::System::Private::Linux
 {

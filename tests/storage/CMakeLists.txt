@@ -55,7 +55,7 @@ catch_discover_tests(test_storage_sqlitetrack_database
     DISCOVERY_MODE PRE_TEST
 )
 
-if(ENABLE_QT)
+if(ENABLE_DESKTOP)
     qt_add_dbus_adaptor(SESSION_DATABASE_ADAPTOR
         ${CMAKE_SOURCE_DIR}/libs/rapid/storage/qt/SessionDatabase.xml
         SessionDatabaseServer.hpp

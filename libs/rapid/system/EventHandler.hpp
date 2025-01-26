@@ -61,7 +61,7 @@ protected:
     EventHandler();
 
 private:
-    std::thread::id mThreadId = std::thread::id{0};
+    std::thread::id mThreadId;
 };
 
 } // namespace Rapid::System

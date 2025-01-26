@@ -33,7 +33,7 @@ catch_discover_tests(test_common
     DISCOVERY_MODE PRE_TEST
 )
 
-if(ENABLE_QT)
+if(ENABLE_DESKTOP)
     add_executable(test_common_qt)
     target_sources(test_common_qt
         PRIVATE
