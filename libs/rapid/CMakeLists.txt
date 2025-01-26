@@ -56,14 +56,16 @@ install(FILES
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Rapid"
 )
 
-if(ENABLE_QT)
+if(ENABLE_DESKTOP OR ENABLE_ANDROID)
     #################################################################################
     # Define Generated DBus Interfaces
     #################################################################################
-    qt_add_dbus_interface(SESSION_DBUS_INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/storage/qt/SessionDatabase.xml
-        SessionDatabaseIpcInterface
-    )
+    if(ENABLE_DESKTOP)
+        qt_add_dbus_interface(SESSION_DBUS_INTERFACE
+            ${CMAKE_CURRENT_SOURCE_DIR}/storage/qt/SessionDatabase.xml
+            SessionDatabaseIpcInterface
+        )
+    endif()
 
     #################################################################################
     # Define Rapid Library Qt
@@ -92,9 +94,15 @@ if(ENABLE_QT)
             Qt6::Network
             Qt6::Gui
             Qt6::GuiPrivate
-            Qt6::Widgets
-            Qt6::DBus
     )
+
+    if(ENABLE_DESKTOP)
+        target_link_libraries(RapidLibraryQt
+            PUBLIC
+                Qt6::Widgets
+                Qt6::DBus
+        )
+    endif()
     target_compile_definitions(RapidLibraryQt PRIVATE QT_NO_KEYWORDS)
 
     set_target_properties(RapidLibraryQt PROPERTIES
@@ -129,7 +137,7 @@ if(ENABLE_QT)
         "${CMAKE_CURRENT_BINARY_DIR}/RapidQtVersion.cmake"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/RapidQt"
     )
-endif(ENABLE_QT)
+endif(ENABLE_DESKTOP OR ENABLE_ANDROID)
 
 #################################################################################
 # Include Sources and Header Install Targets

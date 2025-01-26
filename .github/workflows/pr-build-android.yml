@@ -1,0 +1,61 @@
+# SPDX-FileCopyrightText: 2024 Florian Weßel <florianwessel@gmx.net>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+name: Pullrequest Build For Android
+
+on:
+  workflow_call:
+
+jobs:
+  Generate_Build_Jobs:
+    runs-on: ubuntu-24.04
+    outputs:
+      commits: ${{ steps.commits.outputs.commits_json }}
+    steps:
+      - name: Install jq
+        run: sudo apt-get install jq
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create Commits list
+        id: commits
+        run: |
+          commits=($(git rev-list --reverse origin/${{ github.base_ref }}..origin/${{ github.head_ref }}))
+          commits=$(jq -n -c '$ARGS.positional' --args "${commits[@]}")
+          echo "${commits[@]}"
+          echo "commits_json=${commits[@]}" >> "$GITHUB_OUTPUT"
+
+  Build:
+    runs-on: ubuntu-24.04
+    needs: [Generate_Build_Jobs]
+    strategy:
+      fail-fast: false
+      matrix:
+        commits: ${{ fromJson(needs.Generate_Build_Jobs.outputs.commits) }}
+        abi: [android_x86_64]
+    name: Build_${{matrix.commits}}_Android_${{matrix.abi}}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
+
+    - name: Install Android Setup
+      uses: ./.github/actions/linux-install-qt-android
+
+    - name: Build
+      run: |
+        echo "###############################################################"
+        echo "# Start Build for Commit ${{ matrix.commits }} for Android ${{ matrix.abi }}"
+        echo "###############################################################"
+        export QT_ANDROID_ROOT=/home/runner/work/rapid/Qt/6.8.1/android_x86_64
+        export QT_HOST_PATH=/home/runner/work/rapid/Qt/6.8.1/gcc_64
+        export PATH=${ANDROID_SDK_ROOT}/cmake/3.31.1/bin:${ANDROID_ROOT_PATH}/ndk/26.3.11579264:${PATH}
+        git checkout ${{ matrix.commits }}
+        cmake --preset github-android-x86_64
+        cmake --build --preset github-android-x86_64 --target apk --parallel
+        echo "###############################################################"
+        echo "# Finished Build Commit ${{ matrix.commits }} for Android ${{ matrix.abi }}"
+        echo "###############################################################"

@@ -6,14 +6,6 @@
     "comms-ublox",
     "kdbindings",
     "nlohmann-json",
-    {
-      "name": "sdl2",
-      "default-features": false,
-      "features": [
-        "wayland",
-        "x11"
-      ]
-    },
     "spdlog",
     "sqlite3",
     "trompeloeil",
@@ -31,10 +23,6 @@
     {
       "name": "trompeloeil",
       "version": "49"
-    },
-    {
-      "name": "sdl2",
-      "version": "2.30.6"
     },
     {
       "name": "boost-beast",

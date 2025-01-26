@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <utility>
 
 namespace Rapid::Common
 {

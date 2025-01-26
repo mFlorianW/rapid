@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <QApplication>
+#include <QGuiApplication>
 
 namespace Rapid::System::Qt
 {
@@ -49,27 +49,6 @@ public:
      */
     ~RapidGuiApplication() override;
     Q_DISABLE_COPY_MOVE(RapidGuiApplication);
-};
-
-/**
- * @brief Implements the @ref Rapid::System::EventLoop integration
- */
-class RapidApplication final : public QApplication
-{
-    Q_OBJECT
-public:
-    /**
-     * Creates an instance and forwards the params to QApplication.
-     * @param[in] argc The argument counter
-     * @param[in] argv The arguments from the commond line
-     */
-    RapidApplication(int& argc, char** argv);
-
-    /**
-     * Default destructor
-     */
-    ~RapidApplication() override;
-    Q_DISABLE_COPY_MOVE(RapidApplication);
 };
 
 } // namespace Rapid::System::Qt

@@ -23,7 +23,7 @@ jobs:
     - name: Generate Compile Commands and Build
       run: |
         cmake --preset github
-        cmake --build --preset github --target all -- -j
+        cmake --build --preset github --target all --parallel
       env:
         QT_QPA_PLATFORM: offscreen
     - name: Static Code Analysis

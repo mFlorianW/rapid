@@ -1,0 +1,41 @@
+# SPDX-FileCopyrightText: 2025 Florian Weßel <florianwessel@gmx.net>
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+name: Build CI Android
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  Build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [android_x86_64]
+    name: Build_Android_${{matrix.abi}}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+          fetch-depth: 0
+
+    - name: Install Android Setup
+      uses: ./.github/actions/linux-install-qt-android
+
+    - name: Build
+      run: |
+        echo "###############################################################"
+        echo "# Start Build for Android ${{ matrix.abi }}"
+        echo "###############################################################"
+        export QT_ANDROID_ROOT=/home/runner/work/rapid/Qt/6.8.1/android_x86_64
+        export QT_HOST_PATH=/home/runner/work/rapid/Qt/6.8.1/gcc_64
+        export PATH=${ANDROID_SDK_ROOT}/cmake/3.31.1/bin:${ANDROID_ROOT_PATH}/ndk/26.3.11579264:${PATH}
+        cmake --preset github-android-x86_64
+        cmake --build --preset github-android-x86_64 --target apk --parallel
+        echo "###############################################################"
+        echo "# Finished Build Commit ${{ matrix.commits }}"
+        echo "###############################################################"
+

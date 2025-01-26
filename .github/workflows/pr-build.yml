@@ -73,7 +73,7 @@ jobs:
         echo "###############################################################"
         git checkout ${{ matrix.commits }}
         cmake --preset github -DENABLE_WARNING_AS_ERROR=ON
-        cmake --build --preset github --target install -- -j
+        cmake --build --preset github --target install --parallel
         echo "###############################################################"
         echo "# Finished Build Commit ${{ matrix.commits }}"
         echo "###############################################################"

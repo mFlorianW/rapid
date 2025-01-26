@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "SessionEndpoint.hpp"
+#include <charconv>
 #include <common/JsonSerializer.hpp>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>

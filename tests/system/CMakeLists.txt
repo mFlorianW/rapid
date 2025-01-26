@@ -22,7 +22,7 @@ catch_discover_tests(test_system
     DISCOVERY_MODE PRE_TEST
 )
 
-if(ENABLE_QT)
+if(ENABLE_DESKTOP)
     add_executable(test_system_qt)
     target_sources(test_system_qt
     PRIVATE
