@@ -1,4 +1,4 @@
-# Rapid Laptimer [![Build](https://github.com/mFlorianW/rapid/actions/workflows/build.yml/badge.svg)](https://github.com/mFlorianW/rapid/actions/workflows/build.yml)
+# Rapid Laptimer [![Build](https://github.com/mFlorianW/rapid/actions/workflows/build.yml/badge.svg)](https://github.com/mFlorianW/rapid/actions/workflows/build.yml) [![Build CI Android](https://github.com/mFlorianW/rapid/actions/workflows/build-android.yml/badge.svg)](https://github.com/mFlorianW/rapid/actions/workflows/build-android.yml)
 This repository contains source to create motorcycle laptimer for race tracks action.
 Everything has the WIP status and is not ready to use.
 
