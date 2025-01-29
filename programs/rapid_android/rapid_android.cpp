@@ -32,7 +32,7 @@ int main(int argc, char** argv)
         },
         Qt::QueuedConnection);
     // engine.loadFromModule("Rapid.Android", "RapidAndroid");
-    engine.load(QUrl{"qrc:/Rapid/Android/RapidAndroid.qml"});
+    engine.load(QUrl{"qrc:/Rapid/Android/qml/RapidAndroid.qml"});
 
     return app.exec();
 }

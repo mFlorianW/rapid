@@ -4,7 +4,7 @@ qt_add_qml_module(RapidAndroid
     IMPORT_PATH "Rapid/Android"
     STATIC
     QML_FILES
-        RapidAndroid.qml
+        qml/RapidAndroid.qml
 )
 
 add_library(Rapid::Android ALIAS RapidAndroid)

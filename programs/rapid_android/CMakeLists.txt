@@ -1,4 +1,4 @@
-add_subdirectory(qml)
+add_subdirectory(RapidAndroid)
 
 qt_add_executable(rapid_android)
 
