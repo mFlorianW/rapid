@@ -6,6 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as Ctrl
 import QtQuick.Controls.Material
+import "qrc:/Rapid/Android/qml/elements"
 
 Ctrl.ApplicationWindow {
     id: window
@@ -33,41 +34,60 @@ Ctrl.ApplicationWindow {
 
             Text {
                 id: navBarText
-                text: "Rapid"
+                text: pageLoader.item.title
                 font.pointSize: 18
                 color: "#ffffff"
             }
         }
     }
 
+    Loader {
+        id: pageLoader
+        anchors.fill: parent
+        source: "pages/MainPage.qml"
+    }
+
     Ctrl.Drawer {
         id: menuDrawer
-        width: 290
+        width: 0.8 * window.width
         height: window.height
         topPadding: 0
 
-        Column {
+        ColumnLayout {
             width: parent.width
+            height: parent.height
 
             Item {
                 width: parent.width
-                height: 60
+                height: 80
 
                 RowLayout {
-
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
-                    anchors.leftMargin: 10
+                    anchors.leftMargin: 25
+                    spacing: 10
 
                     Image {
-                        Layout.preferredWidth: 24
-                        Layout.preferredHeight: 24
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
                         source: "qrc:/Rapid/Android/img/Stopwatch.svg"
                     }
 
                     Text {
                         text: "Rapid"
+                        font.pixelSize: 26
                     }
+                }
+            }
+
+            MenuList {
+                id: menuList
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                onOpenPage: page => {
+                    pageLoader.source = page;
+                    menuDrawer.close();
                 }
             }
         }
