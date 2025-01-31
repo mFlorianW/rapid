@@ -5,6 +5,9 @@ qt_add_qml_module(RapidAndroid
     STATIC
     QML_FILES
         qml/RapidAndroid.qml
+    RESOURCES
+        img/BurgerButton.svg
+        img/Stopwatch.svg
 )
 
 add_library(Rapid::Android ALIAS RapidAndroid)

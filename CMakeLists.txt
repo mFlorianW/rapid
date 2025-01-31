@@ -82,6 +82,7 @@ if(ENABLE_DESKTOP OR ENABLE_ANDROID)
         Widgets
         Network
         Location
+        QuickControls2
     )
 
     if(ENABLE_DESKTOP)

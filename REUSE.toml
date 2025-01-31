@@ -6,5 +6,10 @@ SPDX-PackageDownloadLocation = "https://github.com/mFlorianW/rapid"
 [[annotations]]
 path = [ "**.session", "**.xml", "**.sh", "**.ui", "REUSE.toml", "**.json.in", "laps/**", ".gitignore", "doc/**", "db/", "**.sql", "**.json", "**.qrc", "**.md", ".github/**", ".pre-commit-config.yaml", "**CMakeLists.txt", "**.cmake.in", "CMakePresets.json", ".clang-format", ".clang-tidy", "**.svg", "docs/**.in", "format.sh", "configuration/**.cmake", "configuration/**.sh", "docs/style/README.md"]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "2020 - 2024 All contributors"
+SPDX-FileCopyrightText = "2020 - 2025 All contributors"
 SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
+path = [ "programs/rapid_android/RapidAndroid/img" ]
+precedence = "aggregate"
+SPDX-License-Identifier = "CC-BY-1.0"
