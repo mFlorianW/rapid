@@ -6,10 +6,10 @@
 
 #include <ApplicationOverviewWidget.hpp>
 #include <GlobalSettingsWindow.hpp>
-#include <GlobalSettingsWriter.hpp>
 #include <QMainWindow>
 #include <QThread>
 #include <SessionDatabaseIpcServer.hpp>
+#include <common/qt/private/GlobalSettingsWriter.hpp>
 
 namespace Ui
 {
@@ -33,7 +33,7 @@ private:
     void setupDatabase() noexcept;
     std::unique_ptr<Ui::MainWindow> mMainWindow;
     Common::Qt::QSettingsBackend mSettingsBackend;
-    Settings::GlobalSettingsWriter mSettings;
+    Common::Qt::Private::GlobalSettingsWriter mSettings;
     std::unique_ptr<ProcessManager> mProcessManager;
     std::unique_ptr<Settings::GlobalSettingsWindow> mGlobalSettingsWindow;
     std::unique_ptr<ApplicationOverviewWidget> mApplicationOverviewWidget;

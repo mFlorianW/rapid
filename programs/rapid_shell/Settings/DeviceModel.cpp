@@ -13,7 +13,8 @@ namespace
 constexpr auto columns = int{3};
 } // namespace
 
-DeviceModel::DeviceModel(GlobalSettingsWriter* settingsWriter, Common::Qt::GlobalSettingsReader* settingsReader)
+DeviceModel::DeviceModel(Common::Qt::Private::GlobalSettingsWriter* settingsWriter,
+                         Common::Qt::GlobalSettingsReader* settingsReader)
     : mSettingsWriter{settingsWriter}
 {
     Q_ASSERT(mSettingsWriter != nullptr);

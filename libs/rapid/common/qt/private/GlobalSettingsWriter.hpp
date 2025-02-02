@@ -9,7 +9,7 @@
 #include <common/qt/GlobalSettingsBackend.hpp>
 #include <common/qt/GlobalSettingsTypes.hpp>
 
-namespace Rapid::RapidShell::Settings
+namespace Rapid::Common::Qt::Private
 {
 
 /**
@@ -71,4 +71,4 @@ private:
     Common::Qt::GlobalSettingsBackend* mSettingsBackend;
 };
 
-} // namespace Rapid::RapidShell::Settings
+} // namespace Rapid::Common::Qt::Private

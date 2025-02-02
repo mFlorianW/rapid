@@ -3,17 +3,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include <DeviceModel.hpp>
-#include <GlobalSettingsWriter.hpp>
 #include <catch2/catch_all.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
 #include <common/qt/GlobalSettingsTypes.hpp>
 #include <common/qt/private/GlobalSettingsKeys.hpp>
+#include <common/qt/private/GlobalSettingsWriter.hpp>
 #include <testhelper/qt/SettingsMemoryBackend.hpp>
 
 using namespace Rapid::RapidShell::Settings;
 using namespace Rapid::TestHelper;
 using namespace Rapid::Common;
 using namespace Rapid::Common::Qt;
+using namespace Rapid::Common::Qt::Private;
 
 SCENARIO("The device list model shall provide the header data for the list view.")
 {

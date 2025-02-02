@@ -27,7 +27,8 @@ public:
     /**
      * Creates an Instance of the device settings pagage.
      */
-    DevicePage(GlobalSettingsWriter* settingsWriter, Common::Qt::GlobalSettingsReader* settingsReader);
+    DevicePage(Common::Qt::Private::GlobalSettingsWriter* settingsWriter,
+               Common::Qt::GlobalSettingsReader* settingsReader);
 
     /**
      * default destructor
