@@ -94,6 +94,7 @@ if(ENABLE_DESKTOP OR ENABLE_ANDROID)
             Qt6::Network
             Qt6::Gui
             Qt6::GuiPrivate
+            Qt6::Quick
     )
 
     if(ENABLE_DESKTOP)
