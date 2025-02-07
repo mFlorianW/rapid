@@ -4,7 +4,6 @@
 
 #include <QSignalSpy>
 #include <catch2/catch_all.hpp>
-#include <catch2/trompeloeil.hpp>
 #include <common/qt/TableModelDataProvider.hpp>
 
 using namespace Rapid::Common::Qt;
