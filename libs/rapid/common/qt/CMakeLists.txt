@@ -8,6 +8,8 @@ set(RAPID_COMMON_QT_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetadataProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DeviceSettingsProvider.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GenericListModel.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DeviceSettingsListModel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DeviceSettingsListModel.hpp
 )
 install(FILES ${RAPID_COMMON_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/common/qt")
 
