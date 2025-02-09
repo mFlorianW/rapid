@@ -81,16 +81,6 @@ public:
     Q_INVOKABLE bool update(Rapid::Common::Qt::DeviceSettings const& oldDevice,
                             Rapid::Common::Qt::DeviceSettings const& newDevice) noexcept override;
 
-    /**
-     * @brief Helper Method to create @ref DeviceSettings in the QML context
-     *
-     * @return The instance with created from the string parameters
-     */
-    Q_INVOKABLE static Rapid::Common::Qt::DeviceSettings create(QString const& name,
-                                                                QString const& ip,
-                                                                QString port,
-                                                                bool enabled) noexcept;
-
 private:
     Common::Qt::GlobalSettingsBackend* mSettingsBackend{nullptr};
     std::unique_ptr<Common::Qt::GlobalSettingsReader> mGlobalSettingsReader;

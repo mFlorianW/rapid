@@ -2,10 +2,14 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls as Ctrl
 import QtQuick.Controls.Material
 import QtQuick.Layouts
+import Rapid.Android
+import "qrc:/Rapid/Android/qml/controls"
 
 Ctrl.Page {
     id: laptimerPage
@@ -16,6 +20,35 @@ Ctrl.Page {
     Item {
         id: contentItem
         anchors.fill: parent
+
+        ListView {
+            id: deviceListView
+            anchors.fill: parent
+            anchors.margins: 5
+            spacing: 5
+            boundsBehavior: Flickable.StopAtBounds
+            model: GlobalState.deviceManagement.model
+
+            delegate: ListItem {
+                id: delegate
+                required property var laptimer
+                required property var index
+                icon.source: "qrc:/Rapid/Android/img/Stopwatch.svg"
+                width: deviceListView.width
+                text: laptimer.name
+                autoExclusive: true
+
+                firstItem: Ctrl.Switch {
+                    id: enableSwitch
+                }
+
+                onClicked: {
+                    deviceInputPopup.laptimer = this.laptimer;
+                    laptimerPage.state = "edit";
+                    contextMenu.open();
+                }
+            }
+        }
 
         Ctrl.RoundButton {
             id: laptimerPageFabButton
@@ -30,33 +63,83 @@ Ctrl.Page {
             anchors.right: contentItem.right
             anchors.rightMargin: 15
 
-            onClicked: deviceInputPopup.open()
+            onClicked: {
+                laptimerPage.state = "new";
+                deviceInputPopup.laptimer = null;
+                deviceInputPopup.open();
+            }
+        }
+    }
+
+    Drawer {
+        id: contextMenu
+        edge: Qt.BottomEdge
+        dragMargin: 0
+        height: 1.2 * columnLayout.height
+        width: parent.width
+
+        ColumnLayout {
+            id: columnLayout
+            anchors.right: parent.right
+            anchors.left: parent.left
+            spacing: 0
+
+            Rectangle {
+                id: indicator
+                radius: 10
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
+                Layout.bottomMargin: 10
+                color: "black"
+                Layout.preferredHeight: 3
+                Layout.preferredWidth: 30
+            }
+
+            ListItem {
+                id: editItem
+                Layout.fillWidth: true
+                text: qsTr("Edit Laptimer")
+                icon.source: "qrc:/Rapid/Android/img/Edit.svg"
+                onClicked: {
+                    contextMenu.close();
+                    deviceInputPopup.open();
+                }
+            }
+            ListItem {
+                id: deleteItem
+                Layout.fillWidth: true
+                text: qsTr("Delete Laptimer")
+                icon.source: "qrc:/Rapid/Android/img/Trash.svg"
+                onClicked: {
+                    contextMenu.close();
+                    GlobalState.deviceManagement.remove(deviceInputPopup.laptimer);
+                }
+            }
         }
     }
 
     Ctrl.Dialog {
         id: deviceInputPopup
         anchors.centerIn: parent
-        title: "New Device"
         standardButtons: Dialog.Save | Dialog.Cancel
         width: 0.8 * laptimerPage.width
+
+        property var laptimer: null
 
         ColumnLayout {
             id: deviceInputPopupLayout
             anchors.fill: parent
+            spacing: 10
 
             Ctrl.TextField {
                 id: deviceInputPopupDeviceName
                 Layout.fillWidth: true
                 placeholderText: "Name"
-                text: "Rapid Laptimer"
             }
 
             Ctrl.TextField {
                 id: deviceInputPopupDeviceIp
                 Layout.fillWidth: true
                 placeholderText: "IP Address"
-                text: "192.168.1.115"
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 validator: RegularExpressionValidator {
                     id: ipAddressRegExValidation
@@ -68,7 +151,6 @@ Ctrl.Page {
                 id: deviceInputPopupDevicePort
                 Layout.fillWidth: true
                 placeholderText: "Device Port"
-                text: "27015"
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 validator: IntValidator {
                     id: portValidator
@@ -77,5 +159,51 @@ Ctrl.Page {
                 }
             }
         }
+
+        onAccepted: {
+            var device = GlobalState.create(deviceInputPopupDeviceName.text, deviceInputPopupDeviceIp.text, deviceInputPopupDevicePort.text, false);
+            if (laptimerPage.state === "new") {
+                GlobalState.deviceManagement.store(device);
+            } else if (laptimerPage.state === "edit") {
+                GlobalState.deviceManagement.update(deviceInputPopup.laptimer, device);
+            }
+        }
     }
+
+    states: [
+        State {
+            name: "new"
+            PropertyChanges {
+                deviceInputPopup {
+                    title: qsTr("New Laptimer")
+                }
+                deviceInputPopupDeviceName {
+                    text: "Rapid"
+                }
+                deviceInputPopupDeviceIp {
+                    text: "192.168.1.1"
+                }
+                deviceInputPopupDevicePort {
+                    text: "27018"
+                }
+            }
+        },
+        State {
+            name: "edit"
+            PropertyChanges {
+                deviceInputPopup {
+                    title: qsTr("Edit Laptimer")
+                }
+                deviceInputPopupDeviceName {
+                    text: deviceInputPopup.laptimer.name
+                }
+                deviceInputPopupDeviceIp {
+                    text: deviceInputPopup.laptimer.ip
+                }
+                deviceInputPopupDevicePort {
+                    text: deviceInputPopup.laptimer.port
+                }
+            }
+        }
+    ]
 }

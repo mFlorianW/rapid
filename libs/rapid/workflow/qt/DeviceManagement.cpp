@@ -102,14 +102,4 @@ bool DeviceManagement::update(Rapid::Common::Qt::DeviceSettings const& oldDevice
     return true;
 }
 
-Rapid::Common::Qt::DeviceSettings DeviceManagement::create(QString const& name,
-                                                           QString const& ip,
-                                                           QString port,
-                                                           bool enabled) noexcept
-{
-    auto device = DeviceSettings{.name = name, .port = static_cast<quint16>(port.toUInt()), .defaultDevice = enabled};
-    device.setIpAddress(ip);
-    return device;
-}
-
 } // namespace Rapid::Workflow::Qt

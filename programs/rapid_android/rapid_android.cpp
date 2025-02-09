@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "GlobalState.hpp"
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <spdlog/sinks/android_sink.h>
@@ -35,6 +36,7 @@ int main(int argc, char** argv)
         },
         Qt::QueuedConnection);
     // engine.loadFromModule("Rapid.Android", "RapidAndroid");
+    engine.singletonInstance<Rapid::Android::GlobalState*>("Rapid.Android", "GlobalState");
     engine.load(QUrl{"qrc:/Rapid/Android/qml/RapidAndroid.qml"});
 
     return app.exec();
