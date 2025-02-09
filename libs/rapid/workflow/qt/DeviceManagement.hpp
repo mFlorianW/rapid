@@ -5,15 +5,25 @@
 #ifndef RAPID_WORKFLOW_QT_DEVICEMANAGEMENT
 #define RAPID_WORKFLOW_QT_DEVICEMANAGEMENT
 
-#include <QAbstractItemModel>
+#include <common/qt/DeviceSettingsListModel.hpp>
 #include <common/qt/DeviceSettingsProvider.hpp>
 #include <common/qt/GlobalSettingsBackend.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
 #include <workflow/qt/IDeviceManagement.hpp>
 
+namespace Rapid::Common::Qt::Private
+{
+class GlobalSettingsWriter;
+}
+
 namespace Rapid::Workflow::Qt
 {
 
+/**
+ * @brief DeviceManagement impelmentation with QSettings backend.
+ *
+ * @details Every application should have only one instance of the DeviceManagement because the current impelmentation doesn't support multiple instances.
+ */
 class DeviceManagement : public IDeviceManagement
 {
     Q_OBJECT
@@ -53,12 +63,40 @@ public:
     /**
      * @copydoc IDeviceManagement::getModel
      */
-    QAbstractItemModel const* const getModel() const noexcept;
+    QAbstractItemModel const* const getModel() const noexcept override;
+
+    /**
+     * @copydoc IDeviceManagement::store
+     */
+    Q_INVOKABLE bool store(Rapid::Common::Qt::DeviceSettings const& device) noexcept override;
+
+    /**
+     * @copydoc IDeviceManagement::update
+     */
+    Q_INVOKABLE bool remove(Rapid::Common::Qt::DeviceSettings const& device) noexcept override;
+
+    /**
+     * @copydoc IDeviceManagement::update
+     */
+    Q_INVOKABLE bool update(Rapid::Common::Qt::DeviceSettings const& oldDevice,
+                            Rapid::Common::Qt::DeviceSettings const& newDevice) noexcept override;
+
+    /**
+     * @brief Helper Method to create @ref DeviceSettings in the QML context
+     *
+     * @return The instance with created from the string parameters
+     */
+    Q_INVOKABLE static Rapid::Common::Qt::DeviceSettings create(QString const& name,
+                                                                QString const& ip,
+                                                                QString port,
+                                                                bool enabled) noexcept;
 
 private:
+    Common::Qt::GlobalSettingsBackend* mSettingsBackend{nullptr};
     std::unique_ptr<Common::Qt::GlobalSettingsReader> mGlobalSettingsReader;
+    std::unique_ptr<Common::Qt::Private::GlobalSettingsWriter> mGlobalSettingsWriter;
     std::unique_ptr<Common::Qt::DeviceSettingsProvider> mDeviceSettingsProvider;
-    std::unique_ptr<QAbstractItemModel> mModel;
+    std::unique_ptr<Common::Qt::DeviceSettingsListModel> mModel;
 };
 
 } // namespace Rapid::Workflow::Qt
