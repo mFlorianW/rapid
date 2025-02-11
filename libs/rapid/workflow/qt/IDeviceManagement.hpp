@@ -29,6 +29,13 @@ class IDeviceManagement : public QObject
      */
     Q_PROPERTY(QAbstractItemModel const* const model READ getModel CONSTANT)
 
+    /**
+     * @property Rapid::Commont::Qt::DeviceSettings
+     *
+     * Gives the active laptimer to interact with.
+     */
+    Q_PROPERTY(Rapid::Common::Qt::DeviceSettings activeLaptimer READ getActiveLaptimer NOTIFY activeLaptimerChanged);
+
 public:
     /**
      * Default destructor
@@ -66,6 +73,16 @@ public:
     virtual QAbstractItemModel const* const getModel() const noexcept = 0;
 
     /**
+     * @brief Gives the active laptimer
+     *
+     * @details The active laptimer is either activated by the user or is the first device of the device list.
+     *          This is the laptimer that is used for the interaction e.g. session download or live session view.
+     *
+     * @return The laptimer that shall be used for the interaction.
+     */
+    virtual Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept = 0;
+
+    /**
      * @brief Stores a new laptimers
      *
      * @details The store function also updates the model on success.
@@ -99,6 +116,11 @@ public:
      */
     virtual Q_INVOKABLE bool update(Rapid::Common::Qt::DeviceSettings const& oldDevice,
                                     Rapid::Common::Qt::DeviceSettings const& newDevice) noexcept = 0;
+Q_SIGNALS:
+    /**
+     * This signal is emitted when the active laptimer changes
+     */
+    void activeLaptimerChanged();
 
 protected:
     /**

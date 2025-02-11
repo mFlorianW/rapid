@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include <QSignalSpy>
 #include <catch2/catch_all.hpp>
 #include <common/qt/private/GlobalSettingsKeys.hpp>
 #include <testhelper/qt/SettingsBackendMock.hpp>
@@ -20,31 +21,41 @@ struct TestFixtue
 {
     SettingsBackendMock settingsBackendMock;
     std::vector<Expectation> mExpectations;
-    DeviceSettings defaulDevice{.name = "Rapid",
-                                .ip = QHostAddress{"192.168.1.1"},
-                                .port = 27018,
-                                .defaultDevice = false};
 
-    DeviceManagement createWithOneDevice()
+    DeviceManagement createDeviceMangement(std::size_t devices = 1)
     {
-        auto const index = QString::number(0);
+        if (devices < 1) {
+            FAIL("Must be created with at least one device");
+        }
         mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
                                        .WITH(_1 == Private::DeviceSettingsSize.toString())
-                                       .RETURN(1));
-        mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
-                                       .WITH(_1 == Private::DeviceSettingsIp.toString().arg(index))
-                                       .LR_RETURN(QVariant::fromValue(defaulDevice.ip.toString())));
-        mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
-                                       .WITH(_1 == Private::DeviceSettingsName.toString().arg(index))
-                                       .LR_RETURN(defaulDevice.name));
-        mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
-                                       .WITH(_1 == Private::DeviceSettingsPort.toString().arg(index))
-                                       .LR_RETURN(defaulDevice.port));
-        mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
-                                       .WITH(_1 == Private::DeviceSettingsDef.toString().arg(index))
-                                       .LR_RETURN(defaulDevice.defaultDevice));
-        mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, storeValue(_, _)).RETURN(true));
-        return DeviceManagement{std::addressof(settingsBackendMock)};
+                                       .RETURN(QVariant::fromValue(devices)));
+        for (std::size_t i = 0; i < devices; ++i) {
+            auto const index = QString::number(i);
+            auto settings = createDeviceSettings(i);
+            mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
+                                           .WITH(_1 == Private::DeviceSettingsIp.toString().arg(index))
+                                           .RETURN(QVariant::fromValue(settings.ip.toString())));
+            mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
+                                           .WITH(_1 == Private::DeviceSettingsName.toString().arg(index))
+                                           .RETURN(settings.name));
+            mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
+                                           .WITH(_1 == Private::DeviceSettingsPort.toString().arg(index))
+                                           .RETURN(settings.port));
+            mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, getValue(_))
+                                           .WITH(_1 == Private::DeviceSettingsDef.toString().arg(index))
+                                           .RETURN(settings.defaultDevice));
+            mExpectations.emplace_back(NAMED_ALLOW_CALL(settingsBackendMock, storeValue(_, _)).RETURN(true));
+        }
+        return {std::addressof(settingsBackendMock)};
+    }
+
+    DeviceSettings createDeviceSettings(std::size_t deviceIndex)
+    {
+        return {.name = QString{"Rapid%1"}.arg(deviceIndex),
+                .ip = QHostAddress{"192.168.0.1"},
+                .port = 27018,
+                .defaultDevice = false};
     }
 };
 
@@ -90,6 +101,7 @@ TEST_CASE_METHOD(TestFixtue,
         CHECK(laptimerSettings.name == QStringLiteral("Rapid"));
         CHECK(laptimerSettings.ip == QHostAddress("192.168.1.1"));
         CHECK(laptimerSettings.port == 27018);
+        CHECK(laptimerSettings.defaultDevice == true);
     }
 }
 
@@ -101,7 +113,7 @@ TEST_CASE_METHOD(TestFixtue, "The DeviceMangement shall store devices (laptimer)
                                                           .defaultDevice = false};
     SECTION("Store device")
     {
-        auto deviceManagement = createWithOneDevice();
+        auto deviceManagement = createDeviceMangement();
 
         // The expected storage calls
         REQUIRE_CALL(settingsBackendMock, storeValue(_, _)).WITH(_2 == QVariant{2}).RETURN(true);
@@ -118,14 +130,14 @@ TEST_CASE_METHOD(TestFixtue, "The DeviceMangement shall store devices (laptimer)
 
     SECTION("Stored device is added to the model")
     {
-        auto deviceManagement = createWithOneDevice();
+        auto deviceManagement = createDeviceMangement();
         REQUIRE(deviceManagement.store(device));
         CHECK(deviceManagement.getModel()->rowCount() == 2);
     }
 
     SECTION("Store opertaion failed")
     {
-        auto deviceManagement = createWithOneDevice();
+        auto deviceManagement = createDeviceMangement();
         ALLOW_CALL(settingsBackendMock, storeValue(_, _)).RETURN(false);
         REQUIRE_FALSE(deviceManagement.store(device));
         REQUIRE(deviceManagement.getModel()->rowCount() == 1);
@@ -133,8 +145,8 @@ TEST_CASE_METHOD(TestFixtue, "The DeviceMangement shall store devices (laptimer)
 
     SECTION("Don't store the same device twice")
     {
-        auto deviceManagement = createWithOneDevice();
-        REQUIRE_FALSE(deviceManagement.store(defaulDevice));
+        auto deviceManagement = createDeviceMangement();
+        REQUIRE_FALSE(deviceManagement.store(createDeviceSettings(0)));
     }
 }
 
@@ -143,32 +155,72 @@ TEST_CASE_METHOD(TestFixtue, "The DeviceMangement shall delete devices (laptimer
     ALLOW_CALL(settingsBackendMock, storeValue(_, _)).RETURN(true);
     SECTION("Delete existing device")
     {
-        auto deviceManagement = createWithOneDevice();
-        REQUIRE(deviceManagement.remove(defaulDevice));
+        auto deviceManagement = createDeviceMangement();
+        REQUIRE(deviceManagement.remove(createDeviceSettings(0)));
         REQUIRE(deviceManagement.getModel()->rowCount() == 0);
     }
 
     SECTION("Delete not existing device")
     {
-        auto deviceManagement = createWithOneDevice();
+        auto deviceManagement = createDeviceMangement();
         REQUIRE_FALSE(deviceManagement.remove(DeviceSettings{}));
         REQUIRE(deviceManagement.getModel()->rowCount() == 1);
     }
 }
 
-TEST_CASE_METHOD(TestFixtue, "The DeviceSettings shall update devices (laptimer)", "[DEVICE_MANAGEMENT_UPDATE]")
+TEST_CASE_METHOD(TestFixtue, "The DeviceMangement shall update devices (laptimer)", "[DEVICE_MANAGEMENT_UPDATE]")
 {
     ALLOW_CALL(settingsBackendMock, storeValue(_, _)).RETURN(true);
     SECTION("Update existing device")
     {
-        auto deviceManagement = createWithOneDevice();
-        auto updatedDevice = defaulDevice;
-        REQUIRE(deviceManagement.update(defaulDevice, updatedDevice));
+        auto deviceManagement = createDeviceMangement();
+        auto updatedDevice = createDeviceSettings(1);
+        REQUIRE(deviceManagement.update(createDeviceSettings(0), updatedDevice));
     }
 
     SECTION("Update an invalid device")
     {
-        auto deviceManagement = createWithOneDevice();
+        auto deviceManagement = createDeviceMangement();
         REQUIRE_FALSE(deviceManagement.update(DeviceSettings{}, DeviceSettings{}));
+    }
+}
+
+TEST_CASE_METHOD(TestFixtue,
+                 "The DeviceMangement shall only one enabled device (laptimer)",
+                 "[DEVICE_MANAGEMENT_ENABLED]")
+{
+    ALLOW_CALL(settingsBackendMock, storeValue(_, _)).RETURN(true);
+    SECTION("Enable device")
+    {
+        auto deviceManagement = createDeviceMangement();
+        auto device = createDeviceSettings(0);
+        auto activeLaptimerSpy = QSignalSpy{&deviceManagement, &DeviceManagement::activeLaptimerChanged};
+        REQUIRE(deviceManagement.enable(device));
+        auto model = deviceManagement.getModel();
+        CHECK(model->data(model->index(0, 0), DeviceSettingsListModel::Laptimer).value<DeviceSettings>().defaultDevice);
+        CHECK(deviceManagement.property("activeLaptimer").value<DeviceSettings>() == device);
+        CHECK(activeLaptimerSpy.size() == 1);
+    }
+
+    SECTION("No device enabled, default is automatically active")
+    {
+        auto deviceManagement = createDeviceMangement();
+        CHECK(deviceManagement.property("activeLaptimer").value<DeviceSettings>() == createDeviceSettings(0));
+    }
+
+    SECTION("Active device deleted first device is new active device")
+    {
+        // TODO: This test needs some refactoring
+        // The remove call fails because the mock always returns 2 devices
+        // This should be cleaned up when the device settings are stored in a repository which is easier to mock.
+        auto deviceManagement = createDeviceMangement(2);
+        auto enabledDevice = createDeviceSettings(0);
+        auto* const model = deviceManagement.getModel();
+        REQUIRE(deviceManagement.enable(enabledDevice));
+        enabledDevice = model->data(model->index(1, 0), DeviceSettingsListModel::Laptimer).value<DeviceSettings>();
+        deviceManagement.remove(enabledDevice);
+        auto const isDeviceEnabled =
+            model->data(model->index(0, 0), DeviceSettingsListModel::Laptimer).value<DeviceSettings>().defaultDevice;
+        REQUIRE(isDeviceEnabled);
     }
 }

@@ -66,6 +66,11 @@ public:
     QAbstractItemModel const* const getModel() const noexcept override;
 
     /**
+     * @copydoc IDeviceManagement::getActiveLaptimer
+     */
+    [[nodiscard]] Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept override;
+
+    /**
      * @copydoc IDeviceManagement::store
      */
     Q_INVOKABLE bool store(Rapid::Common::Qt::DeviceSettings const& device) noexcept override;
@@ -80,6 +85,11 @@ public:
      */
     Q_INVOKABLE bool update(Rapid::Common::Qt::DeviceSettings const& oldDevice,
                             Rapid::Common::Qt::DeviceSettings const& newDevice) noexcept override;
+
+    /**
+     * @copydoc IDeviceManagement::enable
+     */
+    Q_INVOKABLE bool enable(Rapid::Common::Qt::DeviceSettings device) noexcept;
 
 private:
     Common::Qt::GlobalSettingsBackend* mSettingsBackend{nullptr};

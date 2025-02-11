@@ -22,6 +22,7 @@ class DeviceSettings
     Q_PROPERTY(QString name MEMBER name)
     Q_PROPERTY(QString ip READ getIpAddress WRITE setIpAddress)
     Q_PROPERTY(quint16 port MEMBER port)
+    Q_PROPERTY(quint16 defaultDevice MEMBER defaultDevice)
 
 public:
     QString name;

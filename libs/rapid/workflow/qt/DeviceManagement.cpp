@@ -20,8 +20,10 @@ DeviceManagement::DeviceManagement(Common::Qt::GlobalSettingsBackend* settingsBa
 {
     auto const devices = mGlobalSettingsReader->getDeviceSettings();
     if (devices.isEmpty()) {
-        auto const defaultDevice =
-            DeviceSettings{.name = QStringLiteral("Rapid"), .ip = QHostAddress{"192.168.1.1"}, .port = 27018};
+        auto const defaultDevice = DeviceSettings{.name = QStringLiteral("Rapid"),
+                                                  .ip = QHostAddress{"192.168.1.1"},
+                                                  .port = 27018,
+                                                  .defaultDevice = true};
         if (not store(defaultDevice)) {
             SPDLOG_ERROR("Failed to store default laptimer.");
         } else {
@@ -40,6 +42,17 @@ DeviceManagement::~DeviceManagement() = default;
 QAbstractItemModel const* const DeviceManagement::getModel() const noexcept
 {
     return mModel.get();
+}
+
+Rapid::Common::Qt::DeviceSettings DeviceManagement::getActiveLaptimer() const noexcept
+{
+    auto devices = mGlobalSettingsReader->getDeviceSettings();
+    for (auto const& dev : std::as_const(devices)) {
+        if (dev.defaultDevice) {
+            return dev;
+        }
+    }
+    return devices[0];
 }
 
 bool DeviceManagement::store(Common::Qt::DeviceSettings const& device) noexcept
@@ -67,12 +80,15 @@ bool DeviceManagement::remove(Rapid::Common::Qt::DeviceSettings const& device) n
         SPDLOG_ERROR("Failed to store device configuration. Unknwon error");
         return false;
     }
-    if (mModel->removeItem(device)) {
-        SPDLOG_INFO("Successful removed laptimer configuration: {}", device);
-        return true;
+    if (not mModel->removeItem(device)) {
+        SPDLOG_ERROR("Failed to remove laptimer configuration. Unknwon error");
+        return false;
     }
-    SPDLOG_ERROR("Failed to store laptimer configuration. Unknwon error");
-    return false;
+    if (device.defaultDevice and not devices.empty() and not enable(devices[0])) {
+        return false;
+    }
+    SPDLOG_INFO("Successful removed laptimer configuration: {}", device);
+    return true;
 }
 
 bool DeviceManagement::update(Rapid::Common::Qt::DeviceSettings const& oldDevice,
@@ -95,10 +111,35 @@ bool DeviceManagement::update(Rapid::Common::Qt::DeviceSettings const& oldDevice
         return false;
     }
     if (not mModel->updateItem(oldDevice, newDevice)) {
-        SPDLOG_ERROR("Failed to store updated device configuration in the model. Unknwon error");
+        SPDLOG_ERROR("Failed to store updated device configuration in the model. Unknown error");
         return false;
     }
     SPDLOG_INFO("Successful update laptimer configuration: {} with {}", oldDevice, newDevice);
+    return true;
+}
+
+Q_INVOKABLE bool DeviceManagement::enable(Rapid::Common::Qt::DeviceSettings device) noexcept
+{
+    auto devices = mGlobalSettingsReader->getDeviceSettings();
+    for (auto& dev : devices) {
+        if (dev == device) {
+            SPDLOG_INFO("Successful enabled {}", device);
+            dev.defaultDevice = true;
+        } else {
+            dev.defaultDevice = false;
+        }
+    }
+    if (not mGlobalSettingsWriter->storeDeviceSettings(devices)) {
+        SPDLOG_ERROR("Failed to store enabled devie(s). Unknown error");
+        return false;
+    }
+    for (qsizetype i = 0; i < devices.size(); ++i) {
+        if (not mModel->updateItem(i, devices[i])) {
+            return false;
+        }
+    }
+    SPDLOG_INFO("Successful stored enabled {}", device);
+    Q_EMIT activeLaptimerChanged();
     return true;
 }
 
