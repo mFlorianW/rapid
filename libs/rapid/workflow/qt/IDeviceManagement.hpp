@@ -70,7 +70,7 @@ public:
      *
      * @return A QAbstractItemModel* pointer to display in the UI.
      */
-    virtual QAbstractItemModel const* const getModel() const noexcept = 0;
+    [[nodiscard]] virtual QAbstractItemModel const* const getModel() const noexcept = 0;
 
     /**
      * @brief Gives the active laptimer
@@ -80,7 +80,7 @@ public:
      *
      * @return The laptimer that shall be used for the interaction.
      */
-    virtual Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept = 0;
+    [[nodiscard]] virtual Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept = 0;
 
     /**
      * @brief Stores a new laptimers

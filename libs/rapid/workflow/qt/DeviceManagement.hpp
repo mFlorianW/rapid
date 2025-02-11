@@ -63,7 +63,7 @@ public:
     /**
      * @copydoc IDeviceManagement::getModel
      */
-    QAbstractItemModel const* const getModel() const noexcept override;
+    [[nodiscard]] QAbstractItemModel const* const getModel() const noexcept override;
 
     /**
      * @copydoc IDeviceManagement::getActiveLaptimer
