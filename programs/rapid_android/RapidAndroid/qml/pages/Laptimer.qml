@@ -40,6 +40,10 @@ Ctrl.Page {
 
                 firstItem: Ctrl.Switch {
                     id: enableSwitch
+                    checked: delegate.laptimer.defaultDevice
+                    onClicked: {
+                        GlobalState.deviceManagement.enable(delegate.laptimer);
+                    }
                 }
 
                 onClicked: {
