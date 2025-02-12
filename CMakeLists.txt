@@ -17,10 +17,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SHARED_DATADIR ${CMAKE_INSTALL_DATAROOTDIR}/rapid)
-if(NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr" OR NOT CMAKE_INSTALL_PREFIX STREQUAL "/usr/local")
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-endif()
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# the RPATH to be used when installing, but only if it's not a system directory
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
 
 option(ENABLE_TEST "Enable unit tests" OFF)
 option(ENABLE_DESKTOP "This option enables QT implementations" OFF)
@@ -82,6 +84,7 @@ if(ENABLE_DESKTOP OR ENABLE_ANDROID)
         Widgets
         Network
         Location
+        QuickControls2
     )
 
     if(ENABLE_DESKTOP)
@@ -93,7 +96,7 @@ if(ENABLE_DESKTOP OR ENABLE_ANDROID)
 
     check_c_compiler_flag(-Wall HAS_WALL)
     if(HAS_WALL)
-        set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
     endif()
 endif()
 

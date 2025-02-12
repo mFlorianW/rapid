@@ -8,7 +8,8 @@
 namespace Rapid::RapidShell::Settings
 {
 
-DevicePage::DevicePage(GlobalSettingsWriter* settingsWriter, Common::Qt::GlobalSettingsReader* settingsReader)
+DevicePage::DevicePage(Common::Qt::Private::GlobalSettingsWriter* settingsWriter,
+                       Common::Qt::GlobalSettingsReader* settingsReader)
     : mDeviceModel{settingsWriter, settingsReader}
     , mDevicePage{std::make_unique<Ui::DevicePage>()}
 {

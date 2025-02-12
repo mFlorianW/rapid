@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include <GlobalSettingsWriter.hpp>
 #include <catch2/catch_all.hpp>
 #include <common/qt/GlobalSettingsBackend.hpp>
 #include <common/qt/GlobalSettingsTypes.hpp>
 #include <common/qt/private/GlobalSettingsKeys.hpp>
+#include <common/qt/private/GlobalSettingsWriter.hpp>
 #include <testhelper/qt/SettingsMemoryBackend.hpp>
 
-using namespace Rapid::RapidShell::Settings;
 using namespace Rapid::Common;
 using namespace Rapid::Common::Qt;
+using namespace Rapid::Common::Qt::Private;
 using namespace Rapid::TestHelper;
 
 SCENARIO("The Settings shall store the settings database file path.")

@@ -5,7 +5,7 @@
 #include "GlobalSettingsWriter.hpp"
 #include <common/qt/private/GlobalSettingsKeys.hpp>
 
-namespace Rapid::RapidShell::Settings
+namespace Rapid::Common::Qt::Private
 {
 
 GlobalSettingsWriter::GlobalSettingsWriter(Common::Qt::GlobalSettingsBackend* settingsBackend)
@@ -43,4 +43,4 @@ bool GlobalSettingsWriter::storeDeviceSettings(QList<Common::Qt::DeviceSettings>
     return true;
 }
 
-} // namespace Rapid::RapidShell::Settings
+} // namespace Rapid::Common::Qt::Private

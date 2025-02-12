@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <GlobalSettingsWriter.hpp>
 #include <QAbstractTableModel>
 #include <common/qt/GlobalSettingsReader.hpp>
 #include <common/qt/GlobalSettingsTypes.hpp>
+#include <common/qt/private/GlobalSettingsWriter.hpp>
 
 namespace Rapid::RapidShell::Settings
 {
@@ -30,7 +30,8 @@ public:
      * The class doesn't take the ownership of the passed pointers. So the caller must guarantee the classes
      * live as long as the @ref DeviceModel
      */
-    DeviceModel(GlobalSettingsWriter* settingsWriter, Common::Qt::GlobalSettingsReader* settingsReader);
+    DeviceModel(Common::Qt::Private::GlobalSettingsWriter* settingsWriter,
+                Common::Qt::GlobalSettingsReader* settingsReader);
 
     /**
      * Default destructor
@@ -141,7 +142,7 @@ private:
 
     QList<Common::Qt::DeviceSettings> mDevices;
     QList<Common::Qt::DeviceSettings> mOriginalDeviceSettings;
-    GlobalSettingsWriter* mSettingsWriter = nullptr;
+    Common::Qt::Private::GlobalSettingsWriter* mSettingsWriter = nullptr;
     bool mBackuped = false;
 };
 

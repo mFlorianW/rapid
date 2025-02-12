@@ -12,8 +12,6 @@ qt_add_qml_module(Settings
     STATIC
     SOURCES
         ${UI}
-        GlobalSettingsWriter.cpp
-        GlobalSettingsWriter.hpp
         GlobalSettingsWindow.cpp
         GlobalSettingsWindow.hpp
         DevicePage.cpp

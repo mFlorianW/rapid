@@ -1,4 +1,4 @@
-add_subdirectory(qml)
+add_subdirectory(RapidAndroid)
 
 qt_add_executable(rapid_android)
 
@@ -10,6 +10,7 @@ target_sources(rapid_android
 target_link_libraries(rapid_android
     PRIVATE
         spdlog::spdlog
+        Qt6::QuickControls2
         Rapid::Rapid
         Rapid::RapidQt
         Rapid::Android

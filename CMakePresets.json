@@ -26,7 +26,8 @@
             "hidden": true,
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "ENABLE_TEST": "ON"
+                "ENABLE_TEST": "ON",
+                "QT_QML_GENERATE_QMLLS_INI": "ON"
             }
         },
         {

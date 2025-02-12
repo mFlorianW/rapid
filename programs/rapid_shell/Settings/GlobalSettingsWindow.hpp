@@ -11,6 +11,7 @@
 #include <QtGlobal>
 #include <common/qt/GlobalSettingsBackend.hpp>
 #include <common/qt/GlobalSettingsReader.hpp>
+#include <common/qt/private/GlobalSettingsWriter.hpp>
 #include <memory>
 
 namespace Ui
@@ -48,7 +49,8 @@ public:
 
 private:
     Common::Qt::QSettingsBackend mSettingsBackend = Common::Qt::QSettingsBackend{};
-    GlobalSettingsWriter mSettingsWriter = GlobalSettingsWriter{&mSettingsBackend};
+    Common::Qt::Private::GlobalSettingsWriter mSettingsWriter =
+        Common::Qt::Private::GlobalSettingsWriter{&mSettingsBackend};
     Common::Qt::GlobalSettingsReader mSettingsReader = Common::Qt::GlobalSettingsReader{&mSettingsBackend};
     std::unique_ptr<Ui::GlobalSettingsWindow> mGlobalSettingsWindow;
     std::unique_ptr<QStackedLayout> mSettingsPages;

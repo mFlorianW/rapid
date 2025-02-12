@@ -81,3 +81,7 @@ The tests are automatically enabled for debug builds and the preset requires the
 ``` console
 ctest --preset debug --output-on-failure
 ```
+
+### Icons
+The icons are used from the website [www.svgrepo.com](https://github.com/user/repo/blob/branch/other_file.md) and these are licensed under the CC-BY license.
+I'm very thankful that I can use them.
