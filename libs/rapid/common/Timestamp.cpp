@@ -53,9 +53,9 @@ Timestamp::Timestamp(std::string const& timestampString)
         mData->second = static_cast<std::uint8_t>(std::stoi(second));
         mData->fractionalOfSecond = static_cast<std::uint16_t>(std::stoi(fractionalOfSecond));
     } catch (std::invalid_argument const& e) {
-        spdlog::error("Invalid argument passed. {}", timestampString);
+        spdlog::error("Invalid argument passed: {} Error: {}", timestampString, e.what());
     } catch (std::out_of_range const& e) {
-        spdlog::error("Out of range during converting.{}", timestampString);
+        spdlog::error("Out of range during converting: {} Error:", timestampString, e.what());
     }
 }
 
