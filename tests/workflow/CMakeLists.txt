@@ -8,6 +8,7 @@ PRIVATE
     test_RestSessionManagementWorkflow.cpp
     test_TrackDetectionWorkflow.cpp
     test_ActiveSessionEndpoint.cpp
+    test_RestActiveSession.cpp
 )
 
 target_link_libraries(test_workflow
