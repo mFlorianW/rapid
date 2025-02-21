@@ -49,6 +49,11 @@ QString RestActiveSession::getCurrentSectorTime() const noexcept
     return QString::fromStdString(currentSector.get().asString());
 }
 
+Q_INVOKABLE void RestActiveSession::setRestClient(Rest::IRestClient* restClient)
+{
+    mRestClient = restClient;
+}
+
 void RestActiveSession::updateTrackData() noexcept
 {
     Workflow::RestActiveSession::updateTrackData();

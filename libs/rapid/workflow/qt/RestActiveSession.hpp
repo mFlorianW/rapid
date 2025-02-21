@@ -97,6 +97,12 @@ public:
     QString getCurrentSectorTime() const noexcept;
 
     /**
+     * @brief Sets a new RestClient
+     * @param restClient The new REST client that now is used for all further REST requests.
+     */
+    Q_INVOKABLE void setRestClient(Rapid::Rest::IRestClient* restClient);
+
+    /**
      * @copydoc Rapid::Workflow::IRestActiveSession::updateTrackData
      */
     Q_INVOKABLE void updateTrackData() noexcept override;

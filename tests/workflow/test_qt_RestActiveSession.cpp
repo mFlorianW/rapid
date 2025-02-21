@@ -112,3 +112,15 @@ TEST_CASE_METHOD(TestFixture, "The RestActiveSession shall update the lap data")
     REQUIRE_CALL(restClientMock, execute(_)).LR_WITH(_1 == expectedReq).LR_RETURN(restCall);
     activeSession.updateLapData();
 }
+
+TEST_CASE_METHOD(TestFixture, "The IRestClient shall be exchangable")
+{
+    auto expectedReq = RestRequest{RequestType::Get, "/activeSession/lap"};
+    auto restClientMock2 = RestClientMock{};
+    REQUIRE_CALL(restClientMock, execute(_)).LR_WITH(_1 == expectedReq).LR_RETURN(restCall);
+    activeSession.updateLapData();
+
+    activeSession.setRestClient(std::addressof(restClientMock2));
+    REQUIRE_CALL(restClientMock2, execute(_)).LR_WITH(_1 == expectedReq).LR_RETURN(restCall);
+    activeSession.updateLapData();
+}
