@@ -44,11 +44,13 @@ public:
      */
     void updateLapData() noexcept override;
 
+protected:
+    Rest::IRestClient* mRestClient{nullptr};
+
 private:
     void onDownloadTrackFinished(Rest::RestCall* call) noexcept;
     void onUpdateLapInformationFinished(Rest::RestCall* call) noexcept;
 
-    Rest::IRestClient* mRestClient;
     std::shared_ptr<Rest::RestCall> mPendingTrackCall;
     KDBindings::ScopedConnection mPendingTrackCallConnection;
     std::shared_ptr<Rest::RestCall> mPendingLapCall;
