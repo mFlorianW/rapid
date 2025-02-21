@@ -2,47 +2,65 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
+import Rapid.Android
+import QtQml
+import "qrc:/Rapid/Android/qml/controls"
 
 Page {
     id: mainPage
     anchors.fill: parent
 
-    title: qsTr("Sessions & Tracks")
+    title: qsTr("Sessions")
 
-    TabBar {
-        id: mainPageTabBar
-        width: parent.width
-        currentIndex: mainPageViews.currentIndex
+    ColumnLayout {
+        id: columnLayout
+        spacing: 5
+        anchors.top: parent.top
+        anchors.topMargin: 5
+        anchors.left: parent.left
+        anchors.leftMargin: 10
+        anchors.right: parent.right
+        anchors.rightMargin: 10
 
-        TabButton {
-            text: qsTr("Sessions")
+        Header {
+            id: liveHeader
+            Layout.fillWidth: true
+            text: qsTr("Live")
         }
 
-        TabButton {
-            text: qsTr("Tracks")
+        Session {
+            id: liveSession
+            Layout.fillWidth: true
+            trackName: GlobalState.activeSession.trackName
+            firstEntry: qsTrId("Current") + ":"
+            firstEntryValue: GlobalState.activeSession.currentLapTime
+            secondEntry: qsTrId("Current Sector") + ":"
+            secondEntryValue: GlobalState.activeSession.currentSectorTime
+            thirdEntry: qsTrId("Lap count") + ":"
+            thirdEntryValue: GlobalState.activeSession.lapCount
+        }
+
+        Header {
+            id: sessionHeader
+            Layout.fillWidth: true
+            text: qsTr("Session")
         }
     }
 
-    SwipeView {
-        id: mainPageViews
-        currentIndex: mainPageTabBar.currentIndex
-
-        Item {
-            Text {
-                id: text1
-                text: "Sessions"
-                anchors.centerIn: parent
-            }
+    Timer {
+        id: activeSessionUpdateTimer
+        interval: 500
+        running: true
+        repeat: true
+        onTriggered: {
+            GlobalState.activeSession.updateLapData();
+            GlobalState.activeSession.updateTrackData();
         }
+    }
 
-        Item {
-            Text {
-                id: text2
-                text: "Tracks"
-                anchors.centerIn: parent
-            }
-        }
+    onVisibleChanged: {
+        activeSessionUpdateTimer.running = mainPage.visible;
     }
 }

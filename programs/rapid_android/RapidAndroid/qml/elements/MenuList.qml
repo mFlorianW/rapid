@@ -33,7 +33,7 @@ Control {
 
         model: ListModel {
             ListElement {
-                title: qsTr("Sessions and Tracks")
+                title: qsTr("Sessions")
                 page: "pages/MainPage.qml"
             }
             ListElement {

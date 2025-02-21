@@ -7,6 +7,12 @@
 
 #include <QQmlEngine>
 #include <workflow/qt/DeviceManagement.hpp>
+#include <workflow/qt/RestActiveSession.hpp>
+
+namespace Rapid::Rest
+{
+class QRestClient;
+}
 
 namespace Rapid::Android
 {
@@ -27,6 +33,14 @@ class GlobalState : public QObject
      * Gives the DeviceManagement workflow for managing the laptimer.
      */
     Q_PROPERTY(Rapid::Workflow::Qt::DeviceManagement* deviceManagement MEMBER mDeviceManagement CONSTANT)
+
+    /**
+     * @property Rapid::Workflow::Qt::RestActiveSession
+     *
+     * Gives the REST active session for displaying the information for the active session
+     */
+    Q_PROPERTY(Rapid::Workflow::Qt::RestActiveSession const* activeSession READ getActiveSession CONSTANT)
+
 public:
     Q_DISABLE_COPY_MOVE(GlobalState)
 
@@ -41,6 +55,15 @@ public:
     ~GlobalState() override;
 
     /**
+     * @brief Gives the access to the active session.
+     *
+     * @details The REST client is automatically updated, when the active device is changed.
+     *
+     * @return A pointer to the active session.
+     */
+    Rapid::Workflow::Qt::RestActiveSession const* getActiveSession() const noexcept;
+
+    /**
      * @brief Helper Method to create @ref DeviceSettings in the QML context
      *
      * @return The instance with created from the string parameters
@@ -51,8 +74,12 @@ public:
                                                                 bool enabled) noexcept;
 
 private:
+    void setRestClient();
+
     Rapid::Common::Qt::QSettingsBackend mSettingsBackend;
-    Rapid::Workflow::Qt::DeviceManagement* mDeviceManagement;
+    Rapid::Workflow::Qt::DeviceManagement* mDeviceManagement{nullptr};
+    std::unique_ptr<Rapid::Rest::QRestClient> mRestClient;
+    std::unique_ptr<Rapid::Workflow::Qt::RestActiveSession> mRestActiveSession;
 };
 
 } // namespace Rapid::Android
