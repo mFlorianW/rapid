@@ -6,7 +6,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Rapid.Android
 import QtQml
-import "qrc:/Rapid/Android/qml/controls"
+import "qrc:/qt/qml/Rapid/Android/qml/controls"
 
 Page {
     id: mainPage

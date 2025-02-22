@@ -37,7 +37,7 @@ int main(int argc, char** argv)
         Qt::QueuedConnection);
     // engine.loadFromModule("Rapid.Android", "RapidAndroid");
     engine.singletonInstance<Rapid::Android::GlobalState*>("Rapid.Android", "GlobalState");
-    engine.load(QUrl{"qrc:/Rapid/Android/qml/RapidAndroid.qml"});
+    engine.load(QUrl{"qrc:/qt/qml/Rapid/Android/qml/RapidAndroid.qml"});
 
     return app.exec();
 }
