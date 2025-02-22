@@ -73,9 +73,6 @@ if(ENABLE_DESKTOP OR ENABLE_ANDROID)
 
     ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
-    if(QT_KNOWN_POLICY_QTP0001)
-        qt_policy(SET QTP0001 NEW)
-    endif()
     find_package(Qt6 REQUIRED COMPONENTS
         Core
         Qml
@@ -92,6 +89,14 @@ if(ENABLE_DESKTOP OR ENABLE_ANDROID)
             DBus
             QuickWidgets
         )
+    endif()
+
+    if(QT_KNOWN_POLICY_QTP0001)
+        qt_policy(SET QTP0001 NEW)
+    endif()
+
+    if(QT_KNOWN_POLICY_QTP0004)
+        qt_policy(SET QTP0004 NEW)
     endif()
 
     check_c_compiler_flag(-Wall HAS_WALL)
