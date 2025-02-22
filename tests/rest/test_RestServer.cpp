@@ -62,9 +62,14 @@ public:
         mVerb = verb;
     }
 
+    void setPath(std::string const& path)
+    {
+        mPath = path;
+    }
+
     void send()
     {
-        auto request = Http::request<Http::string_body>{mVerb, "/", 11};
+        auto request = Http::request<Http::string_body>{mVerb, mPath, 11};
         request.set(Http::field::host, SERVER_ADRESS);
         request.set(Http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         Http::write(mTcpStream, request);
@@ -94,6 +99,7 @@ public:
 private:
     std::string mHost;
     std::string mPort;
+    std::string mPath = "/test";
 
     std::unique_ptr<Asio::io_context> mIoContext = std::make_unique<Asio::io_context>();
     Ip::tcp::resolver mResolver = Ip::tcp::resolver{*mIoContext};
@@ -368,4 +374,26 @@ TEST_CASE_METHOD(TestFixture, "The REST server shall handle PUT requests", "[RES
         REQUIRE(response.result() == Http::status::created);
         REQUIRE(response.body() == expBody);
     }
+}
+
+TEST_CASE_METHOD(TestFixture, "The REST server shall call different handler depending on the path")
+{
+    auto anotherHandler = TestRequestHandler{};
+    restServer.registerGetHandler("/test", std::addressof(handler));
+    restServer.registerGetHandler("/test2", std::addressof(anotherHandler));
+
+    bool handlerCalled = false;
+    REQUIRE_CALL(handler, handleRestRequest(_)).LR_SIDE_EFFECT(handlerCalled = true);
+    request.setVerb(Http::verb::get);
+    request.connect();
+    request.send();
+    REQUIRE_COMPARE_WITH_TIMEOUT(handlerCalled, true, timeout);
+
+    handlerCalled = false;
+    REQUIRE_CALL(anotherHandler, handleRestRequest(_)).LR_SIDE_EFFECT(handlerCalled = true);
+    request.setVerb(Http::verb::get);
+    request.setPath("/test2");
+    request.connect();
+    request.send();
+    REQUIRE_COMPARE_WITH_TIMEOUT(handlerCalled, true, timeout);
 }

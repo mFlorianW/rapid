@@ -141,10 +141,10 @@ void RestServerImpl::handleRequest(RestRequest& request,
                                    auto& processingCache)
 {
     try {
-        auto const path = request.getPath();
-        for (auto& [path, handler] : requestCache) {
-            if (path.rfind("path")) {
-                processingCache.insert({request.getPath().getPath(), connection});
+        auto const path = request.getPath().getPath();
+        for (auto& [handlerPath, handler] : requestCache) {
+            if (path.starts_with(handlerPath)) {
+                processingCache.insert({path, connection});
                 handler->handler->handleRestRequest(request);
                 return;
             }
