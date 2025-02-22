@@ -14,6 +14,11 @@ namespace Rapid::Rest
 class QRestClient;
 }
 
+namespace Rapid::Storage
+{
+class ISessionDatabase;
+}
+
 namespace Rapid::Android
 {
 
@@ -78,8 +83,9 @@ private:
 
     Rapid::Common::Qt::QSettingsBackend mSettingsBackend;
     Rapid::Workflow::Qt::DeviceManagement* mDeviceManagement{nullptr};
-    std::unique_ptr<Rapid::Rest::QRestClient> mRestClient;
-    std::unique_ptr<Rapid::Workflow::Qt::RestActiveSession> mRestActiveSession;
+    std::unique_ptr<Rest::QRestClient> mRestClient;
+    std::unique_ptr<Workflow::Qt::RestActiveSession> mRestActiveSession;
+    std::unique_ptr<Storage::ISessionDatabase> mSessionDatabase;
 };
 
 } // namespace Rapid::Android
