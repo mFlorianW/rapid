@@ -12,6 +12,8 @@ qt_add_qml_module(RapidAndroid
         qml/pages/Laptimer.qml
         # controls
         qml/controls/ListItem.qml
+        qml/controls/Header.qml
+        qml/controls/Session.qml
     SOURCES
         GlobalState.cpp
         GlobalState.hpp

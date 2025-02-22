@@ -23,10 +23,7 @@ public:
         connect(&mRequest, &QNetworkReply::errorOccurred, this, &QRestCall::callFinishedWithError);
     }
 
-    ~QRestCall() noexcept override
-    {
-        mRequest.deleteLater();
-    }
+    ~QRestCall() noexcept override = default;
 
 protected:
     void callFinished() noexcept
@@ -44,6 +41,7 @@ protected:
     void setCallResult(RestCallResult result) noexcept override
     {
         try {
+            mRequest.deleteLater();
             mResult = result;
             finished.emit(this);
         } catch (std::exception const& e) {
