@@ -26,7 +26,7 @@ Control {
 
             width: menuListView.width
             text: model.title
-            icon.source: "qrc:/Rapid/Android/img/Stopwatch.svg"
+            icon.source: "qrc:/qt/qml/Rapid/Android/img/Stopwatch.svg"
 
             onClicked: menu.openPage(page)
         }

@@ -6,7 +6,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as Ctrl
 import QtQuick.Controls.Material
-import "qrc:/Rapid/Android/qml/elements"
+import "qrc:/qt/qml/Rapid/Android/qml/elements"
 
 Ctrl.ApplicationWindow {
     id: window
@@ -28,7 +28,7 @@ Ctrl.ApplicationWindow {
                 implicitHeight: 50
                 implicitWidth: navBarBurgerButton.implicitHeight
                 flat: true
-                icon.source: "qrc:/Rapid/Android/img/BurgerButton.svg"
+                icon.source: "qrc:/qt/qml/Rapid/Android/img/BurgerButton.svg"
                 onClicked: menuDrawer.open()
             }
 
@@ -70,7 +70,7 @@ Ctrl.ApplicationWindow {
                     Image {
                         Layout.preferredWidth: 40
                         Layout.preferredHeight: 40
-                        source: "qrc:/Rapid/Android/img/Stopwatch.svg"
+                        source: "qrc:/qt/qml/Rapid/Android/img/Stopwatch.svg"
                     }
 
                     Text {
