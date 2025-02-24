@@ -21,8 +21,9 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
-    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}/lib")
-endif("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+    message(STATUS "RPATH set to ${CMAKE_INSTALL_RPATH}")
+endif()
 
 option(ENABLE_TEST "Enable unit tests" OFF)
 option(ENABLE_DESKTOP "This option enables QT implementations" OFF)
