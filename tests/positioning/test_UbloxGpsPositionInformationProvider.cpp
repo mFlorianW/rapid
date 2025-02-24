@@ -302,7 +302,7 @@ TEST_CASE_METHOD(TestFixture,
         // 3. Give the success response with missconfigured cfg rate
         REQUIRE_CALL(*ubloxDevice, read()).LR_WITH(callCount == 1).RETURN(successResponse);
         // 4. Write the correct cfg rate configuration to the device
-        REQUIRE_CALL(*ubloxDevice, write(_)).LR_SIDE_EFFECT(++callCount).LR_WITH(_1 == createCfgRateResp(100, 1, 0));
+        REQUIRE_CALL(*ubloxDevice, write(_)).LR_SIDE_EFFECT(++callCount).LR_WITH(_1 == createCfgRateResp(40, 1, 0));
         // 5. Send ack response
         REQUIRE_CALL(*ubloxDevice, read())
             .LR_WITH(callCount == 2)
@@ -315,7 +315,7 @@ TEST_CASE_METHOD(TestFixture,
     SECTION("Don't configure CFG-RATE when correctly configured")
     {
         auto callCount = 0;
-        auto correctCfgRate = createCfgRateResp(100, 1, 0);
+        auto correctCfgRate = createCfgRateResp(40, 1, 0);
         auto successResponse = createAckResp(CFG_RATE_CLASS_ID, CFG_RATE_MSG_ID);
         successResponse.insert(successResponse.end(), correctCfgRate.begin(), correctCfgRate.end());
         // 1. must check for initialied device.
@@ -361,7 +361,7 @@ TEST_CASE_METHOD(TestFixture,
         // 3. SIMULATE NACK response from device
         REQUIRE_CALL(*ubloxDevice, read()).LR_RETURN(successResponse);
         // 4. Write request with correct CFG-RATE configuration to the device
-        REQUIRE_CALL(*ubloxDevice, write(_)).LR_SIDE_EFFECT(++callCount).LR_WITH(_1 == createCfgRateResp(100, 1, 0));
+        REQUIRE_CALL(*ubloxDevice, write(_)).LR_SIDE_EFFECT(++callCount).LR_WITH(_1 == createCfgRateResp(40, 1, 0));
         // 5. Simulate NACK response from the device
         REQUIRE_CALL(*ubloxDevice, read())
             .LR_WITH(callCount == 2)

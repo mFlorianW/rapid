@@ -103,14 +103,15 @@ public:
 
     void handle(InCfgRateMsg const& cfgRate)
     {
+        constexpr auto measRateInMs = std::uint16_t{40};
         using TimeRefEnum = cc_ublox::message::CfgRateFieldsCommon::TimeRefCommon::ValueType;
         auto measRate = cfgRate.field_measRate().getValue();
         auto navRate = cfgRate.field_navRate().getValue();
         auto timeRef = cfgRate.field_timeRef().value();
-        if (measRate != 100 or navRate != 1 or timeRef != TimeRefEnum::UTC) {
+        if (measRate != measRateInMs or navRate != 1 or timeRef != TimeRefEnum::UTC) {
             using OutCfgRateMsg = cc_ublox::message::CfgRate<OutMessage>;
             auto outMsg = OutCfgRateMsg{};
-            outMsg.field_measRate().setValue(100);
+            outMsg.field_measRate().setValue(measRateInMs);
             outMsg.field_navRate().setValue(1);
             outMsg.field_timeRef().setValue(TimeRefEnum::UTC);
             auto rawMsg = serialize(outMsg);
