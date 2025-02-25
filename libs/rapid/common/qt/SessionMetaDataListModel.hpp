@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#ifndef RAPID_COMMON_QT_SESSIONMETADATALISTMODEL
+#define RAPID_COMMON_QT_SESSIONMETADATALISTMODEL
+
 #include <common/SessionMetaData.hpp>
 #include <common/qt/GenericListModel.hpp>
 
@@ -45,3 +48,5 @@ public:
 };
 
 } // namespace Rapid::Common::Qt
+
+#endif // !RAPID_COMMON_QT_SESSIONMETADATALISTMODEL
