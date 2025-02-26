@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Rapid.Android
@@ -23,6 +24,7 @@ Page {
         anchors.leftMargin: 10
         anchors.right: parent.right
         anchors.rightMargin: 10
+        anchors.bottom: parent.bottom
 
         Header {
             id: liveHeader
@@ -33,7 +35,7 @@ Page {
         Session {
             id: liveSession
             Layout.fillWidth: true
-            trackName: GlobalState.activeSession.trackName
+            name: GlobalState.activeSession.trackName
             firstEntry: qsTrId("Current") + ":"
             firstEntryValue: GlobalState.activeSession.currentLapTime
             secondEntry: qsTrId("Current Sector") + ":"
@@ -47,12 +49,34 @@ Page {
             Layout.fillWidth: true
             text: qsTr("Session")
         }
+
+        ListView {
+            id: localSessionView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            // Layout.topMargin: 100
+            boundsBehavior: ListView.StopAtBounds
+            spacing: 5
+
+            model: GlobalState.localSessionManagement.listModel
+
+            delegate: Session {
+                required property string trackName
+                required property string time
+                required property string date
+
+                width: parent.width
+
+                name: trackName
+                firstEntry: date
+                secondEntry: time
+            }
+        }
     }
 
     Timer {
         id: activeSessionUpdateTimer
         interval: 500
-        running: true
         repeat: true
         onTriggered: {
             GlobalState.activeSession.updateLapData();

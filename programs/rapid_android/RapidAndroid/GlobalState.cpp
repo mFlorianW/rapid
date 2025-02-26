@@ -26,13 +26,13 @@ GlobalState::GlobalState()
         return;
     }
     mSessionDatabase = std::make_unique<Storage::SqliteSessionDatabase>(dbFile.value().toStdString());
-
     connect(mDeviceManagement, &DeviceManagement::activeLaptimerChanged, this, [this] {
         setRestClient();
         mRestActiveSession->setRestClient(mRestClient.get());
     });
     setRestClient();
     mRestActiveSession = std::make_unique<RestActiveSession>(mRestClient.get());
+    mLocalSessionManagement = std::make_unique<LocalSessionManagement>(mSessionDatabase.get());
 }
 
 GlobalState::~GlobalState()
@@ -43,6 +43,11 @@ GlobalState::~GlobalState()
 Rapid::Workflow::Qt::RestActiveSession const* GlobalState::getActiveSession() const noexcept
 {
     return mRestActiveSession.get();
+}
+
+Rapid::Workflow::Qt::LocalSessionManagement* GlobalState::getLocalSessionManagement() const noexcept
+{
+    return mLocalSessionManagement.get();
 }
 
 Rapid::Common::Qt::DeviceSettings GlobalState::create(QString const& name,
