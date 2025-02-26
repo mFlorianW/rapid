@@ -100,7 +100,7 @@ public:
     qsizetype insertItem(ListType const& item)
     {
         auto insertedIndex = mElements.size();
-        beginInsertRows(index(insertedIndex), insertedIndex, insertedIndex);
+        beginInsertRows({}, insertedIndex, insertedIndex);
         mElements.push_back(item);
         endInsertRows();
         return insertedIndex;
@@ -122,7 +122,7 @@ public:
         if (static_cast<std::size_t>(row) > mElements.size()) {
             return insertItem(item);
         }
-        beginInsertRows(index(row), row, row);
+        beginInsertRows({}, row, row);
         auto const insertedIndex = mElements.insert(mElements.begin() + row, item);
         endInsertRows();
         return std::distance(mElements.begin(), insertedIndex);
