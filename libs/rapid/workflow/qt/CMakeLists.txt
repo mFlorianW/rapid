@@ -5,6 +5,7 @@ set(RAPID_WORKFLOW_QT_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/IDeviceManagement.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DeviceManagement.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RestActiveSession.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalSessionManagement.hpp
 )
 install(FILES ${RAPID_WORKFLOW_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/workflow/qt")
 
@@ -15,4 +16,5 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionManagementWorkflow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DeviceManagement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RestActiveSession.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalSessionManagement.cpp
 )
