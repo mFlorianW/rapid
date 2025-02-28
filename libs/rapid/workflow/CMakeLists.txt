@@ -8,7 +8,7 @@ set(RAPID_WORKFLOW_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/ActiveSessionEndpoint.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/IRestActiveSession.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RestActiveSession.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/RestActiveSession.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalSessionManagement.hpp
 )
 install(FILES ${RAPID_WORKFLOW_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/workflow")
 
@@ -19,6 +19,8 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/ActiveSessionWorkflow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RestSessionManagementWorkflow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ActiveSessionEndpoint.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/RestActiveSession.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalSessionManagement.cpp
 )
 
 if(ENABLE_DESKTOP OR ENABLE_ANDROID)
