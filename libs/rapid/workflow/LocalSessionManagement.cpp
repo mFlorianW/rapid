@@ -13,6 +13,8 @@ LocalSessionManagement::LocalSessionManagement(Storage::ISessionDatabase* db)
     assert(mDb != nullptr);
 }
 
+LocalSessionManagement::~LocalSessionManagement() = default;
+
 std::shared_ptr<Storage::GetSessionResult> LocalSessionManagement::getSession(Common::SessionMetaData const& metadata)
 {
     return mDb->getSessionByMetadataAsync(metadata);

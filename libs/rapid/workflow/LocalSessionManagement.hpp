@@ -5,7 +5,7 @@
 #ifndef RAPID_WORKFLOW_LOCALSESSIONMANAGEMENT
 #define RAPID_WORKFLOW_LOCALSESSIONMANAGEMENT
 
-#include <storage/ISessionDatabase.hpp>
+#include <workflow/ISessionManagement.hpp>
 
 namespace Rapid::Workflow
 {
@@ -13,7 +13,7 @@ namespace Rapid::Workflow
 /**
  * @brief Provides the session management for the local device
  */
-class LocalSessionManagement
+class LocalSessionManagement : public ISessionManagement
 {
 public:
     /**
@@ -25,17 +25,21 @@ public:
      */
     LocalSessionManagement(Storage::ISessionDatabase* db);
 
-    /**
-     * @brief Gives the @ref Rapid::Common::Session for the passed @ref Rapid::Common::SessionMetaData.
-     *
-     * @details This is an asynchronous operation so the returned @Rapid::Storage::GetSessionResult instance notifies when finished.
-     *          But the caller should check immediatly the status of the result if an error happens no notification is emitted.
-     *
-     * @return The result object for the asynchronous operation.
-     */
-    std::shared_ptr<Storage::GetSessionResult> getSession(Common::SessionMetaData const& metadata);
+    /** @cond Doxygen_Suppress */
+    ~LocalSessionManagement() override;
+    LocalSessionManagement(LocalSessionManagement const&) = delete;
+    LocalSessionManagement& operator=(LocalSessionManagement const&) = delete;
+    LocalSessionManagement(LocalSessionManagement const&&) noexcept = delete;
+    LocalSessionManagement& operator=(LocalSessionManagement&&) noexcept = delete;
+    /** @endcond Doxygen_Suppress */
 
-private:
+    /**
+     * @copydoc Rapid::Workflow::ISessionManagement::getSession
+     */
+    [[nodiscard]] std::shared_ptr<Storage::GetSessionResult> getSession(
+        Common::SessionMetaData const& metadata) override;
+
+protected:
     Storage::ISessionDatabase* mDb;
 };
 

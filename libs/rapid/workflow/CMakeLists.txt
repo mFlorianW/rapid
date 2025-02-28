@@ -9,6 +9,7 @@ set(RAPID_WORKFLOW_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/IRestActiveSession.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RestActiveSession.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalSessionManagement.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ISessionManagement.hpp
 )
 install(FILES ${RAPID_WORKFLOW_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/workflow")
 
