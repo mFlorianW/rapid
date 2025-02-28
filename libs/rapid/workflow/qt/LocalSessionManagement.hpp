@@ -9,6 +9,7 @@
 #include <QVariant>
 #include <common/qt/SessionMetaDataListModel.hpp>
 #include <storage/ISessionDatabase.hpp>
+#include <workflow/LocalSessionManagement.hpp>
 
 namespace Rapid::Workflow::Qt
 {
@@ -16,7 +17,7 @@ namespace Rapid::Workflow::Qt
 /**
  * Extends the local session management for Qt usage
  */
-class LocalSessionManagement : public QObject
+class LocalSessionManagement : public QObject, public Workflow::LocalSessionManagement
 {
     Q_OBJECT
 
@@ -66,7 +67,6 @@ private:
     };
 
     std::unique_ptr<Common::Qt::SessionMetaDataListModel> mMetaDataListModel{nullptr};
-    Storage::ISessionDatabase* mDb;
     std::unordered_map<System::AsyncResult*, PendingResult> mPendingResults;
 };
 

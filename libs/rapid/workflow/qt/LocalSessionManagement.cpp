@@ -13,10 +13,9 @@ namespace Rapid::Workflow::Qt
 
 LocalSessionManagement::LocalSessionManagement(Storage::ISessionDatabase* db)
     : QObject{}
+    , Workflow::LocalSessionManagement{db}
     , mMetaDataListModel{std::make_unique<SessionMetaDataListModel>()}
-    , mDb{db}
 {
-    assert(db != nullptr);
     for (auto const& index : std::ranges::iota_view{std::size_t{0}, mDb->getSessionCount()}) {
         auto task = mDb->getSessionMetaDataByIndexAsync(index);
         if (task->getResult() == System::Result::Ok) {
