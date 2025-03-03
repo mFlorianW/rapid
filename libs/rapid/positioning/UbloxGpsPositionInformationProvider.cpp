@@ -153,6 +153,8 @@ public:
         auto velocity = Common::VelocityData{speedMeterPerSecond};
         mQ->gpsPosition.set({pos, time, date, velocity});
 
+        SPDLOG_INFO("asdasdasdasdasdasdasdasdasdasdas LAT: {}, LONG: {}", pos.getLatitude(), pos.getLongitude());
+
         auto const sats = navPvt.field_numSV().getValue();
         if (sats != numberOfSatellites) {
             numberOfSatellites = sats;
