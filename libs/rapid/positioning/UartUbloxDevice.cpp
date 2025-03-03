@@ -319,6 +319,8 @@ void UartUbloxDevice::readRawMessage()
     if (bytesRead < 0 and errno != EAGAIN) {
         SPDLOG_ERROR("Failed to read data from UBLOX UART. Error Code: {} Error: {}", errno, strerror(errno));
         return;
+    } else if (errno == EAGAIN) {
+        return;
     }
     mD->msgCache.insert(mD->msgCache.end(), mD->inBuffer.cbegin(), mD->inBuffer.cbegin() + bytesRead);
     if (not mD->initialized) {
