@@ -36,7 +36,7 @@ public:
         : ubloxDevice{std::move(device)}
         , mQ{q}
     {
-        std::ignore = ubloxDevice->dataReady.connect([this] {
+        mDataReadyConnection = ubloxDevice->dataReady.connect([this] {
             processData();
         });
 
@@ -44,7 +44,7 @@ public:
             pollCfgMsg();
             pollCfgRate();
         } else {
-            std::ignore = ubloxDevice->ready.connect([this] {
+            mDeviceReadyConnection = ubloxDevice->ready.connect([this] {
                 pollCfgMsg();
                 pollCfgRate();
             });
@@ -224,6 +224,8 @@ public:
     UbloxGpsPositionInformationProvider* mQ;
     bool mCfgRatePolled = false;
     std::uint8_t numberOfSatellites = 0;
+    KDBindings::ScopedConnection mDataReadyConnection;
+    KDBindings::ScopedConnection mDeviceReadyConnection;
 };
 
 UbloxGpsPositionInformationProvider::UbloxGpsPositionInformationProvider(std::unique_ptr<IUbloxDevice> dataProvider)
