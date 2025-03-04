@@ -233,23 +233,23 @@ std::shared_ptr<System::AsyncResultWithValue<bool>> UartUbloxDevice::setupUart(s
     }
     cfmakeraw(&options);
 
-    // Configure 8N1 (8 data bits, no parity, 1 stop bit)
-    options.c_cflag = (options.c_cflag & ~CSIZE) | CS8; // 8-bit characters
-    options.c_cflag &= ~PARENB; // No parity bit
-    options.c_cflag &= ~CSTOPB; // 1 stop bit
-    options.c_cflag &= ~CRTSCTS; // Disable hardware flow control (RTS/CTS)
-
-    // Enable the receiver and set local mode
-    options.c_cflag |= (CLOCAL | CREAD);
-
-    // Disable canonical mode, echo, and signal characters
-    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-
-    // Disable software flow control
-    options.c_iflag &= ~(IXON | IXOFF | IXANY);
-
-    // Raw output mode
-    options.c_oflag &= ~OPOST;
+    // // Configure 8N1 (8 data bits, no parity, 1 stop bit)
+    // options.c_cflag = (options.c_cflag & ~CSIZE) | CS8; // 8-bit characters
+    // options.c_cflag &= ~PARENB; // No parity bit
+    // options.c_cflag &= ~CSTOPB; // 1 stop bit
+    // options.c_cflag &= ~CRTSCTS; // Disable hardware flow control (RTS/CTS)
+    //
+    // // Enable the receiver and set local mode
+    // options.c_cflag |= (CLOCAL | CREAD);
+    //
+    // // Disable canonical mode, echo, and signal characters
+    // options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+    //
+    // // Disable software flow control
+    // options.c_iflag &= ~(IXON | IXOFF | IXANY);
+    //
+    // // Raw output mode
+    // options.c_oflag &= ~OPOST;
 
     if (cfsetispeed(&options, baudrate) < 0) {
         SPDLOG_ERROR("Failed ot set in speed {} for UBlox UART. Error: {}",
