@@ -47,6 +47,7 @@ if(ENABLE_DESKTOP)
             test_qt_GenericListModel.cpp
             test_qt_DeviceSettingsListModel.cpp
             test_qt_SessionMetaDataListModel.cpp
+            test_qt_LapListModel.cpp
     )
     target_link_libraries(test_common_qt
         PRIVATE
