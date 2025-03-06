@@ -152,7 +152,7 @@ UartUbloxDevice::UartUbloxDevice(std::string uart)
     : mD{std::make_unique<UbloxDevicePrivate>(*this)}
 {
     mD->device = uart;
-    mD->uartFd = open(mD->device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK | O_SYNC);
+    mD->uartFd = open(mD->device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK | O_NDELAY);
     if (mD->uartFd < 0) {
         SPDLOG_ERROR("Failed to open UBlox device message provider will not work. Error: {}", strerror(errno));
         return;
@@ -161,9 +161,13 @@ UartUbloxDevice::UartUbloxDevice(std::string uart)
     mD->readNotifier = std::make_unique<System::FdNotifier>(mD->uartFd, System::FdNotifierType::Read);
     mD->mFdNotifierConnection = mD->readNotifier->notify.connect(&UartUbloxDevice::readRawMessage, this);
 
-    if (flock(mD->uartFd, LOCK_EX) < 0) {
-        SPDLOG_ERROR("Failed to set exclusive lock on the UART {}. Error: {}", mD->device, strerror(errno));
+    if (fcntl(mD->uartFd, F_SETFL, O_RDWR) < 0) {
+        SPDLOG_ERROR("sdfsdfdsfdsfsdfsdfsdf");
     }
+
+    // if (flock(mD->uartFd, LOCK_EX) < 0) {
+    //     SPDLOG_ERROR("Failed to set exclusive lock on the UART {}. Error: {}", mD->device, strerror(errno));
+    // }
 
     mD->initializeTimer.setInterval(std::chrono::milliseconds{3000});
     mD->mInitializeTimeoutConnection = mD->initializeTimer.timeout.connect([this] {
@@ -250,6 +254,7 @@ std::shared_ptr<System::AsyncResultWithValue<bool>> UartUbloxDevice::setupUart(s
     //
     // // Raw output mode
     // options.c_oflag &= ~OPOST;
+    //
 
     if (cfsetispeed(&options, baudrate) < 0) {
         SPDLOG_ERROR("Failed ot set in speed {} for UBlox UART. Error: {}",
