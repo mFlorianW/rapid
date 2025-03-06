@@ -297,6 +297,20 @@ std::shared_ptr<System::AsyncResultWithValue<bool>> UartUbloxDevice::setupUart(s
         SPDLOG_ERROR("Failed to set UBlox UART options. Error: {}", strerror(errno));
         return result;
     }
+
+    int status = 0;
+    if (ioctl(mD->uartFd, TIOCMGET, &status)) {
+        SPDLOG_ERROR("ioctl tiomcget failed");
+        return result;
+    }
+
+    status |= TIOCM_DTR;
+    status |= TIOCM_RTS;
+    if (ioctl(mD->uartFd, TIOCMSET, &status)) {
+        SPDLOG_ERROR("ioctl tiocmset failed");
+        return result;
+    }
+
     mD->configurationTimer.setInterval(std::chrono::milliseconds{250});
     mD->configurationTimer.start();
     return result;
