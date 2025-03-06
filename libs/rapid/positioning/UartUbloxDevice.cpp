@@ -269,18 +269,29 @@ std::shared_ptr<System::AsyncResultWithValue<bool>> UartUbloxDevice::setupUart(s
         return result;
     }
 
+    options.c_cflag |= (CLOCAL | CREAD);
+    options.c_cflag &= ~PARENB;
+    options.c_cflag &= ~CSTOPB;
+    options.c_cflag &= ~CSIZE;
+    options.c_cflag |= CS8;
+    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+    options.c_oflag &= ~OPOST;
+    options.c_cc[VMIN] = 0;
+    options.c_cc[VTIME] = 100; // Ten seconds (100 deciseconds)
+
     // directly switching the baudrate causes problems on the PI3.
     // Even with TCSAFLUSH or TCSADRAIN the data are not correctly send.
     // An extra delay of 50ms makes sure that the data is correctly send.
-    mD->configurationTimerConnection = mD->configurationTimer.timeout.connect([this, options, result] {
-        if (tcsetattr(mD->uartFd, TCSANOW, &options) < 0) {
-            SPDLOG_ERROR("Failed to set UBlox UART options. Error: {}", strerror(errno));
-            return;
-        }
+    mD->configurationTimerConnection = mD->configurationTimer.timeout.connect([this, result] {
         mD->configurationTimer.stop();
         result->setResult(System::Result::Ok);
         result->setResultValue(false);
     });
+
+    if (tcsetattr(mD->uartFd, TCSANOW, &options) < 0) {
+        SPDLOG_ERROR("Failed to set UBlox UART options. Error: {}", strerror(errno));
+        return result;
+    }
     mD->configurationTimer.setInterval(std::chrono::milliseconds{250});
     mD->configurationTimer.start();
     return result;
