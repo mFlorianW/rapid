@@ -377,6 +377,7 @@ void UartUbloxDevice::readRawMessage()
     }
     mD->msgCache.insert(mD->msgCache.end(), mD->inBuffer.cbegin(), mD->inBuffer.cbegin() + bytesRead);
     if (bytesRead > 0) {
+        SPDLOG_INFO("Bytes read: {}", bytesRead);
         SPDLOG_INFO("Hex Dump: {}", hexDump(mD->inBuffer));
     }
     if (not mD->initialized) {
