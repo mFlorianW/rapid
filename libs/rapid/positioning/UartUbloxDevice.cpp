@@ -343,6 +343,31 @@ void UartUbloxDevice::configureUart() noexcept
     SPDLOG_INFO("Send UART configuration for {} baud with NMEA disabled and UBX enabled.", baudRateToString(B115200));
 }
 
+namespace
+{
+std::string hexDump(std::span<uint8_t> const& buffer, size_t bytesPerLine = 16)
+{
+    std::ostringstream oss;
+
+    for (size_t i = 0; i < buffer.size(); i++) {
+        // Print address offset at the start of each line
+        if (i % bytesPerLine == 0) {
+            oss << fmt::format("\n{:08X}: ", i);
+        }
+
+        // Print the hex byte
+        oss << fmt::format("{:02X} ", buffer[i]);
+
+        // Extra space after 8 bytes for better readability
+        if ((i + 1) % 8 == 0 && (i + 1) % bytesPerLine != 0) {
+            oss << " ";
+        }
+    }
+
+    return oss.str();
+}
+} // namespace
+
 void UartUbloxDevice::readRawMessage()
 {
     auto bytesRead = ::read(mD->uartFd, mD->inBuffer.data(), mD->inBuffer.size());
@@ -351,6 +376,9 @@ void UartUbloxDevice::readRawMessage()
         return;
     }
     mD->msgCache.insert(mD->msgCache.end(), mD->inBuffer.cbegin(), mD->inBuffer.cbegin() + bytesRead);
+    if (bytesRead > 0) {
+        SPDLOG_INFO("Hex Dump: {}", hexDump(mD->inBuffer));
+    }
     if (not mD->initialized) {
         mD->processData();
     } else if (bytesRead > 0) {
