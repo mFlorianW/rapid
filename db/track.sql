@@ -39,3 +39,13 @@ INSERT INTO Sektor (TrackId, PositionId, SektorIndex)
 INSERT INTO Sektor (TrackId, PositionId, SektorIndex)
     VALUES
     ((SELECT TrackId FROM Track WHERE NAME = 'Assen'), (SELECT PositionId FROM Position WHERE Latitude = 52.955628 AND Longitude = 6.512773), 2);
+
+-- INSERT MOST
+INSERT INTO Position (Latitude, Longitude) VALUES
+    (50.519449, 13.607738), -- Finishline
+    (50.515869, 13.591082),
+    (50.521772, 13.600161);
+
+-- INSERT INTO TRACKS (Longitude, Latitude)
+INSERT INTO Track (Name, Finishline) VALUES
+    ('Most', (SELECT PositionId FROM Position WHERE Latitude = 50.519449 AND Longitude = 13.607738));
