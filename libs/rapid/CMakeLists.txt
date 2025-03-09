@@ -20,6 +20,16 @@ PRIVATE
 PUBLIC
     KDAB::KDBindings
 )
+if(UNIX AND NOT ENABLE_ANDROID)
+    target_include_directories(RapidLibrary
+        PRIVATE
+            ${GPSD_INCLUDE_DIRS}
+    )
+    target_link_libraries(RapidLibrary
+        PRIVATE
+            ${GPSD_LIBRARIES}
+    )
+endif()
 
 set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/Rapid CACHE PATH "Location of rapid header files" )
 

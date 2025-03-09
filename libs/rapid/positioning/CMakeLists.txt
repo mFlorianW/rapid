@@ -26,6 +26,17 @@ if(UNIX)
     )
 endif()
 
+if(UNIX AND NOT ENABLE_ANDROID)
+    set(RAPID_POSITIONING_PUBLIC_LINUX_HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/GpsdPositionInformationProvider.hpp
+    )
+    target_sources(RapidLibrary
+        PRIVATE
+        ${RAPID_POSITIONING_PUBLIC_LINUX_HEADERS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/GpsdPositionInformationProvider.cpp
+    )
+endif()
+
 install(FILES ${RAPID_POSITIONING_PUBLIC_HEADERS} ${RAPID_POSITIONING_PUBLIC_LINUX_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/positioning")
 
 if(ENABLE_DESKTOP)
