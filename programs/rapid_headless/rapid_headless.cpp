@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <positioning/ConstantGpsPositionProvider.hpp>
+#include <positioning/GpsdPositionInformationProvider.hpp>
 #include <positioning/UartUbloxDevice.hpp>
 #include <pwd.h>
 #include <spdlog/spdlog.h>
@@ -117,6 +118,7 @@ int main(int argc, char** argv)
         ("gps-fake,g", "Enables a fake GPS source (useful for testing)")
         ("gps-source-file,f", value<std::string>(&gpsSourceFile), "Path to CSV file that contains GPS positions (useful for testing)")
         ("gps-source,s", value<std::string>(&gpsSourceFile), "Name of a UBX compatible device. Typically /dev/ttyUSB0")
+        ("gpsd,d",  "Use the GPS daemon on the system")
     ;
     // clang-format on
     variables_map optionsMap;
@@ -133,6 +135,7 @@ int main(int argc, char** argv)
     }
     bool useFakeSource = optionsMap.contains("gps-fake") > 0;
     bool useRealSource = optionsMap.contains("gps-source") > 0;
+    bool useGpsdSource = optionsMap.contains("gpsd") > 0;
 
     if (optionsMap.contains("gps-source-file") > 0) {
         gpsSourceFile = optionsMap["gps-source-file"].as<std::string>();
@@ -168,6 +171,8 @@ int main(int argc, char** argv)
         SPDLOG_INFO("Use {} device as GPS source", device);
         auto ubloxDevice = std::make_unique<UartUbloxDevice>(device);
         positionProvider = std::make_unique<UbloxGpsPositionInformationProvider>(std::move(ubloxDevice));
+    } else if (useGpsdSource) {
+        positionProvider = std::make_unique<GpsdPositionInformationProvider>();
     } else {
         SPDLOG_ERROR("No GPS source specified. Please specify fake or real GPS source");
         printHelp(options);

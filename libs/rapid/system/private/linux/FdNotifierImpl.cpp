@@ -4,6 +4,7 @@
 
 #include "FdNotifierImpl.hpp"
 #include "system/EventLoop.hpp"
+#include <fcntl.h>
 #include <memory>
 #include <ranges>
 #include <spdlog/spdlog.h>
@@ -42,6 +43,10 @@ void FdNotifierImpl::registerNotifier(Rapid::System::FdNotifier* fdNotifier, FdN
         SPDLOG_WARN("FdNotifier {} for type {} already registered. Ignoring registration.");
         return;
     }
+    if (fcntl(fdNotifier->getFd(), F_GETFL) < 0 && errno == EBADF) {
+        SPDLOG_WARN("Can't register FdNotifier. Fd already cloesed.");
+        return;
+    }
     auto const operation = entryNode.isEmpty() ? EPOLL_CTL_ADD : EPOLL_CTL_MOD;
     updateEntry(fdNotifier, entryNode);
 
@@ -68,7 +73,10 @@ void FdNotifierImpl::unregisterNotifier(Rapid::System::FdNotifier* fdNotifier)
     if (entryNode.isEmpty()) {
         return;
     }
-
+    if (fcntl(fdNotifier->getFd(), F_GETFL) < 0 && errno == EBADF) {
+        stopPolling();
+        return;
+    }
     auto eventData = epoll_data_t{};
     eventData.fd = fdNotifier->getFd();
     auto const operation = getUnregisterOperation(*fdNotifier);
