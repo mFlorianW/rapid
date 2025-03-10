@@ -84,7 +84,11 @@ Page {
         }
     }
 
-    onVisibleChanged: {
+    Component.onCompleted: {
+        activeSessionUpdateTimer.running = mainPage.visible;
+    }
+
+    Component.onDestruction: {
         activeSessionUpdateTimer.running = mainPage.visible;
     }
 }
