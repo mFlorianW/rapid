@@ -49,3 +49,14 @@ INSERT INTO Position (Latitude, Longitude) VALUES
 -- INSERT INTO TRACKS (Longitude, Latitude)
 INSERT INTO Track (Name, Finishline) VALUES
     ('Most', (SELECT PositionId FROM Position WHERE Latitude = 50.519449 AND Longitude = 13.607738));
+
+-- SECTORS
+-- SEKTOR1
+INSERT INTO Sektor (TrackId, PositionId, SektorIndex)
+    VALUES
+    ((SELECT TrackId FROM Track WHERE name = 'Most'), (SELECT PositionId FROM Position WHERE Latitude = 50.515869 AND Longitude = 13.591082), 1);
+
+-- SEKTOR2
+INSERT INTO Sektor (TrackId, PositionId, SektorIndex)
+    VALUES
+    ((SELECT TrackId FROM Track WHERE NAME = 'Most'), (SELECT PositionId FROM Position WHERE Latitude = 50.521772 AND Longitude = 13.600161), 2);
