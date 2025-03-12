@@ -6,18 +6,20 @@ endif()
 
 # Create empty database on every build
 add_custom_command(OUTPUT rapid.db
-    COMMAND rm -f ${CMAKE_CURRENT_BINARY_DIR}/rapid.db && sqlite3 rapid.db < "${CMAKE_CURRENT_SOURCE_DIR}/schema.sql"
+    COMMAND rm -rf rapid.db
+    COMMAND sqlite3 rapid.db < "${CMAKE_CURRENT_SOURCE_DIR}/schema.sql"
     COMMAND sqlite3 "${CMAKE_CURRENT_BINARY_DIR}/rapid.db" < "${CMAKE_CURRENT_SOURCE_DIR}/track.sql"
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/schema.sql
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/track.sql
-    VERBATIM)
+    VERBATIM
+)
 add_custom_target(db ALL DEPENDS rapid.db)
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracks-custom.sql)
-add_custom_target(tracks-custom ALL
-    COMMAND sqlite3 "${CMAKE_CURRENT_BINARY_DIR}/rapid.db" < "${CMAKE_CURRENT_SOURCE_DIR}/tracks-custom.sql"
-    DEPENDS db
-)
+    add_custom_command(TARGET db
+        POST_BUILD
+        COMMAND sqlite3 "${CMAKE_CURRENT_BINARY_DIR}/rapid.db" < "${CMAKE_CURRENT_SOURCE_DIR}/tracks-custom.sql"
+    )
 endif()
 
 set(DATABASE_FILE ${CMAKE_INSTALL_PREFIX}/${SHARED_DATADIR}/rapid.db)
