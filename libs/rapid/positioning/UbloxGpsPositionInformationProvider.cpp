@@ -231,6 +231,11 @@ UbloxGpsPositionInformationProvider::UbloxGpsPositionInformationProvider(std::un
 
 UbloxGpsPositionInformationProvider::~UbloxGpsPositionInformationProvider() = default;
 
+GpsFixMode UbloxGpsPositionInformationProvider::getGpsFixMode() const noexcept
+{
+    return GpsFixMode::NoFix;
+}
+
 std::uint8_t UbloxGpsPositionInformationProvider::getNumbersOfStatelite() const
 {
     return mD->numberOfSatellites;

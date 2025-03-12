@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "RapidHeadless.hpp"
+#include "positioning/StaticGpsInformationProvider.hpp"
 #include "positioning/UartUbloxDevice.hpp"
 #include "positioning/UbloxGpsPositionInformationProvider.hpp"
 #include <DatabaseFile.hpp>
@@ -147,7 +148,9 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    std::unique_ptr<IGpsPositionProvider> positionProvider;
+    std::shared_ptr<IGpsPositionProvider> positionProvider;
+    std::shared_ptr<IGpsInformationProvider> gpsInfoProvider;
+
     if (useFakeSource) {
         gpsSourceFile = optionsMap["gps-source-file"].as<std::string>();
         if (gpsSourceFile.empty()) {
@@ -161,6 +164,7 @@ int main(int argc, char** argv)
         fakeProv->setVelocityInMeterPerSecond(80.3333);
         fakeProv->start();
         positionProvider = std::move(fakeProv);
+        gpsInfoProvider = std::make_shared<StaticGpsInformationProvider>();
     } else if (useRealSource) {
         auto device = optionsMap["gps-source"].as<std::string>();
         if (device.empty()) {
@@ -170,9 +174,13 @@ int main(int argc, char** argv)
         }
         SPDLOG_INFO("Use {} device as GPS source", device);
         auto ubloxDevice = std::make_unique<UartUbloxDevice>(device);
-        positionProvider = std::make_unique<UbloxGpsPositionInformationProvider>(std::move(ubloxDevice));
+        auto ubloxGps = std::make_shared<UbloxGpsPositionInformationProvider>(std::move(ubloxDevice));
+        gpsInfoProvider = ubloxGps;
+        positionProvider = ubloxGps;
     } else if (useGpsdSource) {
-        positionProvider = std::make_unique<GpsdPositionInformationProvider>();
+        auto gpsdProvider = std::make_shared<GpsdPositionInformationProvider>();
+        gpsInfoProvider = gpsdProvider;
+        positionProvider = gpsdProvider;
     } else {
         SPDLOG_ERROR("No GPS source specified. Please specify fake or real GPS source");
         printHelp(options);
@@ -190,7 +198,7 @@ int main(int argc, char** argv)
     auto trackDatabase = SqliteTrackDatabase{maybeDbFile.value()};
 
     // Setup headless laptimer
-    auto laptimer = LappyHeadless{*positionProvider, sessionDatabase, trackDatabase};
+    auto laptimer = LappyHeadless{*positionProvider, *gpsInfoProvider, sessionDatabase, trackDatabase};
 
     eventLoop.exec();
     return 0;
