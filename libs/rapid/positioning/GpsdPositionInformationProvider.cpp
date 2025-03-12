@@ -7,7 +7,6 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <gps.h>
-#include <numeric>
 #include <spdlog/spdlog.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -27,6 +26,7 @@ struct FifoData
     long timeSec{0};
     long long timeNanoSec{0};
     std::uint8_t satellites{0};
+    GpsFixMode gpsFix{GpsFixMode::NoFix};
 };
 
 class GpsdProvider
@@ -85,16 +85,11 @@ private:
             if (0 > mGpsd.fix.mode or 4 <= mGpsd.fix.mode) {
                 mGpsd.fix.mode = 0;
             }
-            // printf("Fix mode: %s (%d) Time: ", mode_str[mGpsd.fix.mode], mGpsd.fix.mode);
+            buffer.gpsFix = convertToFixMode(mGpsd.fix.mode);
             if (TIME_SET == (TIME_SET & mGpsd.set)) {
-                // not 32 bit safe
-                // printf("%ld.%09ld ", mGpsd.fix.time.tv_sec, mGpsd.fix.time.tv_nsec);
                 buffer.timeSec = mGpsd.fix.time.tv_sec;
                 buffer.timeNanoSec = mGpsd.fix.time.tv_nsec;
             }
-            // } else {
-            //     puts("n/a ");
-            // }
             if (std::isfinite(mGpsd.fix.latitude) && std::isfinite(mGpsd.fix.longitude)) {
                 buffer.latitude = static_cast<float>(mGpsd.fix.latitude);
                 buffer.longitude = static_cast<float>(mGpsd.fix.longitude);
@@ -109,6 +104,20 @@ private:
             if (bytesWritten < 0 or bytesWritten < static_cast<ssize_t>(sizeof(buffer))) {
                 SPDLOG_ERROR("Failed to write to FIFO. ErrorCode: {}, Error: {}", errno, strerror(errno));
             }
+        }
+    }
+
+    GpsFixMode convertToFixMode(int mode)
+    {
+        switch (mode) {
+        case 1:
+            return GpsFixMode::NoFix;
+        case 2:
+            return GpsFixMode::Fix2d;
+        case 3:
+            return GpsFixMode::Fix3d;
+        default:
+            return GpsFixMode::NoFix;
         }
     }
 
@@ -150,6 +159,11 @@ GpsdPositionInformationProvider::~GpsdPositionInformationProvider()
     close(mReadFifo);
 }
 
+GpsFixMode GpsdPositionInformationProvider::getGpsFixMode() const noexcept
+{
+    return mGpsFix;
+}
+
 std::uint8_t GpsdPositionInformationProvider::getNumbersOfStatelite() const
 {
     return mSatellites;
@@ -174,6 +188,10 @@ void GpsdPositionInformationProvider::onGpsPositionReceived()
                                           {std::string{&dateBuff[0]}},
                                           Common::VelocityData{buffer.velocity}};
     mSatellites = buffer.satellites;
+    if (mGpsFix != buffer.gpsFix) {
+        mGpsFix = buffer.gpsFix;
+        gpsFixModeChanged.emit(mGpsFix);
+    }
     gpsPosition.set(gpsPos);
 }
 

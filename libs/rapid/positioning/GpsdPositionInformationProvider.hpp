@@ -21,7 +21,7 @@ class GpsdProvider;
 /**
  * @breif An implementaion of the Rapid::Positioning::IGPSInformationProvider and Rapid::Positioning::IGPSInformationProvider interface.
  */
-class GpsdPositionInformationProvider : public IGpsPositionProvider, IGpsInformationProvider
+class GpsdPositionInformationProvider : public IGpsPositionProvider, public IGpsInformationProvider
 {
 public:
     /**
@@ -40,6 +40,11 @@ public:
     /**@cond Doxygen_Suppress */
 
     /**
+     * @copydoc Rapid::Positioning::IGPSInformationProvider::getGpsFixMode
+     */
+    GpsFixMode getGpsFixMode() const noexcept override;
+
+    /**
      * @copy Rapid::Positioning::IGPSInformationProvider::getNumbersOfStatelite
      */
     std::uint8_t getNumbersOfStatelite() const override;
@@ -53,6 +58,7 @@ private:
     int mReadFifo{-1};
     Common::GpsPositionData mLastPos;
     std::size_t mSatellites{0};
+    GpsFixMode mGpsFix{GpsFixMode::NoFix};
 };
 
 } // namespace Rapid::Positioning

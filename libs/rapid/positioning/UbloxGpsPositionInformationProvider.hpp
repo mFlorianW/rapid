@@ -60,6 +60,11 @@ public:
     UbloxGpsPositionInformationProvider& operator=(UbloxGpsPositionInformationProvider&&) noexcept = delete;
 
     /**
+     * @copydoc Rapid::Positioning::IGPSInformationProvider::getGpsFixMode
+     */
+    GpsFixMode getGpsFixMode() const noexcept override;
+
+    /**
      * @copydoc IGpsInformationProvider::getNumbersOfStatelite
      */
     std::uint8_t getNumbersOfStatelite() const override;

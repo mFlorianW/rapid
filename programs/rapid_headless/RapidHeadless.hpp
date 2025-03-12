@@ -6,6 +6,7 @@
 
 #include <algorithm/SimpleLaptimer.hpp>
 #include <algorithm/TrackDetection.hpp>
+#include <positioning/IGPSInformationProvider.hpp>
 #include <positioning/IGpsPositionProvider.hpp>
 #include <rest/RestServer.hpp>
 #include <rest/SessionEndpoint.hpp>
@@ -22,20 +23,29 @@ class LappyHeadless
 {
 public:
     LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvider,
+                  Rapid::Positioning::IGpsInformationProvider& gpsInfoProvider,
                   Rapid::Storage::ISessionDatabase& sessionDatabase,
                   Rapid::Storage::ITrackDatabase& trackDatabase);
 
 private:
+    void startSession();
+
     Rapid::Positioning::IGpsPositionProvider& mPositionProvider;
+    Rapid::Positioning::IGpsInformationProvider& mGpsInfoProvider;
+    KDBindings::ScopedConnection mGpsFixModeConnection;
     Rapid::Storage::ISessionDatabase& mSessionDatabase;
     Rapid::Storage::ITrackDatabase& mTrackDatabase;
     Rapid::Algorithm::TrackDetection mTrackDetection{500};
     Rapid::Workflow::TrackDetectionWorkflow mTrackDetectionWorkflow{mTrackDetection, mPositionProvider};
+    KDBindings::ScopedConnection mTrackDetectionConnection;
     Rapid::Algorithm::SimpleLaptimer mSimpleLaptimer{};
     Rapid::Workflow::ActiveSessionWorkflow mActiveSessionWorkflow{mPositionProvider, mSimpleLaptimer, mSessionDatabase};
+    KDBindings::ScopedConnection mLapFinishedConnection;
     Rapid::Rest::SessionEndpoint mSessionEndpoint{mSessionDatabase};
     Rapid::Rest::RestServer mRestServer;
     Rapid::Workflow::ActiveSessionEndpoint mActiveSessionEndpoint{std::addressof(mActiveSessionWorkflow)};
+    bool mTrackDetected{false};
+    bool mHasFix{false};
 };
 
 } // namespace Rapid::LappyHeadless

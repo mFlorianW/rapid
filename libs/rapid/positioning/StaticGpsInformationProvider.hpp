@@ -12,6 +12,11 @@ namespace Rapid::Positioning
 class StaticGpsInformationProvider : public IGpsInformationProvider
 {
 public:
+    GpsFixMode getGpsFixMode() const noexcept override
+    {
+        return GpsFixMode::Fix3d;
+    }
+
     uint8_t getNumbersOfStatelite() const override
     {
         return 0;
