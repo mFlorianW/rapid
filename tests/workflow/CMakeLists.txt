@@ -9,6 +9,7 @@ PRIVATE
     test_TrackDetectionWorkflow.cpp
     test_ActiveSessionEndpoint.cpp
     test_RestActiveSession.cpp
+    test_LocalSessionManagement.cpp
 )
 
 target_link_libraries(test_workflow
@@ -32,6 +33,7 @@ if(ENABLE_DESKTOP)
             test_qt_RestSessionDownloader.cpp
             test_qt_DeviceManagement.cpp
             test_qt_RestActiveSession.cpp
+            test_qt_LocalSessionManagement.cpp
     )
     target_link_libraries(test_workflow_qt
             Catch2::Catch2

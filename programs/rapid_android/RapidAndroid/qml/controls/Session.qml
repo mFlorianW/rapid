@@ -9,7 +9,7 @@ import QtQuick.Controls
 Pane {
     id: session
 
-    property alias trackName: sessionTrackName.text
+    property alias name: sessionTrackName.text
     property alias firstEntry: sessionLast.text
     property alias firstEntryValue: sessionLastTime.text
     property alias secondEntry: sessionCurrent.text
