@@ -13,14 +13,14 @@ add_custom_command(OUTPUT rapid.db
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/track.sql
     VERBATIM
 )
-add_custom_target(db ALL DEPENDS rapid.db)
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracks-custom.sql)
-    add_custom_command(TARGET db
-        POST_BUILD
+    add_custom_command(OUTPUT rapid.db APPEND
         COMMAND sqlite3 "${CMAKE_CURRENT_BINARY_DIR}/rapid.db" < "${CMAKE_CURRENT_SOURCE_DIR}/tracks-custom.sql"
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tracks-custom.sql
     )
 endif()
+add_custom_target(db ALL DEPENDS rapid.db)
 
 set(DATABASE_FILE ${CMAKE_INSTALL_PREFIX}/${SHARED_DATADIR}/rapid.db)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DatabaseFile.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/DatabaseFile.hpp @ONLY)
