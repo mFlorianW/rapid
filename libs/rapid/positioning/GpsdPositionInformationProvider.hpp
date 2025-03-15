@@ -50,12 +50,8 @@ public:
     std::uint8_t getNumbersOfStatelite() const override;
 
 private:
-    void onGpsPositionReceived();
-
-    std::unique_ptr<Private::GpsdProvider> mProvider;
-    System::FdNotifier mReadNotifier;
-    KDBindings::ScopedConnection mReadNotifierConnection;
-    int mReadFifo{-1};
+    static std::unique_ptr<Private::GpsdProvider> sProvider;
+    KDBindings::ScopedConnection mChangedConnection;
     Common::GpsPositionData mLastPos;
     std::size_t mSatellites{0};
     GpsFixMode mGpsFix{GpsFixMode::NoFix};

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "GpsdPositionInformationProvider.hpp"
+#include "system/EventLoop.hpp"
 #include <cmath>
 #include <fcntl.h>
 #include <filesystem>
@@ -13,12 +14,11 @@
 
 namespace Rapid::Positioning
 {
-constexpr auto FIFONAME = "/tmp/rapid_headless_gps_2";
 
 namespace Private
 {
 
-struct FifoData
+struct GpsdData
 {
     float longitude{0.0f};
     float latitude{0.0f};
@@ -33,14 +33,17 @@ class GpsdProvider
 {
 public:
     GpsdProvider() = default;
+
     ~GpsdProvider()
     {
-        gps_stream(&mGpsd, WATCH_DISABLE, nullptr);
-        if (mGpsProvider.joinable()) {
-            mGpsProvider.join();
+        if (mRunning) {
+            gps_stream(&mGpsd, WATCH_DISABLE, nullptr);
+            stop();
+            if (mGpsProvider.joinable()) {
+                mGpsProvider.join();
+            }
+            gps_close(&mGpsd);
         }
-        gps_close(&mGpsd);
-        close(mWriteFifo);
     }
 
     GpsdProvider(GpsdProvider const&) = delete;
@@ -50,8 +53,10 @@ public:
 
     void start()
     {
-        mGpsProvider = std::thread{&GpsdProvider::run, this};
-        mRunning = true;
+        if (not mRunning) {
+            mGpsProvider = std::thread{&GpsdProvider::run, this};
+            mRunning = true;
+        }
     }
 
     void stop()
@@ -59,20 +64,36 @@ public:
         mRunning = false;
     }
 
+    Common::GpsPositionData getPosition() const noexcept
+    {
+        auto guard = std::lock_guard(mAccessMutex);
+        return mPosition;
+    }
+
+    GpsFixMode getGpsFixMode() const noexcept
+    {
+        auto guard = std::lock_guard(mAccessMutex);
+        return mGpsFix;
+    }
+
+    std::size_t getStatellites() const noexcept
+    {
+        auto guard = std::lock_guard(mAccessMutex);
+        return mSatellites;
+    }
+
+    KDBindings::Signal<> changed;
+
 private:
     void run()
     {
-        mWriteFifo = open(FIFONAME, O_WRONLY | O_NONBLOCK);
-        if (mWriteFifo < 0) {
-            SPDLOG_ERROR("Failed to open write buffer. ErrorCode: {}, Error: {}", errno, strerror(errno));
-        }
         auto error = gps_open("localhost", "2947", &mGpsd);
         if (error < 0) {
             SPDLOG_ERROR("Failed to connected GPSD. Error: {}", gps_errstr(error));
             return;
         }
         gps_stream(&mGpsd, WATCH_ENABLE | WATCH_JSON, nullptr);
-        auto buffer = Private::FifoData{};
+        auto buffer = Private::GpsdData{};
         while (gps_waiting(&mGpsd, 5000000) and mRunning) {
             if (-1 == gps_read(&mGpsd, nullptr, 0)) {
                 printf("Read error.  Bye, bye\n");
@@ -100,10 +121,25 @@ private:
             if (mGpsd.satellites_used > 0) {
                 buffer.satellites = mGpsd.satellites_used;
             }
-            auto bytesWritten = write(mWriteFifo, &buffer, sizeof(buffer));
-            if (bytesWritten < 0 or bytesWritten < static_cast<ssize_t>(sizeof(buffer))) {
-                SPDLOG_ERROR("Failed to write to FIFO. ErrorCode: {}, Error: {}", errno, strerror(errno));
+
+            auto ts = std::timespec{.tv_sec = buffer.timeSec, .tv_nsec = buffer.timeNanoSec};
+            std::array<char, 16> timeBuff = {};
+            std::strftime(&timeBuff[0], sizeof timeBuff, "%H:%M:%S", std::gmtime(&ts.tv_sec));
+            size_t milliseconds = ts.tv_nsec / 1'000'000; // Convert ns to ms
+            auto time = std::format("{}.{}", &timeBuff[0], milliseconds);
+            std::array<char, 11> dateBuff = {};
+            std::strftime(&dateBuff[0], sizeof(dateBuff), "%d.%m.%Y", std::gmtime(&ts.tv_sec));
+
+            {
+                auto guard = std::lock_guard(mAccessMutex);
+                mPosition = Common::GpsPositionData{Common::PositionData{buffer.latitude, buffer.longitude},
+                                                    {time},
+                                                    {std::string{&dateBuff[0]}},
+                                                    Common::VelocityData{buffer.velocity}};
+                mSatellites = buffer.satellites;
+                mGpsFix = buffer.gpsFix;
             }
+            changed.emit();
         }
     }
 
@@ -124,40 +160,38 @@ private:
     gps_data_t mGpsd{};
     std::thread mGpsProvider;
     std::atomic_bool mRunning;
-    int mWriteFifo{-1};
+    mutable std::mutex mAccessMutex;
+    Common::GpsPositionData mPosition;
+    GpsFixMode mGpsFix{GpsFixMode::NoFix};
+    std::size_t mSatellites{0};
 };
 
 } // namespace Private
 
-GpsdPositionInformationProvider::GpsdPositionInformationProvider()
-    : mProvider{std::make_unique<Private::GpsdProvider>()}
-    , mReadNotifier{System::FdNotifierType::Read}
-{
-    if (std::filesystem::exists(FIFONAME) and not std::filesystem::remove(FIFONAME)) {
-        SPDLOG_ERROR("Failed to remove existing FIFO.");
-        return;
-    }
-    if (mkfifo(FIFONAME, 0660) < 0) {
-        SPDLOG_ERROR("Failed to create FIFO. Error Code: {}, Error: {}", errno, strerror(errno));
-        return;
-    }
-    mReadFifo = open(FIFONAME, O_RDONLY | O_NONBLOCK);
-    if (mReadFifo < 0) {
-        SPDLOG_ERROR("Failed to open read buffer. ErrorCode: {}, Error: {}", errno, strerror(errno));
-        return;
-    }
-    mReadNotifier.setFd(mReadFifo);
-    mReadNotifierConnection = mReadNotifier.notify.connect([this] {
-        onGpsPositionReceived();
-    });
-    mProvider->start();
-}
+std::unique_ptr<Private::GpsdProvider> GpsdPositionInformationProvider::sProvider =
+    std::make_unique<Private::GpsdProvider>();
 
-GpsdPositionInformationProvider::~GpsdPositionInformationProvider()
+GpsdPositionInformationProvider::GpsdPositionInformationProvider()
 {
-    mProvider->stop();
-    close(mReadFifo);
+    mChangedConnection = sProvider->changed.connectDeferred(System::EventLoop::getConnectionEvaluator(), [this] {
+        auto const gpsPos = sProvider->getPosition();
+        auto newPos =
+            Common::GpsPositionData{gpsPos.getPosition(), gpsPos.getTime(), gpsPos.getDate(), gpsPos.getVelocity()};
+        gpsPosition.set(newPos);
+        auto const satellites = sProvider->getStatellites();
+        if (mSatellites != satellites) {
+            mSatellites = satellites;
+            numberOfSatellitesChanged.emit();
+        }
+        auto const gpsFix = sProvider->getGpsFixMode();
+        if (mGpsFix != gpsFix) {
+            mGpsFix = gpsFix;
+            gpsFixModeChanged.emit(mGpsFix);
+        }
+    });
+    sProvider->start();
 }
+GpsdPositionInformationProvider::~GpsdPositionInformationProvider() = default;
 
 GpsFixMode GpsdPositionInformationProvider::getGpsFixMode() const noexcept
 {
@@ -167,32 +201,6 @@ GpsFixMode GpsdPositionInformationProvider::getGpsFixMode() const noexcept
 std::uint8_t GpsdPositionInformationProvider::getNumbersOfStatelite() const
 {
     return mSatellites;
-}
-
-void GpsdPositionInformationProvider::onGpsPositionReceived()
-{
-    auto buffer = Private::FifoData{};
-    auto bytesRead = read(mReadFifo, &buffer, sizeof(buffer));
-    if (bytesRead < 0) {
-        SPDLOG_ERROR("Failed to read from FIFO. ErrorCode: {}, Error: {}", errno, strerror(errno));
-    }
-    auto ts = std::timespec{.tv_sec = buffer.timeSec, .tv_nsec = buffer.timeNanoSec};
-    std::array<char, 16> timeBuff = {};
-    std::strftime(&timeBuff[0], sizeof timeBuff, "%H:%M:%S", std::gmtime(&ts.tv_sec));
-    size_t milliseconds = ts.tv_nsec / 1'000'000; // Convert ns to ms
-    auto time = std::format("{}.{}", &timeBuff[0], milliseconds);
-    std::array<char, 11> dateBuff = {};
-    std::strftime(&dateBuff[0], sizeof(dateBuff), "%d.%m.%Y", std::gmtime(&ts.tv_sec));
-    auto gpsPos = Common::GpsPositionData{Common::PositionData{buffer.latitude, buffer.longitude},
-                                          {time},
-                                          {std::string{&dateBuff[0]}},
-                                          Common::VelocityData{buffer.velocity}};
-    mSatellites = buffer.satellites;
-    if (mGpsFix != buffer.gpsFix) {
-        mGpsFix = buffer.gpsFix;
-        gpsFixModeChanged.emit(mGpsFix);
-    }
-    gpsPosition.set(gpsPos);
 }
 
 } // namespace Rapid::Positioning
