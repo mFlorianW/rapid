@@ -29,7 +29,7 @@ if(ENABLE_DESKTOP)
     target_sources(test_workflow_qt
         PRIVATE
             test_qt_workflow_main.cpp
-            test_SessionAnalyzeWorkflow.cpp
+            test_qt_SessionAnalyzeWorkflow.cpp
             test_qt_RestSessionDownloader.cpp
             test_qt_DeviceManagement.cpp
             test_qt_RestActiveSession.cpp
