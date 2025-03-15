@@ -25,6 +25,13 @@ public:
     /** @endcond */
 
     /**
+     * @brief Creates an instance of @ref Rapid::Common::Qt::LapListModel with initial data.
+     *
+     * @details The laps are inserted to the model in the order of the vector.
+     */
+    [[nodiscard]] LapListModel(std::vector<LapData> const& laps) noexcept;
+
+    /**
      * @brief The custom display roles supported by the model
      * @details The main purpose for the roles are for the QML context
      */

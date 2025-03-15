@@ -4,9 +4,11 @@
 
 #include <catch2/catch_all.hpp>
 #include <common/qt/LapListModel.hpp>
+#include <testhelper/Sessions.hpp>
 
 using namespace Rapid::Common;
 using namespace Rapid::Common::Qt;
+using namespace Rapid::TestHelper;
 
 TEST_CASE("The LapListModel shall give the correct role names")
 {
@@ -38,4 +40,11 @@ TEST_CASE("The LapListModel shall give the correct data for the roles")
         auto const laptime = lapModel.data(lapModel.index(2), unsupportedRole).toString();
         REQUIRE(laptime == QString(""));
     }
+}
+
+TEST_CASE("Create a LapListModel from list of laps")
+{
+    auto model = LapListModel{Sessions::getTestSession3().getLaps()};
+    constexpr auto expectedSize = 2U;
+    REQUIRE(model.rowCount({}) == expectedSize);
 }

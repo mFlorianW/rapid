@@ -12,6 +12,14 @@ LapListModel::LapListModel()
 {
 }
 
+LapListModel::LapListModel(std::vector<LapData> const& laps) noexcept
+    : LapListModel{}
+{
+    for (auto const& lap : std::as_const(laps)) {
+        insertItem(lap);
+    }
+}
+
 LapListModel::~LapListModel() = default;
 
 QVariant LapListModel::data(QModelIndex const& index, int role) const noexcept
