@@ -21,14 +21,19 @@ SessionPageModel::SessionPageModel(std::unique_ptr<Storage::ISessionDatabase> se
 
 SessionPageModel::~SessionPageModel() = default;
 
-Rapid::Common::Qt::SessionMetaDataListModel* SessionPageModel::getSessionListModel() const noexcept
+Rapid::Common::Qt::SessionMetaDataListModel* SessionPageModel::getSessionListModel() noexcept
 {
     return mLocalSessionMgmt.getSessionMetaDataListModel();
 }
 
-Rapid::Common::Qt::LapListModel* SessionPageModel::getLapListModel() const noexcept
+Rapid::Common::Qt::LapListModel* SessionPageModel::getLapListModel() noexcept
 {
     return mSessionAnalyzeWorkflow.lapListModel.get().get();
+}
+
+Rapid::Workflow::Qt::RestActiveSession* SessionPageModel::getActiveSession() noexcept
+{
+    return std::addressof(mRestActiveSession);
 }
 
 void SessionPageModel::analyzeSession(quint32 sessionIndex)

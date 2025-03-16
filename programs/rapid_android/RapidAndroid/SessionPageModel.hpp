@@ -6,12 +6,15 @@
 #define PROGRAMS_RAPID_ANDROID_SESSIONPAGEMODEL_HPP
 
 #include "Database.hpp"
-#include "workflow/qt/SessionAnalyzeWorkflow.hpp"
 #include <QObject>
 #include <QQmlEngine>
 #include <common/qt/SessionMetaDataListModel.hpp>
+#include <rest/qt/QRestClient.hpp>
 #include <storage/SqliteSessionDatabase.hpp>
+#include <workflow/ActiveSessionWorkflow.hpp>
 #include <workflow/qt/LocalSessionManagement.hpp>
+#include <workflow/qt/RestActiveSession.hpp>
+#include <workflow/qt/SessionAnalyzeWorkflow.hpp>
 
 namespace Rapid::Android
 {
@@ -34,6 +37,14 @@ class SessionPageModel : public QObject
      * Gives the a list model for display the laps of a session
      */
     Q_PROPERTY(Rapid::Common::Qt::LapListModel* lapListModel READ getLapListModel NOTIFY lapListModelChanged)
+
+    /**
+     * @property Rapid::Workflow::Qt::RestActiveSession
+     *
+     * Gives the REST active session for displaying the information for the active session
+     */
+    Q_PROPERTY(Rapid::Workflow::Qt::RestActiveSession const* activeSession READ getActiveSession CONSTANT)
+
 public:
     Q_DISABLE_COPY_MOVE(SessionPageModel)
 
@@ -51,20 +62,6 @@ public:
     /** @endcond */
 
     /**
-     * @brief Gives the model for displaying the session in a list.
-     *
-     * @return A list model with the stored sessions.
-     */
-    [[nodiscard]] Rapid::Common::Qt::SessionMetaDataListModel* getSessionListModel() const noexcept;
-
-    /**
-     * @brief Gives the model for displaying the session in a list.
-     *
-     * @return A list model with the stored sessions.
-     */
-    [[nodiscard]] Rapid::Common::Qt::LapListModel* getLapListModel() const noexcept;
-
-    /**
      * @brief Analyze session under the given index
      *
      * @param sessionIndex The index of the session that shall be analyzed
@@ -80,6 +77,10 @@ Q_SIGNALS:
     void lapListModelChanged();
 
 private:
+    [[nodiscard]] Rapid::Common::Qt::SessionMetaDataListModel* getSessionListModel() noexcept;
+    [[nodiscard]] Rapid::Common::Qt::LapListModel* getLapListModel() noexcept;
+    [[nodiscard]] Rapid::Workflow::Qt::RestActiveSession* getActiveSession() noexcept;
+
     void handleDbQueryResult();
 
     std::unique_ptr<Storage::ISessionDatabase> mSessionDb;
@@ -88,6 +89,8 @@ private:
     KDBindings::ScopedConnection mLapListModelChangedConnection;
     std::shared_ptr<Storage::GetSessionResult> mDbQuery;
     KDBindings::ScopedConnection mDbQueryDoneConnection;
+    Rapid::Rest::QRestClient mRestclient;
+    Rapid::Workflow::Qt::RestActiveSession mRestActiveSession{&mRestclient};
 };
 
 } // namespace Rapid::Android

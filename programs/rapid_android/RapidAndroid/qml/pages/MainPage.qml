@@ -38,13 +38,13 @@ Page {
         Session {
             id: liveSession
             Layout.fillWidth: true
-            name: GlobalState.activeSession.trackName
+            name: mainPage.viewModel.activeSession.trackName
             firstEntry: qsTrId("Current") + ":"
-            firstEntryValue: GlobalState.activeSession.currentLapTime
+            firstEntryValue: mainPage.viewModel.activeSession.currentLapTime
             secondEntry: qsTrId("Current Sector") + ":"
-            secondEntryValue: GlobalState.activeSession.currentSectorTime
+            secondEntryValue: mainPage.viewModel.activeSession.currentSectorTime
             thirdEntry: qsTrId("Lap count") + ":"
-            thirdEntryValue: GlobalState.activeSession.lapCount
+            thirdEntryValue: mainPage.viewModel.activeSession.lapCount
         }
 
         Header {
@@ -152,8 +152,8 @@ Page {
         interval: 500
         repeat: true
         onTriggered: {
-            GlobalState.activeSession.updateLapData();
-            GlobalState.activeSession.updateTrackData();
+            mainPage.viewModel.activeSession.updateLapData();
+            mainPage.viewModel.activeSession.updateTrackData();
         }
     }
 
