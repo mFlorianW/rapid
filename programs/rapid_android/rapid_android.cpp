@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-#include "GlobalState.hpp"
+#include <Database.hpp>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <spdlog/sinks/android_sink.h>
@@ -26,6 +26,7 @@ void setupLogger()
 int main(int argc, char** argv)
 {
     Rapid::Android::setupLogger();
+    Rapid::Android::setupDatabase();
 
     auto app = Rapid::System::Qt::RapidGuiApplication{argc, argv};
 
@@ -40,8 +41,6 @@ int main(int argc, char** argv)
             QCoreApplication::exit(-1);
         },
         Qt::QueuedConnection);
-    // engine.loadFromModule("Rapid.Android", "RapidAndroid");
-    engine.singletonInstance<Rapid::Android::GlobalState*>("Rapid.Android", "GlobalState");
     engine.load(QUrl{"qrc:/qt/qml/Rapid/Android/qml/RapidAndroid.qml"});
 
     return app.exec();

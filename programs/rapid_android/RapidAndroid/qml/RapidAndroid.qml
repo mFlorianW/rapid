@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls as Ctrl
 import QtQuick.Controls.Material
+import Rapid.Android
 import "qrc:/qt/qml/Rapid/Android/qml/elements"
 
 Ctrl.ApplicationWindow {
@@ -99,7 +102,6 @@ Ctrl.ApplicationWindow {
 
     Component {
         id: sessionPage
-
         MainPage {
             viewModel: sessionPageModel
             SessionPageModel {
@@ -110,6 +112,12 @@ Ctrl.ApplicationWindow {
 
     Component {
         id: devicePage
-        Laptimer {}
+        Laptimer {
+            appModel: applicationModel
+        }
+    }
+
+    RapidAndroidModel {
+        id: applicationModel
     }
 }

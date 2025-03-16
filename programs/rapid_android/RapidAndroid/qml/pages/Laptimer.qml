@@ -17,6 +17,8 @@ Ctrl.Page {
 
     title: qsTr("Laptimer (Devices)")
 
+    required property RapidAndroidModel appModel
+
     Item {
         id: contentItem
         anchors.fill: parent
@@ -27,7 +29,7 @@ Ctrl.Page {
             anchors.margins: 5
             spacing: 5
             boundsBehavior: Flickable.StopAtBounds
-            model: GlobalState.deviceManagement.model
+            model: laptimerPage.appModel.deviceManagement.model
 
             delegate: ListItem {
                 id: delegate
@@ -42,7 +44,7 @@ Ctrl.Page {
                     id: enableSwitch
                     checked: delegate.laptimer.defaultDevice
                     onClicked: {
-                        GlobalState.deviceManagement.enable(delegate.laptimer);
+                        laptimerPage.appModel.deviceManagement.enable(delegate.laptimer);
                     }
                 }
 
@@ -115,7 +117,7 @@ Ctrl.Page {
                 icon.source: "qrc:/qt/qml/Rapid/Android/img/Trash.svg"
                 onClicked: {
                     contextMenu.close();
-                    GlobalState.deviceManagement.remove(deviceInputPopup.laptimer);
+                    laptimerPage.appModel.deviceManagement.remove(deviceInputPopup.laptimer);
                 }
             }
         }
@@ -165,11 +167,11 @@ Ctrl.Page {
         }
 
         onAccepted: {
-            var device = GlobalState.create(deviceInputPopupDeviceName.text, deviceInputPopupDeviceIp.text, deviceInputPopupDevicePort.text, false);
+            var device = laptimerPage.appModel.create(deviceInputPopupDeviceName.text, deviceInputPopupDeviceIp.text, deviceInputPopupDevicePort.text, false);
             if (laptimerPage.state === "new") {
-                GlobalState.deviceManagement.store(device);
+                laptimerPage.appModel.deviceManagement.store(device);
             } else if (laptimerPage.state === "edit") {
-                GlobalState.deviceManagement.update(deviceInputPopup.laptimer, device);
+                laptimerPage.appModel.deviceManagement.update(deviceInputPopup.laptimer, device);
             }
         }
     }

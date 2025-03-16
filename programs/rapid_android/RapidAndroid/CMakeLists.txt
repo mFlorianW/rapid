@@ -15,8 +15,8 @@ qt_add_qml_module(RapidAndroid
         qml/controls/Header.qml
         qml/controls/Session.qml
     SOURCES
-        GlobalState.cpp
-        GlobalState.hpp
+        RapidAndroidModel.cpp
+        RapidAndroidModel.hpp
         Database.cpp
         Database.hpp
         SessionPageModel.cpp
