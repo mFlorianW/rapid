@@ -211,7 +211,6 @@ public:
         return true;
     }
 
-protected:
     /**
      * @brief Gives a constant pointer the element for the index.
      *
