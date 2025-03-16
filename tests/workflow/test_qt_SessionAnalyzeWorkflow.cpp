@@ -13,5 +13,14 @@ TEST_CASE("The SessionAnalyzeWorkflow shall create a LapDataModel when a session
 {
     auto sa = SessionAnalyzeWorkflow();
     sa.setSession(Sessions::getTestSession3());
+    REQUIRE(sa.lapModel.get() != nullptr);
     REQUIRE(sa.lapModel.get()->rowCount() == 2);
+}
+
+TEST_CASE("The SessionAnalyzeWorkflow shall crate a LapListModel when a session is set")
+{
+    auto sa = SessionAnalyzeWorkflow();
+    sa.setSession(Sessions::getTestSession3());
+    REQUIRE(sa.lapListModel.get() != nullptr);
+    REQUIRE(sa.lapListModel.get()->rowCount({}) == 2);
 }

@@ -9,13 +9,15 @@ import QtQuick.Controls
 Pane {
     id: session
 
-    property alias trackName: sessionTrackName.text
+    property alias name: sessionTrackName.text
     property alias firstEntry: sessionLast.text
     property alias firstEntryValue: sessionLastTime.text
     property alias secondEntry: sessionCurrent.text
     property alias secondEntryValue: sessionCurrentTime.text
     property alias thirdEntry: sessionLap.text
     property alias thirdEntryValue: sessionLapCount.text
+
+    signal clicked
 
     background: Rectangle {
         color: "#F8FAF6"
@@ -70,6 +72,12 @@ Pane {
             Text {
                 id: sessionLapCount
             }
+        }
+        TapHandler {
+            id: sessionTapHandler
+            gesturePolicy: TapHandler.WithinBounds
+            acceptedButtons: Qt.LeftButton
+            onTapped: session.clicked()
         }
     }
 }

@@ -40,6 +40,16 @@
             }
         },
         {
+            "name": "debug-android-base",
+            "inherits": "base-debug",
+            "hidden": true,
+            "cacheVariables": {
+                "ENABLE_TEST": "OFF",
+                "ENABLE_ANDROID": "ON",
+                "CMAKE_TOOLCHAIN_FILE": "$env{QT_ANDROID_ROOT}/lib/cmake/Qt6/qt.toolchain.cmake"
+            }
+        },
+        {
             "name": "debug",
             "inherits": "base-debug",
             "displayName": "debug configure preset",
@@ -71,14 +81,20 @@
         },
         {
             "name": "debug-android-x86_64",
-            "inherits": "base-debug",
-            "displayName": "debug configure preset",
+            "inherits": "debug-android-base",
+            "displayName": "debug configure preset for Android x66-64",
             "description": "Debug build for Android",
             "cacheVariables": {
-                "ENABLE_TEST": "OFF",
-                "ENABLE_ANDROID": "ON",
-                "CMAKE_TOOLCHAIN_FILE": "$env{QT_ANDROID_ROOT}/lib/cmake/Qt6/qt.toolchain.cmake",
                 "VCPKG_TRIPLET": "x64-android"
+            }
+        },
+        {
+            "name": "debug-android-arm64",
+            "inherits": "debug-android-base",
+            "displayName": "debug configure preset for Android x66-64",
+            "description": "Debug build for Android",
+            "cacheVariables": {
+                "VCPKG_TRIPLET": "arm64-android"
             }
         },
         {
@@ -144,6 +160,10 @@
         {
             "name": "debug-android-x86_64",
             "configurePreset": "debug-android-x86_64"
+        },
+        {
+            "name": "debug-android-arm64",
+            "configurePreset": "debug-android-arm64"
         },
         {
             "name": "github",

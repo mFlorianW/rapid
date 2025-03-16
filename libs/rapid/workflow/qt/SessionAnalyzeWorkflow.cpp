@@ -28,6 +28,7 @@ void SessionAnalyzeWorkflow::setLapModel() noexcept
     try {
         mLapDataProvider = std::make_unique<Common::Qt::LapDataProvider>(mSession.getTrack(), mSession.getLaps());
         lapModel.set(std::make_shared<LapModel>(*mLapDataProvider));
+        lapListModel.set(std::make_shared<LapListModel>(mSession.getLaps()));
     } catch (std::exception const& e) {
         SPDLOG_ERROR("Failed create lap model not sufficient memory. Error: {}", e.what());
     }

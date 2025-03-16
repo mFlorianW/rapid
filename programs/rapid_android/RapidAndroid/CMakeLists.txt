@@ -17,6 +17,10 @@ qt_add_qml_module(RapidAndroid
     SOURCES
         GlobalState.cpp
         GlobalState.hpp
+        Database.cpp
+        Database.hpp
+        SessionPageModel.cpp
+        SessionPageModel.hpp
     RESOURCES
         img/BurgerButton.svg
         img/Stopwatch.svg
@@ -33,6 +37,13 @@ target_link_libraries(RapidAndroid
         Qt6::Quick
         Rapid::RapidQt
 )
+
+if(NOT ENABLE_ANDROID)
+    target_link_libraries(RapidAndroid
+        PRIVATE
+            Rapid::DatabaseFile
+    )
+endif()
 
 target_include_directories(RapidAndroid
     PUBLIC

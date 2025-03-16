@@ -9,7 +9,7 @@ import QtQuick.Controls as Ctrl
 import QtQuick.Controls.Material
 import QtQuick.Layouts
 import Rapid.Android
-import "qrc:/Rapid/Android/qml/controls"
+import "qrc:/qt/qml/Rapid/Android/qml/controls"
 
 Ctrl.Page {
     id: laptimerPage
@@ -33,7 +33,7 @@ Ctrl.Page {
                 id: delegate
                 required property var laptimer
                 required property var index
-                icon.source: "qrc:/Rapid/Android/img/Stopwatch.svg"
+                icon.source: "qrc:/qt/qml/Rapid/Android/img/Stopwatch.svg"
                 width: deviceListView.width
                 text: laptimer.name
                 autoExclusive: true
@@ -102,7 +102,7 @@ Ctrl.Page {
                 id: editItem
                 Layout.fillWidth: true
                 text: qsTr("Edit Laptimer")
-                icon.source: "qrc:/Rapid/Android/img/Edit.svg"
+                icon.source: "qrc:/qt/qml/Rapid/Android/img/Edit.svg"
                 onClicked: {
                     contextMenu.close();
                     deviceInputPopup.open();
@@ -112,7 +112,7 @@ Ctrl.Page {
                 id: deleteItem
                 Layout.fillWidth: true
                 text: qsTr("Delete Laptimer")
-                icon.source: "qrc:/Rapid/Android/img/Trash.svg"
+                icon.source: "qrc:/qt/qml/Rapid/Android/img/Trash.svg"
                 onClicked: {
                     contextMenu.close();
                     GlobalState.deviceManagement.remove(deviceInputPopup.laptimer);

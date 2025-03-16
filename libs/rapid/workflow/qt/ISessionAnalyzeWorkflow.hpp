@@ -8,6 +8,7 @@
 #include <common/SessionData.hpp>
 #include <common/qt/GenericTableModel.hpp>
 #include <common/qt/LapDataProvider.hpp>
+#include <common/qt/LapListModel.hpp>
 #include <kdbindings/property.h>
 
 namespace Rapid::Workflow::Qt
@@ -17,6 +18,11 @@ namespace Rapid::Workflow::Qt
  * Alias for a LapModel
  */
 using LapModel = Rapid::Common::Qt::GenericTableModel<Rapid::Common::Qt::LapDataProvider>;
+
+/**
+ * Alias for a LapListModel
+ */
+using LapListModel = Rapid::Common::Qt::LapListModel;
 
 class ISessionAnalyzeWorkflow
 {
@@ -58,6 +64,13 @@ public:
      * The model can be used to display laps of the session in QTableView
      */
     KDBindings::Property<std::shared_ptr<LapModel>> lapModel;
+
+    /**
+     * @brief Gives a list model for display laps in a list
+     *
+     * @details The primary use of a lap list model is for displaying the laps of the session in QML.
+     */
+    KDBindings::Property<std::shared_ptr<LapListModel>> lapListModel;
 
 protected:
     /**

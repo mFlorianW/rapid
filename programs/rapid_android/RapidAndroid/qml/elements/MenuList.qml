@@ -26,7 +26,7 @@ Control {
 
             width: menuListView.width
             text: model.title
-            icon.source: "qrc:/Rapid/Android/img/Stopwatch.svg"
+            icon.source: "qrc:/qt/qml/Rapid/Android/img/Stopwatch.svg"
 
             onClicked: menu.openPage(page)
         }
@@ -34,11 +34,11 @@ Control {
         model: ListModel {
             ListElement {
                 title: qsTr("Sessions")
-                page: "pages/MainPage.qml"
+                page: "SessionPage"
             }
             ListElement {
                 title: qsTr("Laptimer (Devices)")
-                page: "pages/Laptimer.qml"
+                page: "DevicePage"
             }
         }
     }

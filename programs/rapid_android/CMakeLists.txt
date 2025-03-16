@@ -29,9 +29,4 @@ qt_add_resources(rapid_android "rapid"
 if(ENABLE_ANDROID)
     set_property(TARGET rapid_android PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
               "${CMAKE_CURRENT_SOURCE_DIR}/templates")
-
-    target_compile_definitions(rapid_android
-        PRIVATE
-            ENABLE_ANDROID=1
-    )
 endif()
