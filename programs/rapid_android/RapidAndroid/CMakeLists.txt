@@ -19,6 +19,8 @@ qt_add_qml_module(RapidAndroid
         GlobalState.hpp
         Database.cpp
         Database.hpp
+        SessionPageModel.cpp
+        SessionPageModel.hpp
     RESOURCES
         img/BurgerButton.svg
         img/Stopwatch.svg

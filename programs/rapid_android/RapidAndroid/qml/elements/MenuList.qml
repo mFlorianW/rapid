@@ -34,11 +34,11 @@ Control {
         model: ListModel {
             ListElement {
                 title: qsTr("Sessions")
-                page: "pages/MainPage.qml"
+                page: "SessionPage"
             }
             ListElement {
                 title: qsTr("Laptimer (Devices)")
-                page: "pages/Laptimer.qml"
+                page: "DevicePage"
             }
         }
     }

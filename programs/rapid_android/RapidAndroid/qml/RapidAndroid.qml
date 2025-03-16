@@ -44,7 +44,7 @@ Ctrl.ApplicationWindow {
     Loader {
         id: pageLoader
         anchors.fill: parent
-        source: "pages/MainPage.qml"
+        sourceComponent: sessionPage
     }
 
     Ctrl.Drawer {
@@ -86,10 +86,30 @@ Ctrl.ApplicationWindow {
                 Layout.fillHeight: true
 
                 onOpenPage: page => {
-                    pageLoader.source = page;
+                    if (page == "SessionPage") {
+                        pageLoader.sourceComponent = sessionPage;
+                    } else if (page == "DevicePage") {
+                        pageLoader.sourceComponent = devicePage;
+                    }
                     menuDrawer.close();
                 }
             }
         }
+    }
+
+    Component {
+        id: sessionPage
+
+        MainPage {
+            viewModel: sessionPageModel
+            SessionPageModel {
+                id: sessionPageModel
+            }
+        }
+    }
+
+    Component {
+        id: devicePage
+        Laptimer {}
     }
 }
