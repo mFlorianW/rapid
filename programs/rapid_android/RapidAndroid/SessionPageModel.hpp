@@ -21,8 +21,18 @@ class SessionPageModel : public QObject
     Q_OBJECT
     QML_ELEMENT
 
+    /**
+     * @property Rapid::Common::Qt::LapListModel*
+     *
+     * Gives a session list model for displaying the local stored sessions
+     */
     Q_PROPERTY(Rapid::Common::Qt::SessionMetaDataListModel* sessionListModel READ getSessionListModel CONSTANT)
 
+    /**
+     * @property Rapid::Common::Qt::LapListModel*
+     *
+     * Gives the a list model for display the laps of a session
+     */
     Q_PROPERTY(Rapid::Common::Qt::LapListModel* lapListModel READ getLapListModel NOTIFY lapListModelChanged)
 public:
     Q_DISABLE_COPY_MOVE(SessionPageModel)
