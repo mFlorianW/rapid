@@ -19,6 +19,16 @@ namespace Rapid::Android
  */
 std::optional<QString> setupDatabase();
 
+/**
+ * @brief Gives the path of the database
+ *
+ * @details The function only gives absolute path, there is no validation if the database exists.
+ *          So before trying to connect to the database make sure to call @ref Rapid::Android::Database::setupDatabase
+ *
+ * @return The absolute path to the database.
+ */
+QString getDatabaseLocation() noexcept;
+
 } // namespace Rapid::Android
 
 #endif // !RAPID_ANDROID_DATABASE_HPP

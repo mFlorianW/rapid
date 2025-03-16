@@ -33,9 +33,8 @@ namespace Rapid::Android
 
 std::optional<QString> setupDatabase()
 {
-    auto const dbLocation =
-        QString{"%1/%2"}.arg(QStandardPaths::writableLocation(writeLocation()), QStringLiteral("rapid"));
-    auto const dbFile = QString{"%1%2"}.arg(dbLocation, QStringLiteral("/rapid.db"));
+    auto const dbFile = getDatabaseLocation();
+    auto const dbLocation = QFileInfo{dbFile}.absolutePath();
     if (not QFile::exists(dbFile)) {
         SPDLOG_INFO("No database found! Copy empty default database to {}", dbLocation.toStdString());
         auto dbDir = QDir{};
@@ -60,6 +59,14 @@ std::optional<QString> setupDatabase()
         }
     }
     SPDLOG_INFO("Database file exists in {}", dbFile.toStdString());
+    return dbFile;
+}
+
+QString getDatabaseLocation() noexcept
+{
+    auto const dbLocation =
+        QString{"%1/%2"}.arg(QStandardPaths::writableLocation(writeLocation()), QStringLiteral("rapid"));
+    auto const dbFile = QString{"%1%2"}.arg(dbLocation, QStringLiteral("/rapid.db"));
     return dbFile;
 }
 
