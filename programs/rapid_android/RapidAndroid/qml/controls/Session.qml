@@ -19,10 +19,6 @@ Pane {
 
     signal clicked
 
-    background: Rectangle {
-        color: "#F8FAF6"
-    }
-
     ColumnLayout {
         id: sessionLayout
         spacing: 0
