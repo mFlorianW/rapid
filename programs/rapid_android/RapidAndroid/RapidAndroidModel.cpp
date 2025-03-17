@@ -15,7 +15,13 @@ using namespace Rapid::Rest;
 namespace Rapid::Android
 {
 
-RapidAndroidModel::RapidAndroidModel() = default;
+RapidAndroidModel::RapidAndroidModel()
+{
+    connect(&mDeviceManagement,
+            &DeviceManagement::activeLaptimerChanged,
+            this,
+            &RapidAndroidModel::activeLaptimerChanged);
+}
 RapidAndroidModel::~RapidAndroidModel() = default;
 
 Rapid::Common::Qt::DeviceSettings RapidAndroidModel::create(QString const& name,
@@ -31,6 +37,11 @@ Rapid::Common::Qt::DeviceSettings RapidAndroidModel::create(QString const& name,
 Rapid::Workflow::Qt::DeviceManagement* RapidAndroidModel::getDeviceManagement() noexcept
 {
     return &mDeviceManagement;
+}
+
+Rapid::Common::Qt::DeviceSettings RapidAndroidModel::getActiveLaptimer() const noexcept
+{
+    return mDeviceManagement.getActiveLaptimer();
 }
 
 } // namespace Rapid::Android

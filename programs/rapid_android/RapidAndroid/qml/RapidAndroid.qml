@@ -106,6 +106,7 @@ Ctrl.ApplicationWindow {
             viewModel: sessionPageModel
             SessionPageModel {
                 id: sessionPageModel
+                activeLaptimer: applicationModel.activeLaptimer
             }
         }
     }

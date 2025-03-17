@@ -8,6 +8,7 @@
 #include "Database.hpp"
 #include <QObject>
 #include <QQmlEngine>
+#include <common/qt/GlobalSettingsTypes.hpp>
 #include <common/qt/SessionMetaDataListModel.hpp>
 #include <rest/qt/QRestClient.hpp>
 #include <storage/SqliteSessionDatabase.hpp>
@@ -45,6 +46,14 @@ class SessionPageModel : public QObject
      */
     Q_PROPERTY(Rapid::Workflow::Qt::RestActiveSession const* activeSession READ getActiveSession CONSTANT)
 
+    /**
+     * @property Rapid::Common::Qt::DeviceSettings
+     *
+     * This property holds the laptimer settings that are used by the SessionPage
+     */
+    Q_PROPERTY(Rapid::Common::Qt::DeviceSettings activeLaptimer READ getActiveLaptimer WRITE setActiveLaptimer NOTIFY
+                   activeLaptimerChanged REQUIRED)
+
 public:
     Q_DISABLE_COPY_MOVE(SessionPageModel)
 
@@ -76,10 +85,19 @@ Q_SIGNALS:
      */
     void lapListModelChanged();
 
+    /**
+     * @brief This signal is emitted when the active laptimer is changed.
+     *
+     * @details The active laptimer is changed when in the laptimer page a different laptimer is activated.
+     */
+    void activeLaptimerChanged();
+
 private:
     [[nodiscard]] Rapid::Common::Qt::SessionMetaDataListModel* getSessionListModel() noexcept;
     [[nodiscard]] Rapid::Common::Qt::LapListModel* getLapListModel() noexcept;
     [[nodiscard]] Rapid::Workflow::Qt::RestActiveSession* getActiveSession() noexcept;
+    void setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer);
+    [[nodiscard]] Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept;
 
     void handleDbQueryResult();
 
@@ -91,6 +109,7 @@ private:
     KDBindings::ScopedConnection mDbQueryDoneConnection;
     Rapid::Rest::QRestClient mRestclient;
     Rapid::Workflow::Qt::RestActiveSession mRestActiveSession{&mRestclient};
+    Rapid::Common::Qt::DeviceSettings mActiveLaptimer;
 };
 
 } // namespace Rapid::Android

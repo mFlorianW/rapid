@@ -23,6 +23,13 @@ class RapidAndroidModel : public QObject
     QML_ELEMENT
 
     /**
+     * @property Rapid::Common::Qt::DeviceSettings
+     *
+     * This property the current active laptimer settings
+     */
+    Q_PROPERTY(Rapid::Common::Qt::DeviceSettings activeLaptimer READ getActiveLaptimer NOTIFY activeLaptimerChanged)
+
+    /**
      * @property Rapid::Workflow::Qt::DeviceManagement*
      *
      * Gives the DeviceManagement workflow for managing the laptimer.
@@ -52,8 +59,17 @@ public:
                                                                 QString port,
                                                                 bool enabled) noexcept;
 
+Q_SIGNALS:
+    /**
+     * @brief This signal is emitted when the active laptimer is changed.
+     *
+     * @details The active laptimer is changed when in the laptimer page a different laptimer is activated.
+     */
+    void activeLaptimerChanged();
+
 private:
     [[nodiscard]] Rapid::Workflow::Qt::DeviceManagement* getDeviceManagement() noexcept;
+    [[nodiscard]] Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept;
 
     Rapid::Common::Qt::QSettingsBackend mSettingsBackend;
     Rapid::Workflow::Qt::DeviceManagement mDeviceManagement{&mSettingsBackend};

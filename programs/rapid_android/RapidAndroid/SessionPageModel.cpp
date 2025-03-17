@@ -65,4 +65,19 @@ void SessionPageModel::handleDbQueryResult()
     mDbQueryDoneConnection->disconnect();
 }
 
+void SessionPageModel::setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer)
+{
+    if (mActiveLaptimer != activeLaptimer) {
+        mActiveLaptimer = activeLaptimer;
+        mRestclient.setServerAddress(activeLaptimer.getIpAddress().toStdString());
+        mRestclient.setServerPort(activeLaptimer.port);
+        Q_EMIT activeLaptimerChanged();
+    }
+}
+
+Rapid::Common::Qt::DeviceSettings SessionPageModel::getActiveLaptimer() const noexcept
+{
+    return mActiveLaptimer;
+}
+
 } // namespace Rapid::Android
