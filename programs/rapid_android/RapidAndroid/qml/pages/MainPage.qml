@@ -85,35 +85,13 @@ Page {
         }
     }
 
-    Drawer {
+    ContextMenu {
         id: contextMenu
-        edge: Qt.BottomEdge
-        dragMargin: 0
-        height: 1.2 * drawerColumnLayout.height
-        width: parent.width
-
-        ColumnLayout {
-            id: drawerColumnLayout
-            anchors.right: parent.right
-            anchors.left: parent.left
-            spacing: 0
-
-            Rectangle {
-                id: indicator
-                radius: 10
-                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                Layout.bottomMargin: 10
-                color: "black"
-                Layout.preferredHeight: 3
-                Layout.preferredWidth: 30
-            }
-
-            ListItem {
-                id: showLap
-                Layout.fillWidth: true
-                text: qsTr("Show Laps")
-                icon.source: "qrc:/qt/qml/Rapid/Android/img/Stopwatch.svg"
-                onClicked: {
+        model: ListModel {
+            ListElement {
+                entryText: qsTr("Show Laps")
+                iconSource: "qrc:/qt/qml/Rapid/Android/img/Stopwatch.svg"
+                clickedAction: function () {
                     mainPage.viewModel.analyzeSession(localSessionView.clickedIndex);
                     contextMenu.close();
                     lapDialog.open();

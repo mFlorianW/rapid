@@ -14,6 +14,7 @@ qt_add_qml_module(RapidAndroid
         qml/controls/ListItem.qml
         qml/controls/Header.qml
         qml/controls/Session.qml
+        qml/controls/ContextMenu.qml
     SOURCES
         RapidAndroidModel.cpp
         RapidAndroidModel.hpp

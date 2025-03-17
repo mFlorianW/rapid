@@ -77,45 +77,22 @@ Ctrl.Page {
         }
     }
 
-    Drawer {
+    ContextMenu {
         id: contextMenu
-        edge: Qt.BottomEdge
-        dragMargin: 0
-        height: 1.2 * columnLayout.height
-        width: parent.width
-
-        ColumnLayout {
-            id: columnLayout
-            anchors.right: parent.right
-            anchors.left: parent.left
-            spacing: 0
-
-            Rectangle {
-                id: indicator
-                radius: 10
-                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                Layout.bottomMargin: 10
-                color: "black"
-                Layout.preferredHeight: 3
-                Layout.preferredWidth: 30
-            }
-
-            ListItem {
-                id: editItem
-                Layout.fillWidth: true
-                text: qsTr("Edit Laptimer")
-                icon.source: "qrc:/qt/qml/Rapid/Android/img/Edit.svg"
-                onClicked: {
+        model: ListModel {
+            ListElement {
+                entryText: qsTr("Edit Laptimer")
+                iconSource: "qrc:/qt/qml/Rapid/Android/img/Edit.svg"
+                clickedAction: function () {
                     contextMenu.close();
                     deviceInputPopup.open();
                 }
             }
-            ListItem {
-                id: deleteItem
-                Layout.fillWidth: true
-                text: qsTr("Delete Laptimer")
-                icon.source: "qrc:/qt/qml/Rapid/Android/img/Trash.svg"
-                onClicked: {
+
+            ListElement {
+                entryText: qsTr("Delete Laptimer")
+                iconSource: "qrc:/qt/qml/Rapid/Android/img/Trash.svg"
+                clickedAction: function () {
                     contextMenu.close();
                     laptimerPage.appModel.deviceManagement.remove(deviceInputPopup.laptimer);
                 }
