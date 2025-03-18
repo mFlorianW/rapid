@@ -18,7 +18,7 @@ using namespace Rapid::Common::Qt;
 struct TestFixture
 {
     Rapid::TestHelper::RestClientMock restClient{};
-    RestSessionManagementWorkflow rDl{restClient};
+    RestSessionManagementWorkflow rDl{&restClient};
     std::shared_ptr<SessionMetadataProvider> provider{rDl.getProvider()};
 };
 

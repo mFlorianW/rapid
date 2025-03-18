@@ -12,10 +12,17 @@
 namespace Rapid::Workflow
 {
 
-RestSessionManagementWorkflow::RestSessionManagementWorkflow(Rest::IRestClient& restClient) noexcept
+RestSessionManagementWorkflow::RestSessionManagementWorkflow() noexcept = default;
+
+RestSessionManagementWorkflow::RestSessionManagementWorkflow(Rest::IRestClient* restClient) noexcept
     : IRestSessionManagementWorkflow()
     , mRestClient{restClient}
 {
+}
+
+void RestSessionManagementWorkflow::setRestClient(Rest::IRestClient* restClient) noexcept
+{
+    mRestClient = restClient;
 }
 
 std::size_t RestSessionManagementWorkflow::getSessionCount() const noexcept
@@ -25,7 +32,11 @@ std::size_t RestSessionManagementWorkflow::getSessionCount() const noexcept
 
 void RestSessionManagementWorkflow::fetchSessionCount() noexcept
 {
-    auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, "/sessions"});
+    if (mRestClient == nullptr) {
+        SPDLOG_ERROR("Failed to start fetchSessionCount. Error: IRestClient == nullptr");
+        return;
+    }
+    auto call = mRestClient->execute(Rest::RestRequest{Rest::RequestType::Get, "/sessions"});
     mFetchCounterCache.insert({call.get(), call});
     if (call->isFinished()) {
         onFetchSessionCountFinished(call.get());
@@ -79,7 +90,11 @@ void RestSessionManagementWorkflow::downloadSessionMetadata(std::size_t index) n
 
 void RestSessionManagementWorkflow::downloadAllSessionMetadata() noexcept
 {
-    auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, "/sessions"});
+    if (mRestClient == nullptr) {
+        SPDLOG_ERROR("Failed to start downloadAllSessionMetadata. Error: IRestClient == nullptr");
+        return;
+    }
+    auto call = mRestClient->execute(Rest::RestRequest{Rest::RequestType::Get, "/sessions"});
     mFetchCounterCache.insert({call.get(), call});
     if (call->isFinished()) {
         onFetchSessionCountAllDownloadFinished(call.get());

@@ -78,7 +78,7 @@ void SessionManager::onDeviceActivated(qsizetype index)
         mRestClient = std::make_unique<Rest::QRestClient>();
         mRestClient->setServerAddress(device->ip.toString().toStdString());
         mRestClient->setServerPort(device->port);
-        mRestSessionManagement = std::make_unique<Workflow::Qt::RestSessionManagementWorkflow>(*mRestClient);
+        mRestSessionManagement = std::make_unique<Workflow::Qt::RestSessionManagementWorkflow>(mRestClient.get());
         mRestSessionManagement->downloadAllSessionMetadata();
         mRestSessionMetadataProvider = mRestSessionManagement->getProvider();
         mRestSessionModel = std::make_unique<RestSessionModel>(*mRestSessionMetadataProvider);

@@ -8,11 +8,18 @@
 namespace Rapid::Workflow::Qt
 {
 
-RestSessionManagementWorkflow::RestSessionManagementWorkflow(Rest::IRestClient& client)
+RestSessionManagementWorkflow::RestSessionManagementWorkflow()
+    : mProvider{std::make_shared<Common::Qt::SessionMetadataProvider>()}
+{
+    mSessionMetadataDownloadConnection =
+        sessionMetadataDownloadFinished.connect(&RestSessionManagementWorkflow::onSessionMetadataDownloaded, this);
+}
+
+RestSessionManagementWorkflow::RestSessionManagementWorkflow(Rest::IRestClient* client)
     : Rapid::Workflow::RestSessionManagementWorkflow{client}
     , mProvider{std::make_shared<Common::Qt::SessionMetadataProvider>()}
 {
-    std::ignore =
+    mSessionMetadataDownloadConnection =
         sessionMetadataDownloadFinished.connect(&RestSessionManagementWorkflow::onSessionMetadataDownloaded, this);
 }
 

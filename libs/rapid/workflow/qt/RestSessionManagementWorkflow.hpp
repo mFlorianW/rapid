@@ -15,36 +15,39 @@ class RestSessionManagementWorkflow : public Workflow::RestSessionManagementWork
 {
 public:
     /**
-     * Creates an instance of the @ref RestSessionDownloader
-     * @param client The REST client that is used for the device communication.
+     * @brief Creates an instance of the @ref Rapid::Workflow::Qt::RestSessionManagementWorkflow
+     *
+     * @details This constructor creates an non functional instance.
+     *          Before the class can be used an @ref Rapid::Rest::IRestClient must be configured.
      */
-    explicit RestSessionManagementWorkflow(Rest::IRestClient& client);
-
+    RestSessionManagementWorkflow();
+    /**
+     * @brief Creates an instance of the @ref RestSessionDownloader
+     *
+     * @param client The REST client that is used for the device communication.
+     *               The REST client must have the same life time as the this instance.
+     */
+    explicit RestSessionManagementWorkflow(Rest::IRestClient* client);
     /**
      * Default destructor
      */
     ~RestSessionManagementWorkflow() override;
-
     /**
      * Disabled copy constructor
      */
     RestSessionManagementWorkflow(RestSessionManagementWorkflow const&) = delete;
-
+    RestSessionManagementWorkflow(RestSessionManagementWorkflow&&) noexcept = delete;
     /**
      * Disabled copy operator
      */
     RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow const&) = delete;
-
+    RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow&&) noexcept = delete;
     /**
      * Disabled move constructor
      */
-    RestSessionManagementWorkflow(RestSessionManagementWorkflow&&) noexcept = delete;
-
     /**
      * Disabled move operator
      */
-    RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow&&) noexcept = delete;
-
     /**
      * @brief Gives the @ref Common::SessionMetadataProvider for the configured device.
      *
@@ -54,12 +57,13 @@ public:
      * @return A provider for usage in a @ref Common::GenericTableModel
      */
     std::shared_ptr<Common::Qt::SessionMetadataProvider> getProvider() const noexcept;
-
-private:
+private
+:
     void onSessionMetadataDownloaded(std::size_t index, DownloadResult result);
-
-private:
+private
+:
     std::shared_ptr<Common::Qt::SessionMetadataProvider> mProvider;
+    KDBindings::ScopedConnection mSessionMetadataDownloadConnection;
 };
 
 } // namespace Rapid::Workflow::Qt
