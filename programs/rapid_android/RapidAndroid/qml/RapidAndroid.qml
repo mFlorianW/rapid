@@ -9,7 +9,6 @@ import QtQuick.Layouts
 import QtQuick.Controls as Ctrl
 import QtQuick.Controls.Material
 import Rapid.Android
-import "qrc:/qt/qml/Rapid/Android/qml/elements"
 
 Ctrl.ApplicationWindow {
     id: window
@@ -91,8 +90,12 @@ Ctrl.ApplicationWindow {
                 onOpenPage: page => {
                     if (page == "SessionPage") {
                         pageLoader.sourceComponent = sessionPage;
+                    } else if (page == "LaptimerSessionPage") {
+                        pageLoader.sourceComponent = laptimerSessionPage;
                     } else if (page == "DevicePage") {
                         pageLoader.sourceComponent = devicePage;
+                    } else {
+                        console.error("Unsupported page" + page + "requested");
                     }
                     menuDrawer.close();
                 }
@@ -103,9 +106,17 @@ Ctrl.ApplicationWindow {
     Component {
         id: sessionPage
         MainPage {
-            viewModel: sessionPageModel
-            SessionPageModel {
+            viewModel: SessionPageModel {
                 id: sessionPageModel
+                activeLaptimer: applicationModel.activeLaptimer
+            }
+        }
+    }
+
+    Component {
+        id: laptimerSessionPage
+        LaptimerSessionPage {
+            viewModel: LaptimerSessionPageModel {
                 activeLaptimer: applicationModel.activeLaptimer
             }
         }

@@ -10,6 +10,7 @@ qt_add_qml_module(RapidAndroid
         # pages
         qml/pages/MainPage.qml
         qml/pages/Laptimer.qml
+        qml/pages/LaptimerSessionPage.qml
         # controls
         qml/controls/ListItem.qml
         qml/controls/Header.qml
@@ -22,12 +23,15 @@ qt_add_qml_module(RapidAndroid
         Database.hpp
         SessionPageModel.cpp
         SessionPageModel.hpp
+        LaptimerSessionPageModel.cpp
+        LaptimerSessionPageModel.hpp
     RESOURCES
         img/BurgerButton.svg
         img/Stopwatch.svg
         img/ContextMenu.svg
         img/Edit.svg
         img/Trash.svg
+        img/Refresh.svg
 )
 
 add_library(Rapid::Android ALIAS RapidAndroid)

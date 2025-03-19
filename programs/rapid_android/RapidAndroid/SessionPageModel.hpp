@@ -20,6 +20,9 @@
 namespace Rapid::Android
 {
 
+/**
+ * @brief Holds the state of the SessionPage QML context and implements the view logic.
+ */
 class SessionPageModel : public QObject
 {
     Q_OBJECT

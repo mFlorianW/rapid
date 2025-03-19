@@ -33,8 +33,12 @@ Control {
 
         model: ListModel {
             ListElement {
-                title: qsTr("Sessions")
+                title: qsTr("Stored Sessions")
                 page: "SessionPage"
+            }
+            ListElement {
+                title: qsTr("Laptimer Sessions")
+                page: "LaptimerSessionPage"
             }
             ListElement {
                 title: qsTr("Laptimer (Devices)")
