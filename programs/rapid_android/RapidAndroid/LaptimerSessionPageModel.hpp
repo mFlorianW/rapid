@@ -5,11 +5,14 @@
 #ifndef PROGRAMS_RAPID_ANDROID_LAPTIMERSESSIONPAGEMODEL_HPP
 #define PROGRAMS_RAPID_ANDROID_LAPTIMERSESSIONPAGEMODEL_HPP
 
+#include <ContextMenuModel.hpp>
+#include <Database.hpp>
 #include <QAbstractItemModel>
 #include <QObject>
 #include <QQmlEngine>
 #include <common/qt/GlobalSettingsTypes.hpp>
 #include <rest/qt/QRestClient.hpp>
+#include <storage/SqliteSessionDatabase.hpp>
 #include <workflow/qt/RestSessionManagementWorkflow.hpp>
 
 namespace Rapid::Android
@@ -42,9 +45,17 @@ class LaptimerSessionPageModel : public QObject
 public:
     /** @cond Doxygen_Suppress */
     Q_DISABLE_COPY_MOVE(LaptimerSessionPageModel)
-    LaptimerSessionPageModel();
     ~LaptimerSessionPageModel() override;
     /** @endcond */
+
+    /**
+     * @brief Creates an instance of the @ref Rapid::Android::SessionPageModel
+     *
+     * @param sessionDb The session database that is used for the view
+     */
+    [[nodiscard]] LaptimerSessionPageModel(
+        std::unique_ptr<Storage::ISessionDatabase> sessionDb =
+            std::make_unique<Storage::SqliteSessionDatabase>(getDatabaseLocation().toStdString().c_str()));
 
     /**
      * @brief Fetches all @ref Rapid::Common::SessionMetaData from the active laptimer
@@ -52,6 +63,13 @@ public:
      * @details This function updates the content of session meta data model property.
      */
     Q_INVOKABLE void updateSessionMetadata() noexcept;
+
+    /**
+     * @brief Download the session under the index
+     *
+     * @details For an invalid index an error toat is displayed
+     */
+    Q_INVOKABLE void downloadSession(std::size_t index) noexcept;
 
 Q_SIGNALS:
     /**
@@ -69,6 +87,9 @@ private:
     Common::Qt::DeviceSettings mActiveLaptimer;
     Rapid::Rest::QRestClient mRestclient;
     std::unique_ptr<Rapid::Workflow::Qt::RestSessionManagementWorkflow> mRestSessionManagement;
+    KDBindings::ScopedConnection mDownloadFinishedConnection;
+    std::unique_ptr<Storage::ISessionDatabase> mSessionDatabase;
+    KDBindings::ScopedConnection mSessionStoredConnection;
 };
 
 } // namespace Rapid::Android

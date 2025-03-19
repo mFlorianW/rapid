@@ -36,6 +36,7 @@ Page {
                 required property string time
                 required property string date
                 required property var model
+                required property var index
 
                 width: laptimerSessionView.width
 
@@ -43,7 +44,10 @@ Page {
                 firstEntry: date
                 secondEntry: time
 
-                onClicked: {}
+                onClicked: {
+                    contextMenu.open();
+                    laptimerSessionView.clickedIndex = index;
+                }
             }
         }
 
@@ -65,4 +69,20 @@ Page {
             }
         }
     }
+
+    ContextMenu {
+        id: contextMenu
+        model: ListModel {
+            ListElement {
+                entryText: qsTr("Download Session")
+                iconSource: "qrc:/qt/qml/Rapid/Android/img/Download.svg"
+                clickedAction: function () {
+                    laptimerSessionPage.viewModel.downloadSession(laptimerSessionView.clickedIndex);
+                    contextMenu.close();
+                }
+            }
+        }
+    }
+
+    Component.onCompleted: viewModel.updateSessionMetadata()
 }

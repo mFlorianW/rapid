@@ -29,11 +29,12 @@ qt_add_qml_module(RapidAndroid
         ContextMenuModel.hpp
     RESOURCES
         img/BurgerButton.svg
-        img/Stopwatch.svg
         img/ContextMenu.svg
+        img/Download.svg
         img/Edit.svg
-        img/Trash.svg
         img/Refresh.svg
+        img/Stopwatch.svg
+        img/Trash.svg
 )
 
 add_library(Rapid::Android ALIAS RapidAndroid)
