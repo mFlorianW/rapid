@@ -25,6 +25,8 @@ qt_add_qml_module(RapidAndroid
         SessionPageModel.hpp
         LaptimerSessionPageModel.cpp
         LaptimerSessionPageModel.hpp
+        ContextMenuModel.cpp
+        ContextMenuModel.hpp
     RESOURCES
         img/BurgerButton.svg
         img/Stopwatch.svg
