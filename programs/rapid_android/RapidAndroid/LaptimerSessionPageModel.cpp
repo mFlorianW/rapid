@@ -26,6 +26,7 @@ LaptimerSessionPageModel::LaptimerSessionPageModel(std::unique_ptr<Storage::ISes
     mSessionStoredConnection = mSessionDatabase->sessionAdded.connect([](auto&& index) {
         SPDLOG_INFO("Successful stored session under index {}", index);
     });
+    mSessionSortModel.setSourceModel(mRestSessionManagement->getSessionMetadataListModel().get());
 }
 
 LaptimerSessionPageModel::~LaptimerSessionPageModel() = default;
@@ -44,8 +45,9 @@ void LaptimerSessionPageModel::downloadSession(std::size_t index) noexcept
                      mRestSessionManagement->getSessionCount());
         return;
     }
-    SPDLOG_INFO("Start download for index {}", index);
-    mRestSessionManagement->downloadSession(index);
+    auto const downloadIndex = mSessionSortModel.mapToSource(mSessionSortModel.index(static_cast<int>(index), 0));
+    SPDLOG_DEBUG("Start download for index {}", downloadIndex.row());
+    mRestSessionManagement->downloadSession(downloadIndex.row());
 }
 
 Rapid::Common::Qt::DeviceSettings LaptimerSessionPageModel::getActiveLaptimer() const noexcept
@@ -64,9 +66,9 @@ void LaptimerSessionPageModel::setActiveLaptimer(Rapid::Common::Qt::DeviceSettin
     }
 }
 
-Rapid::Common::Qt::SessionMetaDataListModel* LaptimerSessionPageModel::getSessionMetadataListModel() noexcept
+Rapid::Common::Qt::SessionMetaDataSortListModel* LaptimerSessionPageModel::getSessionMetadataListModel() noexcept
 {
-    return mRestSessionManagement->getSessionMetadataListModel().get();
+    return &mSessionSortModel;
 }
 
 } // namespace Rapid::Android

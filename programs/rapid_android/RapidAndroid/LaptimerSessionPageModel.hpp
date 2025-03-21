@@ -10,7 +10,9 @@
 #include <QAbstractItemModel>
 #include <QObject>
 #include <QQmlEngine>
+#include <QSortFilterProxyModel>
 #include <common/qt/GlobalSettingsTypes.hpp>
+#include <common/qt/SessionMetaDataSortListModel.hpp>
 #include <rest/qt/QRestClient.hpp>
 #include <storage/SqliteSessionDatabase.hpp>
 #include <workflow/qt/RestSessionManagementWorkflow.hpp>
@@ -35,13 +37,13 @@ class LaptimerSessionPageModel : public QObject
                    activeLaptimerChanged REQUIRED)
 
     /**
-     * @property Rapid::Common::Qt::SessionMetaDataListModel
+     * @property Rapid::Common::Qt::SessionMetaDataSortModel
      *
      * This property holds the list model with the session data of the active laptimer.
      * Initially the model is empty to fill the model call @ref Rapid::Android::LaptimerSessionPageModel::updateSessionMetadata
      */
-    Q_PROPERTY(
-        Rapid::Common::Qt::SessionMetaDataListModel* sessionMetadataListModel READ getSessionMetadataListModel CONSTANT)
+    Q_PROPERTY(Rapid::Common::Qt::SessionMetaDataSortListModel* sessionMetadataListModel READ
+                   getSessionMetadataListModel CONSTANT)
 public:
     /** @cond Doxygen_Suppress */
     Q_DISABLE_COPY_MOVE(LaptimerSessionPageModel)
@@ -82,7 +84,7 @@ Q_SIGNALS:
 private:
     [[nodiscard]] Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept;
     void setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer) noexcept;
-    [[nodiscard]] Rapid::Common::Qt::SessionMetaDataListModel* getSessionMetadataListModel() noexcept;
+    [[nodiscard]] Rapid::Common::Qt::SessionMetaDataSortListModel* getSessionMetadataListModel() noexcept;
 
     Common::Qt::DeviceSettings mActiveLaptimer;
     Rapid::Rest::QRestClient mRestclient;
@@ -90,6 +92,7 @@ private:
     KDBindings::ScopedConnection mDownloadFinishedConnection;
     std::unique_ptr<Storage::ISessionDatabase> mSessionDatabase;
     KDBindings::ScopedConnection mSessionStoredConnection;
+    Common::Qt::SessionMetaDataSortListModel mSessionSortModel;
 };
 
 } // namespace Rapid::Android
