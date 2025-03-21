@@ -76,8 +76,6 @@ Page {
                     required property string date
                     required property var model
 
-                    width: parent.width
-
                     name: trackName
                     firstEntry: date
                     secondEntry: time
