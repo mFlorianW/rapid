@@ -27,6 +27,23 @@ public:
                 (lhs.fractionalOfSecond) == (rhs.fractionalOfSecond));
         // clang-format on
     }
+
+    friend bool operator<(SharedTimestamp const& lhs, SharedTimestamp const& rhs)
+    {
+        if (lhs.hour != rhs.hour) {
+            return lhs.hour < rhs.hour;
+        } else if (lhs.minute != rhs.minute) {
+            return lhs.minute < rhs.minute;
+        } else if (lhs.second != rhs.minute) {
+            return lhs.second < rhs.second;
+        }
+        return lhs.fractionalOfSecond < rhs.fractionalOfSecond;
+    }
+
+    friend bool operator>(SharedTimestamp const& lhs, SharedTimestamp const& rhs)
+    {
+        return rhs < lhs;
+    }
 };
 
 Timestamp::Timestamp()
@@ -189,6 +206,16 @@ bool operator==(Timestamp const& lhs, Timestamp const& rhs)
 bool operator!=(Timestamp const& lhs, Timestamp const& rhs)
 {
     return !(lhs == rhs);
+}
+
+bool operator<(Timestamp const& lhs, Timestamp const& rhs)
+{
+    return *lhs.mData < *rhs.mData;
+}
+
+bool operator>(Timestamp const& lhs, Timestamp const& rhs)
+{
+    return *lhs.mData > *rhs.mData;
 }
 
 } // namespace Rapid::Common
