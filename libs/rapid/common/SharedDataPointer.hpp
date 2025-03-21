@@ -217,6 +217,16 @@ public:
         return mData != other.mData;
     }
 
+    bool operator<(SharedDataPointer<T> const& other) const
+    {
+        return mData < other.mData;
+    }
+
+    bool operator>(SharedDataPointer<T> const& other) const
+    {
+        return mData > other.mData;
+    }
+
 private:
     /**
      * Creates a new shared data object, when the reference count > 1.
