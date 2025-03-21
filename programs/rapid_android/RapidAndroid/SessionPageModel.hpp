@@ -10,6 +10,7 @@
 #include <QQmlEngine>
 #include <common/qt/GlobalSettingsTypes.hpp>
 #include <common/qt/SessionMetaDataListModel.hpp>
+#include <common/qt/SessionMetaDataSortListModel.hpp>
 #include <rest/qt/QRestClient.hpp>
 #include <storage/SqliteSessionDatabase.hpp>
 #include <workflow/ActiveSessionWorkflow.hpp>
@@ -33,7 +34,7 @@ class SessionPageModel : public QObject
      *
      * Gives a session list model for displaying the local stored sessions
      */
-    Q_PROPERTY(Rapid::Common::Qt::SessionMetaDataListModel* sessionListModel READ getSessionListModel CONSTANT)
+    Q_PROPERTY(Rapid::Common::Qt::SessionMetaDataSortListModel* sessionListModel READ getSessionListModel CONSTANT)
 
     /**
      * @property Rapid::Common::Qt::LapListModel*
@@ -96,7 +97,7 @@ Q_SIGNALS:
     void activeLaptimerChanged();
 
 private:
-    [[nodiscard]] Rapid::Common::Qt::SessionMetaDataListModel* getSessionListModel() noexcept;
+    [[nodiscard]] Rapid::Common::Qt::SessionMetaDataSortListModel* getSessionListModel() noexcept;
     [[nodiscard]] Rapid::Common::Qt::LapListModel* getLapListModel() noexcept;
     [[nodiscard]] Rapid::Workflow::Qt::RestActiveSession* getActiveSession() noexcept;
     void setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer);
@@ -113,6 +114,7 @@ private:
     Rapid::Rest::QRestClient mRestclient;
     Rapid::Workflow::Qt::RestActiveSession mRestActiveSession{&mRestclient};
     Rapid::Common::Qt::DeviceSettings mActiveLaptimer;
+    Rapid::Common::Qt::SessionMetaDataSortListModel mSessionMetaSortModel;
 };
 
 } // namespace Rapid::Android

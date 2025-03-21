@@ -17,13 +17,14 @@ SessionPageModel::SessionPageModel(std::unique_ptr<Storage::ISessionDatabase> se
     mLapListModelChangedConnection = mSessionAnalyzeWorkflow.lapListModel.valueChanged().connect([this] {
         Q_EMIT lapListModelChanged();
     });
+    mSessionMetaSortModel.setSourceModel(mLocalSessionMgmt.getSessionMetaDataListModel());
 }
 
 SessionPageModel::~SessionPageModel() = default;
 
-Rapid::Common::Qt::SessionMetaDataListModel* SessionPageModel::getSessionListModel() noexcept
+Rapid::Common::Qt::SessionMetaDataSortListModel* SessionPageModel::getSessionListModel() noexcept
 {
-    return mLocalSessionMgmt.getSessionMetaDataListModel();
+    return &mSessionMetaSortModel;
 }
 
 Rapid::Common::Qt::LapListModel* SessionPageModel::getLapListModel() noexcept
@@ -38,7 +39,9 @@ Rapid::Workflow::Qt::RestActiveSession* SessionPageModel::getActiveSession() noe
 
 void SessionPageModel::analyzeSession(quint32 sessionIndex)
 {
-    auto session = mLocalSessionMgmt.getSessionMetaDataListModel()->getElement(sessionIndex);
+    auto const index =
+        mSessionMetaSortModel.mapToSource(mSessionMetaSortModel.index(static_cast<int>(sessionIndex), 0));
+    auto session = mLocalSessionMgmt.getSessionMetaDataListModel()->getElement(index.row());
     if (session.has_value()) {
         mDbQuery = mSessionDb->getSessionByIndexAsync(session.value()->getId());
         mDbQueryDoneConnection = mDbQuery->done.connect([this] {
