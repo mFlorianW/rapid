@@ -38,6 +38,17 @@ std::string serialize(TrackData const& trackData);
 
 } // namespace Track
 
+namespace Position
+{
+
+/**
+ * @brief Serialize a GPS position into a JSON string
+ * @retrun string with JSON content.
+ */
+std::string serialize(GpsPositionData const& position);
+
+} // namespace Position
+
 } // namespace Rapid::Common::JsonSerializer
 
 #endif // JSONSERIALIZER_HPP
