@@ -24,7 +24,7 @@ std::optional<Common::SessionMetaData> deserialize(std::string const& rawData);
 
 namespace Track
 {
-std::optional<Common::TrackData> derserialize(std::string rawData);
+std::optional<Common::TrackData> deserialize(std::string rawData);
 }
 
 } // namespace Rapid::Common::JsonDeserializer

@@ -58,7 +58,7 @@ TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a Ses
 TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a TrackData", "[JSONDESERIALIZER_TRACK]")
 {
     auto expTrack = Tracks::getTrack();
-    auto track = JsonDeserializer::Track::derserialize(Tracks::getTrackAsJson());
+    auto track = JsonDeserializer::Track::deserialize(Tracks::getTrackAsJson());
     REQUIRE(track.has_value());
     REQUIRE(track.value_or(TrackData{}) == expTrack);
 }
