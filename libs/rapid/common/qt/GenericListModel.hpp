@@ -220,7 +220,7 @@ public:
      */
     std::optional<ListType const*> getElement(std::size_t index) const noexcept
     {
-        if (index > mElements.size()) {
+        if (mElements.empty() or index > mElements.size() - 1) {
             return std::nullopt;
         }
         return std::addressof(mElements[index]);

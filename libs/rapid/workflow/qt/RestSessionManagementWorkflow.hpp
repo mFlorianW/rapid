@@ -5,6 +5,7 @@
 #ifndef WORKFLOW_QT_RESTSESSIONDOWNLOADER_HPP
 #define WORKFLOW_QT_RESTSESSIONDOWNLOADER_HPP
 
+#include <common/qt/SessionMetaDataListModel.hpp>
 #include <common/qt/SessionMetadataProvider.hpp>
 #include <workflow/RestSessionManagementWorkflow.hpp>
 
@@ -15,36 +16,39 @@ class RestSessionManagementWorkflow : public Workflow::RestSessionManagementWork
 {
 public:
     /**
-     * Creates an instance of the @ref RestSessionDownloader
-     * @param client The REST client that is used for the device communication.
+     * @brief Creates an instance of the @ref Rapid::Workflow::Qt::RestSessionManagementWorkflow
+     *
+     * @details This constructor creates an non functional instance.
+     *          Before the class can be used an @ref Rapid::Rest::IRestClient must be configured.
      */
-    explicit RestSessionManagementWorkflow(Rest::IRestClient& client);
-
+    RestSessionManagementWorkflow();
+    /**
+     * @brief Creates an instance of the @ref RestSessionDownloader
+     *
+     * @param client The REST client that is used for the device communication.
+     *               The REST client must have the same life time as the this instance.
+     */
+    explicit RestSessionManagementWorkflow(Rest::IRestClient* client);
     /**
      * Default destructor
      */
     ~RestSessionManagementWorkflow() override;
-
     /**
      * Disabled copy constructor
      */
     RestSessionManagementWorkflow(RestSessionManagementWorkflow const&) = delete;
-
+    RestSessionManagementWorkflow(RestSessionManagementWorkflow&&) noexcept = delete;
     /**
      * Disabled copy operator
      */
     RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow const&) = delete;
-
+    RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow&&) noexcept = delete;
     /**
      * Disabled move constructor
      */
-    RestSessionManagementWorkflow(RestSessionManagementWorkflow&&) noexcept = delete;
-
     /**
      * Disabled move operator
      */
-    RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow&&) noexcept = delete;
-
     /**
      * @brief Gives the @ref Common::SessionMetadataProvider for the configured device.
      *
@@ -55,11 +59,25 @@ public:
      */
     std::shared_ptr<Common::Qt::SessionMetadataProvider> getProvider() const noexcept;
 
+    /**
+     * @brief Gives the @ref Rapid::Common::Qt::SessionMetaDataListModel for the configured device.
+     *
+     * @details The provivder is automatically updated when a @ref Common::SessionMetadata are requested.
+     *          On creation the returned @ref Rapid::Common::Qt::SessionMetaDataListModel is empty.
+     *
+     * @return A @ref Rapid::Common::Qt::SessionMetaDataListModel for the usage in the QML context
+     */
+    std::shared_ptr<Common::Qt::SessionMetaDataListModel> getSessionMetadataListModel() const noexcept;
+
 private:
     void onSessionMetadataDownloaded(std::size_t index, DownloadResult result);
+    void updateProvider(std::size_t index, Common::SessionMetaData const& session);
+    void updateListModel(std::size_t index, Common::SessionMetaData const& session);
 
 private:
     std::shared_ptr<Common::Qt::SessionMetadataProvider> mProvider;
+    KDBindings::ScopedConnection mSessionMetadataDownloadConnection;
+    std::shared_ptr<Common::Qt::SessionMetaDataListModel> mListModel;
 };
 
 } // namespace Rapid::Workflow::Qt

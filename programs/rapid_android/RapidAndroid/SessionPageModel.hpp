@@ -6,24 +6,58 @@
 #define PROGRAMS_RAPID_ANDROID_SESSIONPAGEMODEL_HPP
 
 #include "Database.hpp"
-#include "workflow/qt/SessionAnalyzeWorkflow.hpp"
 #include <QObject>
 #include <QQmlEngine>
+#include <common/qt/GlobalSettingsTypes.hpp>
 #include <common/qt/SessionMetaDataListModel.hpp>
+#include <common/qt/SessionMetaDataSortListModel.hpp>
+#include <rest/qt/QRestClient.hpp>
 #include <storage/SqliteSessionDatabase.hpp>
+#include <workflow/ActiveSessionWorkflow.hpp>
 #include <workflow/qt/LocalSessionManagement.hpp>
+#include <workflow/qt/RestActiveSession.hpp>
+#include <workflow/qt/SessionAnalyzeWorkflow.hpp>
 
 namespace Rapid::Android
 {
 
+/**
+ * @brief Holds the state of the SessionPage QML context and implements the view logic.
+ */
 class SessionPageModel : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
 
-    Q_PROPERTY(Rapid::Common::Qt::SessionMetaDataListModel* sessionListModel READ getSessionListModel CONSTANT)
+    /**
+     * @property Rapid::Common::Qt::LapListModel*
+     *
+     * Gives a session list model for displaying the local stored sessions
+     */
+    Q_PROPERTY(Rapid::Common::Qt::SessionMetaDataSortListModel* sessionListModel READ getSessionListModel CONSTANT)
 
+    /**
+     * @property Rapid::Common::Qt::LapListModel*
+     *
+     * Gives the a list model for display the laps of a session
+     */
     Q_PROPERTY(Rapid::Common::Qt::LapListModel* lapListModel READ getLapListModel NOTIFY lapListModelChanged)
+
+    /**
+     * @property Rapid::Workflow::Qt::RestActiveSession
+     *
+     * Gives the REST active session for displaying the information for the active session
+     */
+    Q_PROPERTY(Rapid::Workflow::Qt::RestActiveSession const* activeSession READ getActiveSession CONSTANT)
+
+    /**
+     * @property Rapid::Common::Qt::DeviceSettings
+     *
+     * This property holds the laptimer settings that are used by the SessionPage
+     */
+    Q_PROPERTY(Rapid::Common::Qt::DeviceSettings activeLaptimer READ getActiveLaptimer WRITE setActiveLaptimer NOTIFY
+                   activeLaptimerChanged REQUIRED)
+
 public:
     Q_DISABLE_COPY_MOVE(SessionPageModel)
 
@@ -41,20 +75,6 @@ public:
     /** @endcond */
 
     /**
-     * @brief Gives the model for displaying the session in a list.
-     *
-     * @return A list model with the stored sessions.
-     */
-    [[nodiscard]] Rapid::Common::Qt::SessionMetaDataListModel* getSessionListModel() const noexcept;
-
-    /**
-     * @brief Gives the model for displaying the session in a list.
-     *
-     * @return A list model with the stored sessions.
-     */
-    [[nodiscard]] Rapid::Common::Qt::LapListModel* getLapListModel() const noexcept;
-
-    /**
      * @brief Analyze session under the given index
      *
      * @param sessionIndex The index of the session that shall be analyzed
@@ -69,7 +89,20 @@ Q_SIGNALS:
      */
     void lapListModelChanged();
 
+    /**
+     * @brief This signal is emitted when the active laptimer is changed.
+     *
+     * @details The active laptimer is changed when in the laptimer page a different laptimer is activated.
+     */
+    void activeLaptimerChanged();
+
 private:
+    [[nodiscard]] Rapid::Common::Qt::SessionMetaDataSortListModel* getSessionListModel() noexcept;
+    [[nodiscard]] Rapid::Common::Qt::LapListModel* getLapListModel() noexcept;
+    [[nodiscard]] Rapid::Workflow::Qt::RestActiveSession* getActiveSession() noexcept;
+    void setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer);
+    [[nodiscard]] Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept;
+
     void handleDbQueryResult();
 
     std::unique_ptr<Storage::ISessionDatabase> mSessionDb;
@@ -78,6 +111,10 @@ private:
     KDBindings::ScopedConnection mLapListModelChangedConnection;
     std::shared_ptr<Storage::GetSessionResult> mDbQuery;
     KDBindings::ScopedConnection mDbQueryDoneConnection;
+    Rapid::Rest::QRestClient mRestclient;
+    Rapid::Workflow::Qt::RestActiveSession mRestActiveSession{&mRestclient};
+    Rapid::Common::Qt::DeviceSettings mActiveLaptimer;
+    Rapid::Common::Qt::SessionMetaDataSortListModel mSessionMetaSortModel;
 };
 
 } // namespace Rapid::Android

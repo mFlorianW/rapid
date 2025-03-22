@@ -17,6 +17,8 @@ Ctrl.Page {
 
     title: qsTr("Laptimer (Devices)")
 
+    required property RapidAndroidModel appModel
+
     Item {
         id: contentItem
         anchors.fill: parent
@@ -27,7 +29,7 @@ Ctrl.Page {
             anchors.margins: 5
             spacing: 5
             boundsBehavior: Flickable.StopAtBounds
-            model: GlobalState.deviceManagement.model
+            model: laptimerPage.appModel.deviceManagement.model
 
             delegate: ListItem {
                 id: delegate
@@ -42,7 +44,7 @@ Ctrl.Page {
                     id: enableSwitch
                     checked: delegate.laptimer.defaultDevice
                     onClicked: {
-                        GlobalState.deviceManagement.enable(delegate.laptimer);
+                        laptimerPage.appModel.deviceManagement.enable(delegate.laptimer);
                     }
                 }
 
@@ -75,47 +77,24 @@ Ctrl.Page {
         }
     }
 
-    Drawer {
+    ContextMenu {
         id: contextMenu
-        edge: Qt.BottomEdge
-        dragMargin: 0
-        height: 1.2 * columnLayout.height
-        width: parent.width
-
-        ColumnLayout {
-            id: columnLayout
-            anchors.right: parent.right
-            anchors.left: parent.left
-            spacing: 0
-
-            Rectangle {
-                id: indicator
-                radius: 10
-                Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-                Layout.bottomMargin: 10
-                color: "black"
-                Layout.preferredHeight: 3
-                Layout.preferredWidth: 30
-            }
-
-            ListItem {
-                id: editItem
-                Layout.fillWidth: true
-                text: qsTr("Edit Laptimer")
-                icon.source: "qrc:/qt/qml/Rapid/Android/img/Edit.svg"
-                onClicked: {
+        model: ListModel {
+            ListElement {
+                entryText: qsTr("Edit Laptimer")
+                iconSource: "qrc:/qt/qml/Rapid/Android/img/Edit.svg"
+                clickedAction: function () {
                     contextMenu.close();
                     deviceInputPopup.open();
                 }
             }
-            ListItem {
-                id: deleteItem
-                Layout.fillWidth: true
-                text: qsTr("Delete Laptimer")
-                icon.source: "qrc:/qt/qml/Rapid/Android/img/Trash.svg"
-                onClicked: {
+
+            ListElement {
+                entryText: qsTr("Delete Laptimer")
+                iconSource: "qrc:/qt/qml/Rapid/Android/img/Trash.svg"
+                clickedAction: function () {
                     contextMenu.close();
-                    GlobalState.deviceManagement.remove(deviceInputPopup.laptimer);
+                    laptimerPage.appModel.deviceManagement.remove(deviceInputPopup.laptimer);
                 }
             }
         }
@@ -165,11 +144,11 @@ Ctrl.Page {
         }
 
         onAccepted: {
-            var device = GlobalState.create(deviceInputPopupDeviceName.text, deviceInputPopupDeviceIp.text, deviceInputPopupDevicePort.text, false);
+            var device = laptimerPage.appModel.create(deviceInputPopupDeviceName.text, deviceInputPopupDeviceIp.text, deviceInputPopupDevicePort.text, false);
             if (laptimerPage.state === "new") {
-                GlobalState.deviceManagement.store(device);
+                laptimerPage.appModel.deviceManagement.store(device);
             } else if (laptimerPage.state === "edit") {
-                GlobalState.deviceManagement.update(deviceInputPopup.laptimer, device);
+                laptimerPage.appModel.deviceManagement.update(deviceInputPopup.laptimer, device);
             }
         }
     }

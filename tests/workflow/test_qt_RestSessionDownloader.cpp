@@ -18,8 +18,9 @@ using namespace Rapid::Common::Qt;
 struct TestFixture
 {
     Rapid::TestHelper::RestClientMock restClient{};
-    RestSessionManagementWorkflow rDl{restClient};
+    RestSessionManagementWorkflow rDl{&restClient};
     std::shared_ptr<SessionMetadataProvider> provider{rDl.getProvider()};
+    std::shared_ptr<SessionMetaDataListModel> listModel{rDl.getSessionMetadataListModel()};
 };
 
 TEST_CASE_METHOD(TestFixture, "The RestSessionDownloader shall have a SessionMetadataProvider")
@@ -75,5 +76,69 @@ TEST_CASE_METHOD(TestFixture, "The RestSessionDownloader shall have a SessionMet
         rDl.downloadSessionMetadata(0);
         CHECK(provider->getRowCount() == 1);
         CHECK(provider->getItem(0).value_or(Rapid::Common::SessionData{}) == Sessions::getTestSessionMetaData());
+    }
+}
+
+TEST_CASE_METHOD(TestFixture, "The RestSessionDownloader shall have a session list model")
+{
+    auto restCall = std::make_shared<RestCallMock>();
+    auto resultHandler = [&restCall](std::string_view path) {
+        if (path == "/sessions/0/metadata") {
+            restCall->setData(Sessions::getTestSessionMetaAsJson());
+        } else {
+            restCall->setData(Sessions::getTestSessionMetadataAsJson2());
+        }
+        restCall->setCallResult(RestCallResult::Success);
+    };
+
+    SECTION("On creation the list model is empty")
+    {
+        REQUIRE(listModel->rowCount({}) == 0);
+    }
+
+    SECTION("On finished session meta download insert the list model")
+    {
+        REQUIRE_CALL(restClient, execute(_))
+            .TIMES(2)
+            .WITH(_1.getType() == RequestType::Get)
+            .WITH(_1.getPath() == Path("/sessions/0/metadata") or _1.getPath() == Path("/sessions/1/metadata"))
+            .SIDE_EFFECT(resultHandler(_1.getPath().getPath()))
+            .LR_RETURN(restCall);
+
+        rDl.downloadSessionMetadata(0);
+
+        CHECK(listModel->rowCount({}) == 1);
+        auto* element = listModel->getElement(0).value_or(nullptr);
+        REQUIRE(element != nullptr);
+        CHECK(*element == Sessions::getTestSessionMetaData());
+
+        rDl.downloadSessionMetadata(1);
+
+        CHECK(listModel->rowCount({}) == 2);
+        element = listModel->getElement(1).value_or(nullptr);
+        REQUIRE(element != nullptr);
+        CHECK(*element == Sessions::getTestSessionMetaData2());
+    }
+
+    SECTION("On finished session meta download the data is updated")
+    {
+        REQUIRE_CALL(restClient, execute(_))
+            .TIMES(2)
+            .WITH(_1.getType() == RequestType::Get)
+            .WITH(_1.getPath() == Path("/sessions/0/metadata"))
+            .SIDE_EFFECT(resultHandler(_1.getPath().getPath()))
+            .LR_RETURN(restCall);
+
+        rDl.downloadSessionMetadata(0);
+        CHECK(listModel->rowCount({}) == 1);
+        auto* element = listModel->getElement(0).value_or(nullptr);
+        REQUIRE(element != nullptr);
+        CHECK(*element == Sessions::getTestSessionMetaData());
+
+        rDl.downloadSessionMetadata(0);
+        CHECK(listModel->rowCount({}) == 1);
+        element = listModel->getElement(0).value_or(nullptr);
+        REQUIRE(element != nullptr);
+        CHECK(*element == Sessions::getTestSessionMetaData());
     }
 }

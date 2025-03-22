@@ -148,6 +148,22 @@ public:
      */
     static Timestamp getSystemTimestamp();
 
+    /**
+     * @brief Less than operator
+     *
+     * @return true The lhs timestmap is smaller than the rhs
+     * @return false The lhs timestmap is not smaller than the rhs
+     */
+    friend bool operator<(Timestamp const& lhs, Timestamp const& rhs);
+
+    /**
+     * @brief Greater than operator
+     *
+     * @return true The lhs timestmap is greater than the rhs
+     * @return false The lhs timestmap is not greater than the rhs
+     */
+    friend bool operator>(Timestamp const& lhs, Timestamp const& rhs);
+
 private:
     std::int32_t convertToMilliSeconds() const;
 

@@ -28,6 +28,26 @@ public:
                 (lhs.mDay == rhs.mDay));
         // clang-format on
     }
+
+    friend bool operator!=(SharedDate const& lhs, SharedDate const& rhs)
+    {
+        return !(lhs == rhs);
+    }
+
+    friend bool operator<(SharedDate const& lhs, SharedDate const& rhs)
+    {
+        if (lhs.mYear != rhs.mYear) {
+            return lhs.mYear < rhs.mYear;
+        } else if (lhs.mMonth != rhs.mMonth) {
+            return lhs.mMonth < rhs.mMonth;
+        }
+        return lhs.mDay < rhs.mDay;
+    }
+
+    friend bool operator>(SharedDate const& lhs, SharedDate const& rhs)
+    {
+        return rhs < lhs;
+    }
 };
 
 Date::Date()
@@ -111,10 +131,20 @@ Date Date::getSystemDate() noexcept
     auto const time = std::localtime(&timeT);
 
     auto date = Date{};
-    date.setYear(1900 + time->tm_year); // The year is relativ to 1900.
+    date.setYear(1900 + time->tm_year); // The mYear is relativ to 1900.
     date.setMonth(++time->tm_mon); // The month is in the range 0-11.
     date.setDay(time->tm_mday);
     return date;
+}
+
+bool operator<(Date const& lhs, Date const& rhs)
+{
+    return *lhs.mData < *rhs.mData;
+}
+
+bool operator>(Date const& lhs, Date const& rhs)
+{
+    return *lhs.mData > *rhs.mData;
 }
 
 bool operator==(Date const& lhs, Date const& rhs)

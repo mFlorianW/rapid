@@ -30,3 +30,37 @@ TEST_CASE("The Date shall be creatable from string in the format of dd.MM.YYYY")
     auto date = Date{"01.01.1970"};
     REQUIRE(date == expectedDate);
 }
+
+TEST_CASE("The Date shall support the less than operator")
+{
+    SECTION("Less than lhs smaller than rhs")
+    {
+        Date date1{"01.01.1970"};
+        Date date2{"01.01.1971"};
+        REQUIRE(date1 < date2);
+    }
+
+    SECTION("Less than lhs bigger than rhs")
+    {
+        Date date1{"01.01.1971"};
+        Date date2{"01.01.1970"};
+        REQUIRE_FALSE(date1 < date1);
+    }
+}
+
+TEST_CASE("The Date shall be support the greater than operator")
+{
+    SECTION("Greater than lhs greater than rhs")
+    {
+        Date date1{"01.01.1971"};
+        Date date2{"01.01.1970"};
+        REQUIRE(date1 > date2);
+    }
+
+    SECTION("Greater than lhs smaller than rhs")
+    {
+        Date date1{"01.01.1970"};
+        Date date2{"01.02.1970"};
+        REQUIRE_FALSE(date1 > date2);
+    }
+}

@@ -12,6 +12,7 @@ set(RAPID_COMMON_QT_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/DeviceSettingsListModel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetaDataListModel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LapListModel.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetaDataSortListModel.hpp
 )
 install(FILES ${RAPID_COMMON_QT_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/common/qt")
 
@@ -33,4 +34,5 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/DeviceSettingsProvider.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetaDataListModel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LapListModel.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SessionMetaDataSortListModel.cpp
 )

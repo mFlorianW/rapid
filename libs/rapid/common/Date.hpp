@@ -119,6 +119,20 @@ public:
      */
     static Date getSystemDate() noexcept;
 
+    /**
+     * Less than operator
+     * @return true The lhs date is smaller than the rhs are not the same.
+     * @return fals The lhs date is not smaller than the rhs are not the same.
+     */
+    friend bool operator<(Date const& lhs, Date const& rhs);
+
+    /**
+     * Greater than operator
+     * @return true The lhs date is greater than the rhs are not the same.
+     * @return fals The lhs date is not greater than the rhs are not the same.
+     */
+    friend bool operator>(Date const& lhs, Date const& rhs);
+
 private:
     SharedDataPointer<SharedDate> mData;
 };

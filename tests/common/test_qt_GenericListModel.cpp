@@ -200,4 +200,29 @@ TEST_CASE_METHOD(TestFixture, "The GenericListModel shall support the update of 
     }
 }
 
+TEST_CASE_METHOD(TestFixture, "The GenericListModel shall return an element pointer")
+{
+    SECTION("Nullopt shall be returned for empty model")
+    {
+        auto model = TestModel{};
+        REQUIRE(model.getElement(0U) == std::nullopt);
+    }
+
+    SECTION("Nullopt shall be returned invalid index")
+    {
+        auto model = TestModel{data};
+        constexpr std::size_t invalidIndex = 2U;
+        REQUIRE(model.getElement(invalidIndex) == std::nullopt);
+    }
+
+    SECTION("Element shall be returned for a valid index")
+    {
+        auto model = TestModel{data};
+        constexpr std::size_t validIndex = 1U;
+        auto* element = model.getElement(validIndex).value_or(nullptr);
+        REQUIRE(element != nullptr);
+        REQUIRE(*element == data[1]);
+    }
+}
+
 #include "test_qt_GenericListModel.moc"

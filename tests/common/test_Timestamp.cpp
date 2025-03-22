@@ -161,3 +161,37 @@ TEST_CASE("The Timestamp shall correctly calucalute the delta between two timest
 
     REQUIRE((ts2 - ts1) == Timestamp{"00:00:57.000"});
 }
+
+TEST_CASE("The time shall support the less than operator")
+{
+    SECTION("Less than lhs is small than rhs")
+    {
+        Timestamp ts1{"15:05:13.237"};
+        Timestamp ts2{"15:06:10.237"};
+        REQUIRE(ts1 < ts2);
+    }
+
+    SECTION("Less than lhs is bigger than rhs")
+    {
+        Timestamp ts1{"15:15:13.237"};
+        Timestamp ts2{"15:06:10.237"};
+        REQUIRE_FALSE(ts1 < ts2);
+    }
+}
+
+TEST_CASE("The time shall support the greater than operator")
+{
+    SECTION("Less than lhs is greater than rhs")
+    {
+        Timestamp ts1{"15:15:13.237"};
+        Timestamp ts2{"15:06:10.237"};
+        REQUIRE(ts1 > ts2);
+    }
+
+    SECTION("Less than lhs is bigger than rhs")
+    {
+        Timestamp ts1{"15:05:13.237"};
+        Timestamp ts2{"15:06:10.237"};
+        REQUIRE_FALSE(ts1 > ts2);
+    }
+}

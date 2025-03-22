@@ -17,23 +17,31 @@ SessionPageModel::SessionPageModel(std::unique_ptr<Storage::ISessionDatabase> se
     mLapListModelChangedConnection = mSessionAnalyzeWorkflow.lapListModel.valueChanged().connect([this] {
         Q_EMIT lapListModelChanged();
     });
+    mSessionMetaSortModel.setSourceModel(mLocalSessionMgmt.getSessionMetaDataListModel());
 }
 
 SessionPageModel::~SessionPageModel() = default;
 
-Rapid::Common::Qt::SessionMetaDataListModel* SessionPageModel::getSessionListModel() const noexcept
+Rapid::Common::Qt::SessionMetaDataSortListModel* SessionPageModel::getSessionListModel() noexcept
 {
-    return mLocalSessionMgmt.getSessionMetaDataListModel();
+    return &mSessionMetaSortModel;
 }
 
-Rapid::Common::Qt::LapListModel* SessionPageModel::getLapListModel() const noexcept
+Rapid::Common::Qt::LapListModel* SessionPageModel::getLapListModel() noexcept
 {
     return mSessionAnalyzeWorkflow.lapListModel.get().get();
 }
 
+Rapid::Workflow::Qt::RestActiveSession* SessionPageModel::getActiveSession() noexcept
+{
+    return std::addressof(mRestActiveSession);
+}
+
 void SessionPageModel::analyzeSession(quint32 sessionIndex)
 {
-    auto session = mLocalSessionMgmt.getSessionMetaDataListModel()->getElement(sessionIndex);
+    auto const index =
+        mSessionMetaSortModel.mapToSource(mSessionMetaSortModel.index(static_cast<int>(sessionIndex), 0));
+    auto session = mLocalSessionMgmt.getSessionMetaDataListModel()->getElement(index.row());
     if (session.has_value()) {
         mDbQuery = mSessionDb->getSessionByIndexAsync(session.value()->getId());
         mDbQueryDoneConnection = mDbQuery->done.connect([this] {
@@ -58,6 +66,21 @@ void SessionPageModel::handleDbQueryResult()
     }
     mDbQuery.reset();
     mDbQueryDoneConnection->disconnect();
+}
+
+void SessionPageModel::setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer)
+{
+    if (mActiveLaptimer != activeLaptimer) {
+        mActiveLaptimer = activeLaptimer;
+        mRestclient.setServerAddress(activeLaptimer.getIpAddress().toStdString());
+        mRestclient.setServerPort(activeLaptimer.port);
+        Q_EMIT activeLaptimerChanged();
+    }
+}
+
+Rapid::Common::Qt::DeviceSettings SessionPageModel::getActiveLaptimer() const noexcept
+{
+    return mActiveLaptimer;
 }
 
 } // namespace Rapid::Android

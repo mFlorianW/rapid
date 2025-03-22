@@ -22,7 +22,7 @@ SCENARIO("The RestSessionManagementWorkflow shall fetch the stored session count
     GIVEN("A setuped RestSessionManagementWorkflow")
     {
         auto restClient = RestClientMock{};
-        auto rDl = RestSessionManagementWorkflow{restClient};
+        auto rDl = RestSessionManagementWorkflow{&restClient};
         auto fetchedSignalSpy = SignalSpy{rDl.sessionCountFetched};
         auto restCall = std::make_shared<RestCallMock>();
         restCall->setData(SessionCountJson);
@@ -51,7 +51,7 @@ SCENARIO("The RestSessionManagementWorkflow shall download a specific session st
     GIVEN("A setuped RestSessionDownloader")
     {
         auto restClient = RestClientMock{};
-        auto rDl = RestSessionManagementWorkflow{restClient};
+        auto rDl = RestSessionManagementWorkflow{&restClient};
         auto sessionDownloadSpy = SignalSpy{rDl.sessionDownloadFinshed};
         auto restCall = std::make_shared<RestCallMock>();
 
@@ -79,7 +79,7 @@ SCENARIO("The RestSessionManagementWorkflow shall download a specific session st
 TEST_CASE("The RestSessionManagementWorkflow shall download session metadata")
 {
     auto restClient = RestClientMock{};
-    auto rDl = RestSessionManagementWorkflow{restClient};
+    auto rDl = RestSessionManagementWorkflow{&restClient};
     auto sessionMetadataDownloadSpy = SignalSpy{rDl.sessionMetadataDownloadFinished};
     auto restCall = std::make_shared<RestCallMock>();
 
@@ -101,7 +101,7 @@ TEST_CASE("The RestSessionManagementWorkflow shall download session metadata")
 TEST_CASE("The RestSessionManagementWorkflow shall download all session meta data at once")
 {
     auto restClient = RestClientMock{};
-    auto rDl = RestSessionManagementWorkflow{restClient};
+    auto rDl = RestSessionManagementWorkflow{&restClient};
     auto finishedSpy = SignalSpy{rDl.sessionMetadataDownloadFinished};
     auto sessionMetadataCall = std::make_shared<RestCallMock>();
     auto sessionCountCall = std::make_shared<RestCallMock>();

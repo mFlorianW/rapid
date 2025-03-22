@@ -10,22 +10,30 @@ qt_add_qml_module(RapidAndroid
         # pages
         qml/pages/MainPage.qml
         qml/pages/Laptimer.qml
+        qml/pages/LaptimerSessionPage.qml
         # controls
         qml/controls/ListItem.qml
         qml/controls/Header.qml
         qml/controls/Session.qml
+        qml/controls/ContextMenu.qml
     SOURCES
-        GlobalState.cpp
-        GlobalState.hpp
+        RapidAndroidModel.cpp
+        RapidAndroidModel.hpp
         Database.cpp
         Database.hpp
         SessionPageModel.cpp
         SessionPageModel.hpp
+        LaptimerSessionPageModel.cpp
+        LaptimerSessionPageModel.hpp
+        ContextMenuModel.cpp
+        ContextMenuModel.hpp
     RESOURCES
         img/BurgerButton.svg
-        img/Stopwatch.svg
         img/ContextMenu.svg
+        img/Download.svg
         img/Edit.svg
+        img/Refresh.svg
+        img/Stopwatch.svg
         img/Trash.svg
 )
 

@@ -11,7 +11,21 @@ namespace Rapid::Workflow
 class RestSessionManagementWorkflow : public IRestSessionManagementWorkflow
 {
 public:
-    RestSessionManagementWorkflow(Rest::IRestClient& restClient) noexcept;
+    /**
+     * @brief Creates an instance of the @ref Rapid::Workflow::RestSessionManagementWorkflow
+     *
+     * @details This constructor creates an non functional instance.
+     *          Before the class can be used an @ref Rapid::Rest::IRestClient must be configured.
+     */
+    RestSessionManagementWorkflow() noexcept;
+
+    /**
+     * @brief Creates an instance of the @ref Rapid::Workflow::RestSessionManagementWorkflow
+     *
+     * @param restClient The rest client used for the REST communication
+     *                   The lifetime of the rest client must be the same as this instance.
+     */
+    RestSessionManagementWorkflow(Rest::IRestClient* restClient) noexcept;
 
     /**
      * Default empty destructor
@@ -37,6 +51,14 @@ public:
      * Deleted move operator
      */
     RestSessionManagementWorkflow& operator=(RestSessionManagementWorkflow&&) = delete;
+
+    /**
+     * @brief Sets the REST client
+     *
+     * @param restClient The rest client used for the REST communication
+     *                   The lifetime of the rest client must be the same as this instance.
+     */
+    void setRestClient(Rest::IRestClient* restClient) noexcept;
 
     /**
      * @copydoc ISessionDownloader::getSession()
@@ -83,7 +105,11 @@ private:
                   Cache& cache,
                   std::function<void(Rest::RestCall*)> handler)
     {
-        auto call = mRestClient.execute(Rest::RestRequest{Rest::RequestType::Get, path});
+        if (mRestClient == nullptr) {
+            logError("Failed to start downloadAllSessionMetadata. Error: IRestClient == nullptr");
+            return;
+        }
+        auto call = mRestClient->execute(Rest::RestRequest{Rest::RequestType::Get, path});
         cache.insert({call.get(), {.index = index, .call = call}});
         if (call->isFinished()) {
             handler(call.get());
@@ -131,7 +157,7 @@ private:
         std::shared_ptr<Rest::RestCall> call;
     };
 
-    Rest::IRestClient& mRestClient;
+    Rest::IRestClient* mRestClient = nullptr;
     std::size_t mSessionCount{0};
     std::unordered_map<Rest::RestCall*, std::shared_ptr<Rest::RestCall>> mFetchCounterCache;
     std::unordered_map<Rest::RestCall*, SessionDownloadCacheEntry> mDownloadSessionCache;
