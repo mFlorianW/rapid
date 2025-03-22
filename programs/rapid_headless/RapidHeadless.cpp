@@ -16,6 +16,7 @@ LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvid
     , mGpsInfoProvider{gpsInfoProvider}
     , mSessionDatabase{sessionDatabase}
     , mTrackDatabase{trackDatabase}
+    , mGpsRestResource{&mGpsInfoProvider, &mPositionProvider}
 {
     mTrackDetectionConnection = mTrackDetectionWorkflow.trackDetected.connect([this] {
         auto const track = mTrackDetectionWorkflow.getDetectedTrack();
@@ -43,6 +44,7 @@ LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvid
 
     mRestServer.registerGetHandler(std::string{"/sessions"}, &mSessionEndpoint);
     mRestServer.registerGetHandler(std::string{"/activeSession"}, std::addressof(mActiveSessionEndpoint));
+    mRestServer.registerGetHandler(std::string{"/gps"}, std::addressof(mGpsRestResource));
     if (mRestServer.start() == Rest::ServerStartResult::Ok) {
         SPDLOG_INFO("Succesful start REST server");
     } else {

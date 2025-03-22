@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "workflow/GpsRestResource.hpp"
 #include <algorithm/SimpleLaptimer.hpp>
 #include <algorithm/TrackDetection.hpp>
 #include <positioning/IGPSInformationProvider.hpp>
@@ -46,6 +47,7 @@ private:
     Rapid::Workflow::ActiveSessionEndpoint mActiveSessionEndpoint{std::addressof(mActiveSessionWorkflow)};
     bool mTrackDetected{false};
     bool mHasFix{false};
+    Rapid::Workflow::GpsRestResource mGpsRestResource;
 };
 
 } // namespace Rapid::LappyHeadless
