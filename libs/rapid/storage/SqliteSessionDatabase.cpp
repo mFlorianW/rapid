@@ -220,6 +220,11 @@ void SqliteSessionDatabase::updateSession(Private::SessionStorageContext* ctx)
             commitGuard.setRollback();
             return;
         }
+        SPDLOG_DEBUG("Successful store lap {} of {} with ID {} for session with ID {}",
+                     lapIndex,
+                     sessionLaps.size(),
+                     lapIndex,
+                     ctx->mSessionId);
     }
 
     auto const updatedIndex = readIndexOfSessionId(context->mSessionId);
@@ -254,7 +259,7 @@ void SqliteSessionDatabase::saveSession(Private::SessionStorageContext* ctx)
                          .bindValue(3, ctx->mStorageObject.getSessionTime().asString())
                          .hasError();
     if (bindError or (insertStm.execute() != ExecuteResult::Ok)) {
-        spdlog::error("Error insert session. Error:", mDbConnection->getErrorMessage());
+        SPDLOG_ERROR("Error insert session. Error:", mDbConnection->getErrorMessage());
         ctx->mStoragePromise.set_value(false);
         commitGuard.setRollback();
         return;
@@ -263,7 +268,7 @@ void SqliteSessionDatabase::saveSession(Private::SessionStorageContext* ctx)
     // get the session for inserting the laps.
     auto sessionId = readSessionId(ctx->mStorageObject);
     if (!sessionId.has_value()) {
-        spdlog::error("Failed to query session of new stored session");
+        SPDLOG_ERROR("Failed to query session of new stored session");
         ctx->mStoragePromise.set_value(false);
         commitGuard.setRollback();
         return;
@@ -277,8 +282,12 @@ void SqliteSessionDatabase::saveSession(Private::SessionStorageContext* ctx)
             commitGuard.setRollback();
             return;
         }
+        SPDLOG_DEBUG("Successful store lap {} of {} with ID {} for session with ID {}",
+                     lapIndex,
+                     laps.size(),
+                     lapIndex,
+                     sessionId.value());
     }
-
     updateIndexMapper();
     ctx->mSessionId = sessionId.value();
     ctx->mStoragePromise.set_value(true);
@@ -575,7 +584,6 @@ bool SqliteSessionDatabase::saveLapOfSession(std::size_t sessionId,
     if (!saveLapLogPoints(lapId, lapData)) {
         return false;
     }
-
     return true;
 }
 
@@ -600,15 +608,16 @@ bool SqliteSessionDatabase::saveLapLogPoints(std::size_t lapId, Common::LapData 
                                    .bindValue(7, gpsPos.getTime().asString())
                                    .hasError();
         if (bindError) {
-            spdlog::error("Failed to bind values LogPoint statement. Error: {}", mDbConnection->getErrorMessage());
+            SPDLOG_ERROR("Failed to bind values LogPoint statement. Error: {}", mDbConnection->getErrorMessage());
             return false;
         }
         if (insertLogPointStm.execute() != ExecuteResult::Ok) {
-            spdlog::error("Failed to execute LogPoint statement. Error: {}", mDbConnection->getErrorMessage());
+            SPDLOG_ERROR("Failed to execute LogPoint statement. Error: {}", mDbConnection->getErrorMessage());
             return false;
         }
     }
 
+    SPDLOG_DEBUG("Successful stored the log points for lap with ID {}", lapId);
     return true;
 }
 
@@ -652,6 +661,7 @@ void SqliteSessionDatabase::handleUpdates(void* objPtr,
                                           return entry.second == static_cast<std::size_t>(rowId);
                                       });
             if (index != sessionDatabase->mIndexMapper.cend()) {
+                SPDLOG_DEBUG("Session with index {} added", index->first);
                 sessionDatabase->sessionAdded.emit(index->first);
             }
         } break;
@@ -696,6 +706,7 @@ void SqliteSessionDatabase::handleUpdates(void* objPtr,
                                           return entry.second == static_cast<std::size_t>(sessionId.value());
                                       });
             if (index != sessionDatabase->mIndexMapper.cend()) {
+                SPDLOG_DEBUG("Session for index {} updated", index->first);
                 sessionDatabase->sessionUpdated.emit(index->first);
             }
         } break;
