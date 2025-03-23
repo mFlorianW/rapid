@@ -62,6 +62,16 @@ std::optional<QString> setupDatabase()
     return dbFile;
 }
 
+bool setupDatabaseFilePermissions()
+{
+    if (QFile(Rapid::Android::getDatabaseLocation()).setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner)) {
+        SPDLOG_INFO("Succcesful set write permissions to owner of the Database in MAIN function");
+        return true;
+    }
+    SPDLOG_ERROR("Failed to set write permissions to owner of the Database in MAIN function");
+    return false;
+}
+
 QString getDatabaseLocation() noexcept
 {
     auto const dbLocation =
