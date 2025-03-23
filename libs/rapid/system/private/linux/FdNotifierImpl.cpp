@@ -64,7 +64,7 @@ void FdNotifierImpl::registerNotifier(Rapid::System::FdNotifier* fdNotifier, FdN
     if (not mRunning and mNotifiers->size() == 1 and mPollThread == nullptr) {
         startPolling();
     }
-    SPDLOG_DEBUG("Register fd notifier {} with type {}", fdNotifier->getFd(), fdNotifier->getType());
+    SPDLOG_DEBUG("Register fd notifier {} with type {}", fdNotifier->getFd(), static_cast<int>(fdNotifier->getType()));
 }
 
 void FdNotifierImpl::unregisterNotifier(Rapid::System::FdNotifier* fdNotifier)
@@ -101,7 +101,9 @@ void FdNotifierImpl::unregisterNotifier(Rapid::System::FdNotifier* fdNotifier)
             (*mNotifiers)[fdNotifier->getFd()].writeNotifier = nullptr;
         }
     }
-    SPDLOG_DEBUG("Unregister fd notifier {} with type {}", fdNotifier->getFd(), fdNotifier->getType());
+    SPDLOG_DEBUG("Unregister fd notifier {} with type {}",
+                 fdNotifier->getFd(),
+                 static_cast<int>(fdNotifier->getType()));
 }
 
 void FdNotifierImpl::polling()
