@@ -44,6 +44,15 @@ class LaptimerSessionPageModel : public QObject
      */
     Q_PROPERTY(Rapid::Common::Qt::SessionMetaDataSortListModel* sessionMetadataListModel READ
                    getSessionMetadataListModel CONSTANT)
+
+    /**
+     * @property bool
+     *
+     * This property holds the state if a session download and storing is ongoing.
+     * True means session and storing is ongoing otherwise false
+     */
+    Q_PROPERTY(bool isDownloading READ isDownloading NOTIFY downloadingChanged)
+
 public:
     /** @cond Doxygen_Suppress */
     Q_DISABLE_COPY_MOVE(LaptimerSessionPageModel)
@@ -81,18 +90,23 @@ Q_SIGNALS:
      */
     void activeLaptimerChanged();
 
+    void downloadingChanged();
+
 private:
     [[nodiscard]] Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept;
     void setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer) noexcept;
     [[nodiscard]] Rapid::Common::Qt::SessionMetaDataSortListModel* getSessionMetadataListModel() noexcept;
+    [[nodiscard]] bool isDownloading() const noexcept;
 
     Common::Qt::DeviceSettings mActiveLaptimer;
     Rapid::Rest::QRestClient mRestclient;
     std::unique_ptr<Rapid::Workflow::Qt::RestSessionManagementWorkflow> mRestSessionManagement;
     KDBindings::ScopedConnection mDownloadFinishedConnection;
     std::unique_ptr<Storage::ISessionDatabase> mSessionDatabase;
-    KDBindings::ScopedConnection mSessionStoredConnection;
+    std::shared_ptr<System::AsyncResult> mStoreResult;
+    KDBindings::ScopedConnection mSessionStoreConnection;
     Common::Qt::SessionMetaDataSortListModel mSessionSortModel;
+    bool mIsDownloading{false};
 };
 
 } // namespace Rapid::Android
