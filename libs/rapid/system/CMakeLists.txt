@@ -5,6 +5,8 @@ set(RAPID_SYSTEM_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/Event.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/EventHandler.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FdNotifier.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
+
 )
 install(FILES ${RAPID_SYSTEM_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/system")
 
@@ -29,6 +31,7 @@ target_sources(RapidLibrary
         ${CMAKE_CURRENT_SOURCE_DIR}/EventLoop.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/EventHandler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/FdNotifier.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
 )
 
 if(ENABLE_DESKTOP OR ENABLE_ANDROID)

@@ -1,6 +1,7 @@
 set(RAPID_SYSTEM_QT_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/EventLoopIntegration.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/RapidApplication.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
 )
 
 if(NOT ENABLE_ANDROID)
@@ -21,4 +22,5 @@ target_sources(RapidLibraryQt
         ${RAPID_SYSTEM_QT_PUBLIC_HEADERS}
         ${CMAKE_CURRENT_SOURCE_DIR}/EventLoopIntegration.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/RapidApplication.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
 )
