@@ -84,5 +84,28 @@ Page {
         }
     }
 
+    Dialog {
+        id: downloadDialog
+        modal: true
+        anchors.centerIn: parent
+        visible: viewModel.isDownloading
+
+        background: Rectangle {
+            color: "transparent"
+        }
+
+        ColumnLayout {
+            id: downloadDialogColumn
+            anchors.centerIn: parent
+            BusyIndicator {
+                running: true
+            }
+
+            Text {
+                text: qsTrId("Downloading...")
+            }
+        }
+    }
+
     Component.onCompleted: viewModel.updateSessionMetadata()
 }

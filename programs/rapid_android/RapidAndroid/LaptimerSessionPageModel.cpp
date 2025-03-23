@@ -18,14 +18,15 @@ LaptimerSessionPageModel::LaptimerSessionPageModel(std::unique_ptr<Storage::ISes
                 SPDLOG_INFO("Session download finished for index {} {}", index, static_cast<int>(result));
                 auto session = mRestSessionManagement->getSession(index);
                 if (session.has_value()) {
-                    mSessionDatabase->storeSession(session.value());
+                    mStoreResult = mSessionDatabase->storeSession(session.value());
+                    mSessionStoreConnection = mStoreResult->done.connect([this] {
+                        mIsDownloading = false;
+                        Q_EMIT downloadingChanged();
+                    });
                 }
             }
         });
 
-    mSessionStoredConnection = mSessionDatabase->sessionAdded.connect([](auto&& index) {
-        SPDLOG_INFO("Successful stored session under index {}", index);
-    });
     mSessionSortModel.setSourceModel(mRestSessionManagement->getSessionMetadataListModel().get());
 }
 
@@ -47,7 +48,9 @@ void LaptimerSessionPageModel::downloadSession(std::size_t index) noexcept
     }
     auto const downloadIndex = mSessionSortModel.mapToSource(mSessionSortModel.index(static_cast<int>(index), 0));
     SPDLOG_DEBUG("Start download for index {}", downloadIndex.row());
+    mIsDownloading = true;
     mRestSessionManagement->downloadSession(downloadIndex.row());
+    Q_EMIT downloadingChanged();
 }
 
 Rapid::Common::Qt::DeviceSettings LaptimerSessionPageModel::getActiveLaptimer() const noexcept
@@ -69,6 +72,11 @@ void LaptimerSessionPageModel::setActiveLaptimer(Rapid::Common::Qt::DeviceSettin
 Rapid::Common::Qt::SessionMetaDataSortListModel* LaptimerSessionPageModel::getSessionMetadataListModel() noexcept
 {
     return &mSessionSortModel;
+}
+
+bool LaptimerSessionPageModel::isDownloading() const noexcept
+{
+    return mIsDownloading;
 }
 
 } // namespace Rapid::Android
