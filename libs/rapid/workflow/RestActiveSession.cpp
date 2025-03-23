@@ -44,7 +44,7 @@ void RestActiveSession::onDownloadTrackFinished(RestCall* call) noexcept
 {
     if (call->getResult() == Rest::RestCallResult::Success) {
         try {
-            auto trackData = Common::JsonDeserializer::Track::derserialize(call->getData());
+            auto trackData = Common::JsonDeserializer::Track::deserialize(call->getData());
             if (trackData.has_value()) {
                 track.set(trackData.value());
             }

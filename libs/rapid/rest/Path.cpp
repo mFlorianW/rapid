@@ -73,7 +73,7 @@ std::size_t Path::getDepth() const noexcept
 
 std::optional<std::string_view> Path::getEntry(std::size_t index) const noexcept
 {
-    if (mData->mPath.empty() || index > mData->mPositions.size()) {
+    if (mData->mPath.empty() || index > mData->mPositions.size() - 1) {
         return std::nullopt;
     }
 

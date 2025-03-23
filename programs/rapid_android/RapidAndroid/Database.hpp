@@ -20,6 +20,13 @@ namespace Rapid::Android
 std::optional<QString> setupDatabase();
 
 /**
+ * @brief Setups the database file permissions.
+ *
+ * @return bool True file permissions succesful set otherwise false
+ */
+bool setupDatabaseFilePermissions();
+
+/**
  * @brief Gives the path of the database
  *
  * @details The function only gives absolute path, there is no validation if the database exists.

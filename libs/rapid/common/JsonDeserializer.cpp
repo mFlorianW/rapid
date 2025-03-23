@@ -175,7 +175,7 @@ std::optional<Common::SessionMetaData> deserialize(std::string const& rawData)
 
 namespace Track
 {
-std::optional<Common::TrackData> derserialize(std::string rawData)
+std::optional<Common::TrackData> deserialize(std::string rawData)
 {
     try {
         auto json = nlohmann::ordered_json{};
@@ -187,4 +187,23 @@ std::optional<Common::TrackData> derserialize(std::string rawData)
 }
 } // namespace Track
 
+namespace Position
+{
+
+std::optional<Common::GpsPositionData> deserialize(std::string rawData)
+{
+    try {
+        nlohmann::ordered_json json = json.parse(rawData);
+        auto pos = parsePosition(json);
+        auto date = Common::Date{json["date"]};
+        auto time = Common::Timestamp{json["time"]};
+        auto vel = Common::VelocityData{json["velocity"]};
+        return Common::GpsPositionData{pos.value_or(PositionData{}), time, date, vel};
+    } catch (nlohmann::json::exception const& e) {
+        SPDLOG_CRITICAL("Failed to deserialize pos. {}", e.what());
+        return std::nullopt;
+    }
+}
+
+} // namespace Position
 } // namespace Rapid::Common::JsonDeserializer

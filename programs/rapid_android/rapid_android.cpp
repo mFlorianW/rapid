@@ -7,6 +7,9 @@
 #include <QQuickStyle>
 #include <spdlog/sinks/android_sink.h>
 #include <spdlog/spdlog.h>
+#include <storage/SqliteSessionDatabase.hpp>
+#include <system/Logger.hpp>
+#include <system/qt/Logger.hpp>
 #include <system/qt/RapidApplication.hpp>
 
 namespace Rapid::Android
@@ -18,6 +21,8 @@ void setupLogger()
     auto logger = std::make_shared<spdlog::logger>("rapid_android", android_sink);
     logger->set_level(spdlog::level::debug);
     spdlog::set_default_logger(logger);
+    Rapid::System::Logger::setDefaultLogger(logger);
+    Rapid::System::Qt::Logger::setDefaultLogger(logger);
     SPDLOG_INFO("Succcesful setup SDPLOG android logger");
 #endif // ENABLE_ANDROID
 }
@@ -27,6 +32,7 @@ int main(int argc, char** argv)
 {
     Rapid::Android::setupLogger();
     Rapid::Android::setupDatabase();
+    Rapid::Android::setupDatabaseFilePermissions();
 
     auto app = Rapid::System::Qt::RapidGuiApplication{argc, argv};
 

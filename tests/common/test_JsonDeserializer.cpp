@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "TestFile.hpp"
-#include "common/JsonDeserializer.hpp"
-#include "testhelper/Sessions.hpp"
-#include "testhelper/Tracks.hpp"
 #include <catch2/catch_all.hpp>
+#include <common/JsonDeserializer.hpp>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <testhelper/GpsPositions.hpp>
+#include <testhelper/Sessions.hpp>
+#include <testhelper/Tracks.hpp>
 
 using namespace Rapid::Common;
 using namespace Rapid::TestHelper;
@@ -58,7 +59,16 @@ TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a Ses
 TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a TrackData", "[JSONDESERIALIZER_TRACK]")
 {
     auto expTrack = Tracks::getTrack();
-    auto track = JsonDeserializer::Track::derserialize(Tracks::getTrackAsJson());
+    auto track = JsonDeserializer::Track::deserialize(Tracks::getTrackAsJson());
     REQUIRE(track.has_value());
     REQUIRE(track.value_or(TrackData{}) == expTrack);
+}
+
+TEST_CASE("The JsonDeserializer shall deserialize a valid json string into a TrackData",
+          "[JSONDESERIALIZER][GPSPOSITION]")
+{
+    auto expPos = GpsPositions::getGpsPosition();
+    auto pos = JsonDeserializer::Position::deserialize(GpsPositions::getGpsPositionAsJson());
+    REQUIRE(pos.has_value());
+    REQUIRE(pos.value_or(GpsPositionData{}) == expPos);
 }

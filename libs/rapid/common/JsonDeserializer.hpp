@@ -24,8 +24,20 @@ std::optional<Common::SessionMetaData> deserialize(std::string const& rawData);
 
 namespace Track
 {
-std::optional<Common::TrackData> derserialize(std::string rawData);
+std::optional<Common::TrackData> deserialize(std::string rawData);
 }
+
+namespace Position
+{
+/**
+     * @brief Tries to derserialize the JSON string into a @ref Rapid::Common::GpsPositionData
+     *
+     * @param rawData The raw JSON string
+     *
+     * @return std::optional<Common::GpsPositionData> with the Position or an nullopt
+     */
+std::optional<Common::GpsPositionData> deserialize(std::string rawData);
+} // namespace Position
 
 } // namespace Rapid::Common::JsonDeserializer
 

@@ -58,6 +58,15 @@ nlohmann::ordered_json serialize(PositionData const& position)
     return json;
 }
 
+std::string serialize(GpsPositionData const& position)
+{
+    auto json = serialize(position.getPosition());
+    json["time"] = position.getTime().asString();
+    json["date"] = position.getDate().asString();
+    json["velocity"] = position.getVelocity().getVelocity();
+    return json.dump();
+}
+
 } // namespace Position
 
 namespace Track
