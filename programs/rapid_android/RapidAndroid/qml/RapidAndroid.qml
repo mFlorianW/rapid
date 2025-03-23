@@ -94,6 +94,8 @@ Ctrl.ApplicationWindow {
                         pageLoader.sourceComponent = laptimerSessionPage;
                     } else if (page == "DevicePage") {
                         pageLoader.sourceComponent = devicePage;
+                    } else if (page == "GpsPage") {
+                        pageLoader.sourceComponent = gpsPage;
                     } else {
                         console.error("Unsupported page" + page + "requested");
                     }
@@ -117,6 +119,15 @@ Ctrl.ApplicationWindow {
         id: laptimerSessionPage
         LaptimerSessionPage {
             viewModel: LaptimerSessionPageModel {
+                activeLaptimer: applicationModel.activeLaptimer
+            }
+        }
+    }
+
+    Component {
+        id: gpsPage
+        GpsPage {
+            viewModel: GpsPageModel {
                 activeLaptimer: applicationModel.activeLaptimer
             }
         }

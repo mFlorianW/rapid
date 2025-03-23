@@ -11,6 +11,7 @@ PRIVATE
     test_RestActiveSession.cpp
     test_LocalSessionManagement.cpp
     test_GpsRestResource.cpp
+    test_GpsRestResourceReader.cpp
 )
 
 target_link_libraries(test_workflow

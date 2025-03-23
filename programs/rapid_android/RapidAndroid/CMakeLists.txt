@@ -11,6 +11,7 @@ qt_add_qml_module(RapidAndroid
         qml/pages/MainPage.qml
         qml/pages/Laptimer.qml
         qml/pages/LaptimerSessionPage.qml
+        qml/pages/GpsPage.qml
         # controls
         qml/controls/ListItem.qml
         qml/controls/Header.qml
@@ -27,6 +28,8 @@ qt_add_qml_module(RapidAndroid
         LaptimerSessionPageModel.hpp
         ContextMenuModel.cpp
         ContextMenuModel.hpp
+        GpsPageModel.cpp
+        GpsPageModel.hpp
     RESOURCES
         img/BurgerButton.svg
         img/ContextMenu.svg
@@ -35,6 +38,11 @@ qt_add_qml_module(RapidAndroid
         img/Refresh.svg
         img/Stopwatch.svg
         img/Trash.svg
+        img/Pause.svg
+        img/Play.svg
+        img/Wifi-High.svg
+        img/Wifi-Low.svg
+        img/Wifi-None.svg
 )
 
 add_library(Rapid::Android ALIAS RapidAndroid)

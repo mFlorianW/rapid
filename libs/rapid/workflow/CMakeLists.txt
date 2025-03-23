@@ -11,6 +11,7 @@ set(RAPID_WORKFLOW_PUBLIC_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalSessionManagement.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ISessionManagement.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GpsRestResource.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GpsRestResourceReader.hpp
 )
 install(FILES ${RAPID_WORKFLOW_PUBLIC_HEADERS} DESTINATION "${INCLUDE_INSTALL_DIR}/workflow")
 
@@ -24,6 +25,7 @@ PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/RestActiveSession.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalSessionManagement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GpsRestResource.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/GpsRestResourceReader.cpp
 )
 
 if(ENABLE_DESKTOP OR ENABLE_ANDROID)

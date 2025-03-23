@@ -41,6 +41,10 @@ Control {
                 page: "LaptimerSessionPage"
             }
             ListElement {
+                title: qsTr("GPS Information")
+                page: "GpsPage"
+            }
+            ListElement {
                 title: qsTr("Laptimer (Devices)")
                 page: "DevicePage"
             }
