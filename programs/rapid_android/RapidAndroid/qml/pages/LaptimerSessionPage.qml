@@ -88,7 +88,8 @@ Page {
         id: downloadDialog
         modal: true
         anchors.centerIn: parent
-        visible: viewModel.isDownloading
+        visible: laptimerSessionPage.viewModel.isDownloading
+        closePolicy: Popup.NoAutoClose
 
         background: Rectangle {
             color: "transparent"
@@ -98,10 +99,12 @@ Page {
             id: downloadDialogColumn
             anchors.centerIn: parent
             BusyIndicator {
+                Layout.alignment: Qt.AlignCenter
                 running: true
             }
 
             Text {
+                Layout.alignment: Qt.AlignCenter
                 text: qsTrId("Downloading...")
             }
         }

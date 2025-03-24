@@ -19,11 +19,11 @@ void setupLogger()
 #ifdef ANDROID
     auto android_sink = std::make_shared<spdlog::sinks::android_sink_mt>("rapid_android");
     auto logger = std::make_shared<spdlog::logger>("rapid_android", android_sink);
-    logger->set_level(spdlog::level::debug);
     spdlog::set_default_logger(logger);
     Rapid::System::Logger::setDefaultLogger(logger);
     Rapid::System::Qt::Logger::setDefaultLogger(logger);
-    SPDLOG_INFO("Succcesful setup SDPLOG android logger");
+    logger->set_level(spdlog::level::debug);
+    SPDLOG_DEBUG("Succcesful setup SDPLOG android logger");
 #endif // ENABLE_ANDROID
 }
 } // namespace Rapid::Android

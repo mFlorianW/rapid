@@ -130,6 +130,10 @@ if(UNIX AND NOT ENABLE_ANDROID)
     pkg_check_modules(GPSD REQUIRED libgps)
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_definitions(-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+endif()
+
 if(ENABLE_TEST)
     include(CTest)
     find_package(Catch2 CONFIG REQUIRED)
