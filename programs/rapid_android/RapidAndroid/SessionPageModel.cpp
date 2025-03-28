@@ -32,11 +32,6 @@ Rapid::Common::Qt::LapListModel* SessionPageModel::getLapListModel() noexcept
     return mSessionAnalyzeWorkflow.lapListModel.get().get();
 }
 
-Rapid::Workflow::Qt::RestActiveSession* SessionPageModel::getActiveSession() noexcept
-{
-    return std::addressof(mRestActiveSession);
-}
-
 void SessionPageModel::analyzeSession(quint32 sessionIndex)
 {
     auto const index =
@@ -66,21 +61,6 @@ void SessionPageModel::handleDbQueryResult()
     }
     mDbQuery.reset();
     mDbQueryDoneConnection->disconnect();
-}
-
-void SessionPageModel::setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer)
-{
-    if (mActiveLaptimer != activeLaptimer) {
-        mActiveLaptimer = activeLaptimer;
-        mRestclient.setServerAddress(activeLaptimer.getIpAddress().toStdString());
-        mRestclient.setServerPort(activeLaptimer.port);
-        Q_EMIT activeLaptimerChanged();
-    }
-}
-
-Rapid::Common::Qt::DeviceSettings SessionPageModel::getActiveLaptimer() const noexcept
-{
-    return mActiveLaptimer;
 }
 
 } // namespace Rapid::Android

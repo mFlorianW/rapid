@@ -46,7 +46,7 @@ Ctrl.ApplicationWindow {
     Loader {
         id: pageLoader
         anchors.fill: parent
-        sourceComponent: sessionPage
+        sourceComponent: activeSessionPage
     }
 
     Ctrl.Drawer {
@@ -88,7 +88,9 @@ Ctrl.ApplicationWindow {
                 Layout.fillHeight: true
 
                 onOpenPage: page => {
-                    if (page == "SessionPage") {
+                    if (page == "ActiveSessionPage") {
+                        pageLoader.sourceComponent = activeSessionPage;
+                    } else if (page == "SessionPage") {
                         pageLoader.sourceComponent = sessionPage;
                     } else if (page == "LaptimerSessionPage") {
                         pageLoader.sourceComponent = laptimerSessionPage;
@@ -106,11 +108,20 @@ Ctrl.ApplicationWindow {
     }
 
     Component {
+        id: activeSessionPage
+        ActiveSessionPage {
+            viewModel: ActiveSessionPageModel {
+                id: activeSessionPageModel
+                activeLaptimer: applicationModel.activeLaptimer
+            }
+        }
+    }
+
+    Component {
         id: sessionPage
-        MainPage {
+        SessionPage {
             viewModel: SessionPageModel {
                 id: sessionPageModel
-                activeLaptimer: applicationModel.activeLaptimer
             }
         }
     }

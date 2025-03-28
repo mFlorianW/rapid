@@ -12,10 +12,10 @@ import QtQml
 import "qrc:/qt/qml/Rapid/Android/qml/controls"
 
 Page {
-    id: mainPage
+    id: sessionPage
     anchors.fill: parent
 
-    title: qsTr("Sessions")
+    title: qsTr("Stored Sessions")
 
     required property SessionPageModel viewModel
 
@@ -33,32 +33,6 @@ Page {
             anchors.rightMargin: 10
             anchors.bottom: parent.bottom
 
-            Header {
-                id: liveHeader
-                Layout.fillWidth: true
-                text: qsTr("Live")
-                visible: activeSessionUpdateTimer.running
-            }
-
-            Session {
-                id: liveSession
-                Layout.fillWidth: true
-                visible: activeSessionUpdateTimer.running
-                name: mainPage.viewModel.activeSession.trackName
-                firstEntry: qsTrId("Current") + ":"
-                firstEntryValue: mainPage.viewModel.activeSession.currentLapTime
-                secondEntry: qsTrId("Current Sector") + ":"
-                secondEntryValue: mainPage.viewModel.activeSession.currentSectorTime
-                thirdEntry: qsTrId("Lap count") + ":"
-                thirdEntryValue: mainPage.viewModel.activeSession.lapCount
-            }
-
-            Header {
-                id: sessionHeader
-                Layout.fillWidth: true
-                text: qsTr("Session")
-            }
-
             ListView {
                 id: localSessionView
                 Layout.fillWidth: true
@@ -68,7 +42,7 @@ Page {
 
                 property var clickedIndex: 0
 
-                model: mainPage.viewModel.sessionListModel
+                model: sessionPage.viewModel.sessionListModel
 
                 delegate: Session {
                     required property string trackName
@@ -88,25 +62,6 @@ Page {
                 }
             }
         }
-
-        RoundButton {
-            id: laptimerPageFabButton
-            height: 60
-            width: laptimerPageFabButton.height
-            text: "+"
-
-            Material.roundedScale: Material.FullScale
-
-            anchors.bottom: contentItem.bottom
-            anchors.bottomMargin: 30
-            anchors.right: contentItem.right
-            anchors.rightMargin: 15
-
-            onClicked: {
-                contextMenu.model = pageContextMenuModel;
-                contextMenu.open();
-            }
-        }
     }
 
     ContextMenu {
@@ -119,7 +74,7 @@ Page {
             entryText: qsTr("Show Laps")
             iconSource: "qrc:/qt/qml/Rapid/Android/img/Stopwatch.svg"
             clickedAction: function () {
-                mainPage.viewModel.analyzeSession(localSessionView.clickedIndex);
+                sessionPage.viewModel.analyzeSession(localSessionView.clickedIndex);
                 contextMenu.close();
                 lapDialog.open();
             }
@@ -142,8 +97,8 @@ Page {
         id: lapDialog
         anchors.centerIn: parent
         standardButtons: Dialog.Close
-        width: 0.8 * mainPage.width
-        height: 0.7 * mainPage.height
+        width: 0.8 * sessionPage.width
+        height: 0.7 * sessionPage.height
 
         title: qsTr("Laps")
 
@@ -151,7 +106,7 @@ Page {
             id: lapListView
             anchors.fill: parent
 
-            model: mainPage.viewModel.lapListModel
+            model: sessionPage.viewModel.lapListModel
 
             delegate: ListItem {
                 id: lapDelegate
@@ -160,17 +115,6 @@ Page {
                 width: lapListView.width
                 text: model.index + ": " + laptime
             }
-        }
-    }
-
-    Timer {
-        id: activeSessionUpdateTimer
-        interval: 500
-        repeat: true
-        running: false
-        onTriggered: {
-            mainPage.viewModel.activeSession.updateLapData();
-            mainPage.viewModel.activeSession.updateTrackData();
         }
     }
 }

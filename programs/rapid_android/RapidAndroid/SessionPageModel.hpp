@@ -43,21 +43,6 @@ class SessionPageModel : public QObject
      */
     Q_PROPERTY(Rapid::Common::Qt::LapListModel* lapListModel READ getLapListModel NOTIFY lapListModelChanged)
 
-    /**
-     * @property Rapid::Workflow::Qt::RestActiveSession
-     *
-     * Gives the REST active session for displaying the information for the active session
-     */
-    Q_PROPERTY(Rapid::Workflow::Qt::RestActiveSession const* activeSession READ getActiveSession CONSTANT)
-
-    /**
-     * @property Rapid::Common::Qt::DeviceSettings
-     *
-     * This property holds the laptimer settings that are used by the SessionPage
-     */
-    Q_PROPERTY(Rapid::Common::Qt::DeviceSettings activeLaptimer READ getActiveLaptimer WRITE setActiveLaptimer NOTIFY
-                   activeLaptimerChanged REQUIRED)
-
 public:
     Q_DISABLE_COPY_MOVE(SessionPageModel)
 
@@ -99,9 +84,6 @@ Q_SIGNALS:
 private:
     [[nodiscard]] Rapid::Common::Qt::SessionMetaDataSortListModel* getSessionListModel() noexcept;
     [[nodiscard]] Rapid::Common::Qt::LapListModel* getLapListModel() noexcept;
-    [[nodiscard]] Rapid::Workflow::Qt::RestActiveSession* getActiveSession() noexcept;
-    void setActiveLaptimer(Rapid::Common::Qt::DeviceSettings activeLaptimer);
-    [[nodiscard]] Rapid::Common::Qt::DeviceSettings getActiveLaptimer() const noexcept;
 
     void handleDbQueryResult();
 
@@ -111,9 +93,6 @@ private:
     KDBindings::ScopedConnection mLapListModelChangedConnection;
     std::shared_ptr<Storage::GetSessionResult> mDbQuery;
     KDBindings::ScopedConnection mDbQueryDoneConnection;
-    Rapid::Rest::QRestClient mRestclient;
-    Rapid::Workflow::Qt::RestActiveSession mRestActiveSession{&mRestclient};
-    Rapid::Common::Qt::DeviceSettings mActiveLaptimer;
     Rapid::Common::Qt::SessionMetaDataSortListModel mSessionMetaSortModel;
 };
 

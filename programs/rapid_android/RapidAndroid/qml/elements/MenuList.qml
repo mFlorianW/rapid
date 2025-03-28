@@ -33,6 +33,10 @@ Control {
 
         model: ListModel {
             ListElement {
+                title: qsTr("Active Session")
+                page: "ActiveSessionPage"
+            }
+            ListElement {
                 title: qsTr("Stored Sessions")
                 page: "SessionPage"
             }
