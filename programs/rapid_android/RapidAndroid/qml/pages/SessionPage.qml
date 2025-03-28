@@ -15,7 +15,7 @@ Page {
     id: sessionPage
     anchors.fill: parent
 
-    title: qsTr("Sessions")
+    title: qsTr("Stored Sessions")
 
     required property SessionPageModel viewModel
 
@@ -32,12 +32,6 @@ Page {
             anchors.right: parent.right
             anchors.rightMargin: 10
             anchors.bottom: parent.bottom
-
-            Header {
-                id: sessionHeader
-                Layout.fillWidth: true
-                text: qsTr("Session")
-            }
 
             ListView {
                 id: localSessionView
