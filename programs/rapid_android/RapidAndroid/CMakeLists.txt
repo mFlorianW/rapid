@@ -9,10 +9,10 @@ qt_add_qml_module(RapidAndroid
         qml/elements/MenuList.qml
         # pages
         qml/pages/ActiveSessionPage.qml
-        qml/pages/MainPage.qml
         qml/pages/Laptimer.qml
         qml/pages/LaptimerSessionPage.qml
         qml/pages/GpsPage.qml
+        qml/pages/SessionPage.qml
         # controls
         qml/controls/ListItem.qml
         qml/controls/Header.qml

@@ -12,7 +12,7 @@ import QtQml
 import "qrc:/qt/qml/Rapid/Android/qml/controls"
 
 Page {
-    id: mainPage
+    id: sessionPage
     anchors.fill: parent
 
     title: qsTr("Sessions")
@@ -48,7 +48,7 @@ Page {
 
                 property var clickedIndex: 0
 
-                model: mainPage.viewModel.sessionListModel
+                model: sessionPage.viewModel.sessionListModel
 
                 delegate: Session {
                     required property string trackName
@@ -80,7 +80,7 @@ Page {
             entryText: qsTr("Show Laps")
             iconSource: "qrc:/qt/qml/Rapid/Android/img/Stopwatch.svg"
             clickedAction: function () {
-                mainPage.viewModel.analyzeSession(localSessionView.clickedIndex);
+                sessionPage.viewModel.analyzeSession(localSessionView.clickedIndex);
                 contextMenu.close();
                 lapDialog.open();
             }
@@ -103,8 +103,8 @@ Page {
         id: lapDialog
         anchors.centerIn: parent
         standardButtons: Dialog.Close
-        width: 0.8 * mainPage.width
-        height: 0.7 * mainPage.height
+        width: 0.8 * sessionPage.width
+        height: 0.7 * sessionPage.height
 
         title: qsTr("Laps")
 
@@ -112,7 +112,7 @@ Page {
             id: lapListView
             anchors.fill: parent
 
-            model: mainPage.viewModel.lapListModel
+            model: sessionPage.viewModel.lapListModel
 
             delegate: ListItem {
                 id: lapDelegate

@@ -119,7 +119,7 @@ Ctrl.ApplicationWindow {
 
     Component {
         id: sessionPage
-        MainPage {
+        SessionPage {
             viewModel: SessionPageModel {
                 id: sessionPageModel
             }
