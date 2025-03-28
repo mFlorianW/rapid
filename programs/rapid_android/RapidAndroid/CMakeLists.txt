@@ -8,6 +8,7 @@ qt_add_qml_module(RapidAndroid
         # Elements
         qml/elements/MenuList.qml
         # pages
+        qml/pages/ActiveSessionPage.qml
         qml/pages/MainPage.qml
         qml/pages/Laptimer.qml
         qml/pages/LaptimerSessionPage.qml
@@ -18,6 +19,8 @@ qt_add_qml_module(RapidAndroid
         qml/controls/Session.qml
         qml/controls/ContextMenu.qml
     SOURCES
+        ActiveSessionPageModel.cpp
+        ActiveSessionPageModel.hpp
         RapidAndroidModel.cpp
         RapidAndroidModel.hpp
         Database.cpp

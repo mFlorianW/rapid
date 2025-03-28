@@ -34,26 +34,6 @@ Page {
             anchors.bottom: parent.bottom
 
             Header {
-                id: liveHeader
-                Layout.fillWidth: true
-                text: qsTr("Live")
-                visible: activeSessionUpdateTimer.running
-            }
-
-            Session {
-                id: liveSession
-                Layout.fillWidth: true
-                visible: activeSessionUpdateTimer.running
-                name: mainPage.viewModel.activeSession.trackName
-                firstEntry: qsTrId("Current") + ":"
-                firstEntryValue: mainPage.viewModel.activeSession.currentLapTime
-                secondEntry: qsTrId("Current Sector") + ":"
-                secondEntryValue: mainPage.viewModel.activeSession.currentSectorTime
-                thirdEntry: qsTrId("Lap count") + ":"
-                thirdEntryValue: mainPage.viewModel.activeSession.lapCount
-            }
-
-            Header {
                 id: sessionHeader
                 Layout.fillWidth: true
                 text: qsTr("Session")
@@ -86,25 +66,6 @@ Page {
                         contextMenu.open();
                     }
                 }
-            }
-        }
-
-        RoundButton {
-            id: laptimerPageFabButton
-            height: 60
-            width: laptimerPageFabButton.height
-            text: "+"
-
-            Material.roundedScale: Material.FullScale
-
-            anchors.bottom: contentItem.bottom
-            anchors.bottomMargin: 30
-            anchors.right: contentItem.right
-            anchors.rightMargin: 15
-
-            onClicked: {
-                contextMenu.model = pageContextMenuModel;
-                contextMenu.open();
             }
         }
     }
@@ -160,17 +121,6 @@ Page {
                 width: lapListView.width
                 text: model.index + ": " + laptime
             }
-        }
-    }
-
-    Timer {
-        id: activeSessionUpdateTimer
-        interval: 500
-        repeat: true
-        running: false
-        onTriggered: {
-            mainPage.viewModel.activeSession.updateLapData();
-            mainPage.viewModel.activeSession.updateTrackData();
         }
     }
 }
