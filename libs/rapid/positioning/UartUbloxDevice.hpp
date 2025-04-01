@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <positioning/IUbloxDevice.hpp>
+#include <system/AsyncResult.hpp>
 
 namespace Rapid::Positioning
 {
@@ -84,13 +85,14 @@ public:
 private:
     friend class UbloxDevicePrivate;
 
-    void startBaudrateDetection();
-    bool setupUart(std::uint32_t baudrate) noexcept;
+    std::shared_ptr<System::AsyncResultWithValue<bool>> setupUart(std::uint32_t baudrate) noexcept;
     void configureUart() noexcept;
     void requestUartConfig() noexcept;
     void readRawMessage();
 
     std::unique_ptr<UbloxDevicePrivate> mD;
+    KDBindings::ScopedConnection mFdNotifierConnection;
+    KDBindings::ScopedConnection mInitializeTimeoutConnection;
 };
 
 } // namespace Rapid::Positioning

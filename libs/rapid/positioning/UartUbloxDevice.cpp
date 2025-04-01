@@ -28,8 +28,6 @@ namespace
 std::string baudRateToString(std::uint32_t baudRate)
 {
     switch (baudRate) {
-    case B9600:
-        return "9600";
     case B115200:
         return "115200";
     default:
@@ -71,8 +69,9 @@ public:
 
     void handle(InCfgPrtUart const& portCfg)
     {
-        SPDLOG_INFO("CFG port response message received on {} baud.", baudRateToString(lastUsedBaudrate));
+        SPDLOG_INFO("CFG port response message received.");
         portConfiguration = portCfg;
+        mReceiver.configureUart();
     }
 
     void handle(InAckMsg const& ack)
@@ -81,17 +80,14 @@ public:
         auto msgClass = (msgId >> 8) & 0xFF;
         auto id = msgId & 0xFF;
         SPDLOG_INFO("Ack message received class: {:#x}, id: {:#x}", msgClass, id);
-        if (msgId == cc_ublox::MsgId::MsgId_CfgPrt && not baudrateDetected) {
-            SPDLOG_INFO("Successfull send UBX-CFG-PRT poll message. Baudrate detected.");
-            baudrateDetectionTimer.stop();
-            baudrateDetected = true;
-            mReceiver.configureUart();
-            mReceiver.setupUart(B115200);
-        } else if (msgId == cc_ublox::MsgId_CfgPrt && baudrateDetected) {
-            SPDLOG_INFO("Successfull send UBX-CFG-PRT message. UBlox device ready for use.");
+        if (msgId == cc_ublox::MsgId::MsgId_CfgPrt and not portConfigured) {
+            SPDLOG_INFO("Successfull send UBX-CFG-PRT poll message.");
+        } else if (msgId == cc_ublox::MsgId::MsgId_CfgPrt and portConfigured) {
+            SPDLOG_INFO("Successfull send UBX-CFG-PRT configuration message.");
+            SPDLOG_INFO("UBlox device successful initialized.");
             initialized = true;
-            mReceiver.ready.emit();
             initializeTimer.stop();
+            mReceiver.ready.emit();
         }
     }
 
@@ -134,16 +130,18 @@ public:
     std::array<std::uint8_t, 512> inBuffer{0};
     std::vector<std::uint8_t> msgCache;
     InCfgPrtUart portConfiguration;
-    System::Timer baudrateDetectionTimer;
-    bool baudrateDetected = false;
-    std::uint32_t lastUsedBaudrate = B9600;
     std::string device;
     bool initialized{false};
     int uartFd{-1};
     std::unique_ptr<System::FdNotifier> readNotifier;
     System::Timer initializeTimer;
-    System::Timer baudrateActivationTimer;
-    KDBindings::ScopedConnection baudrateActivationTimerConnection;
+    System::Timer configurationTimer;
+    bool portConfigured{false};
+    KDBindings::ScopedConnection mFdNotifierConnection;
+    KDBindings::ScopedConnection mInitializeTimeoutConnection;
+    KDBindings::ScopedConnection configurationTimerConnection;
+    std::shared_ptr<System::AsyncResultWithValue<bool>> configurationResult;
+    KDBindings::ScopedConnection configurationResultConnection;
 
 private:
     UartUbloxDevice& mReceiver;
@@ -154,40 +152,37 @@ UartUbloxDevice::UartUbloxDevice(std::string uart)
     : mD{std::make_unique<UbloxDevicePrivate>(*this)}
 {
     mD->device = uart;
-    mD->uartFd = open(mD->device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK | O_SYNC);
+    mD->uartFd = open(mD->device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK | O_NDELAY);
     if (mD->uartFd < 0) {
         SPDLOG_ERROR("Failed to open UBlox device message provider will not work. Error: {}", strerror(errno));
         return;
     }
 
     mD->readNotifier = std::make_unique<System::FdNotifier>(mD->uartFd, System::FdNotifierType::Read);
-    std::ignore = mD->readNotifier->notify.connect(&UartUbloxDevice::readRawMessage, this);
+    mD->mFdNotifierConnection = mD->readNotifier->notify.connect(&UartUbloxDevice::readRawMessage, this);
 
-    mD->baudrateDetectionTimer.setInterval(std::chrono::milliseconds{500});
-    std::ignore = mD->baudrateDetectionTimer.timeout.connect([this] {
-        if (mD->lastUsedBaudrate == B9600) {
-            SPDLOG_INFO("Failed to detect UBlox UART with {} baud.", baudRateToString(mD->lastUsedBaudrate));
-            setupUart(B115200);
-            requestUartConfig();
-        } else {
-            SPDLOG_INFO("Failed to initialize UBlox UART no device detected.");
-        }
-        mD->baudrateDetectionTimer.stop();
-    });
-
-    if (flock(mD->uartFd, LOCK_EX) < 0) {
-        SPDLOG_ERROR("Failed to set exclusive lock on the UART {}. Error: {}", mD->device, strerror(errno));
+    if (fcntl(mD->uartFd, F_SETFL, O_RDWR) < 0) {
+        SPDLOG_ERROR("sdfsdfdsfdsfsdfsdfsdf");
     }
 
+    // if (flock(mD->uartFd, LOCK_EX) < 0) {
+    //     SPDLOG_ERROR("Failed to set exclusive lock on the UART {}. Error: {}", mD->device, strerror(errno));
+    // }
+
     mD->initializeTimer.setInterval(std::chrono::milliseconds{3000});
-    std::ignore = mD->initializeTimer.timeout.connect([this] {
+    mD->mInitializeTimeoutConnection = mD->initializeTimer.timeout.connect([this] {
         SPDLOG_ERROR("UBlox device not initialized after {} seconds. Restarting initialization",
                      mD->initializeTimer.getInterval().count() / 1000);
-        startBaudrateDetection();
+        requestUartConfig();
     });
-    startBaudrateDetection();
-
-    mD->baudrateActivationTimer.setInterval(50ms);
+    mD->configurationResult = setupUart(B115200);
+    if (mD->configurationResult->getResult() == System::Result::Error) {
+        return;
+    }
+    mD->configurationResultConnection = mD->configurationResult->done.connect([this](auto*) {
+        mD->initializeTimer.start();
+        requestUartConfig();
+    });
 }
 
 UartUbloxDevice::~UartUbloxDevice()
@@ -230,58 +225,95 @@ bool UartUbloxDevice::hasDataPending() const noexcept
     return false;
 }
 
-void UartUbloxDevice::startBaudrateDetection()
+std::shared_ptr<System::AsyncResultWithValue<bool>> UartUbloxDevice::setupUart(std::uint32_t baudrate) noexcept
 {
-    if (mD->initialized) {
-        SPDLOG_WARN("Start baudrate detection called for an initialized UBlox data provider");
-        return;
-    }
-    SPDLOG_INFO("Baudrate detection started with {}", baudRateToString(mD->lastUsedBaudrate));
-    if (not setupUart(B9600)) {
-        return;
-    }
-    requestUartConfig();
-    mD->baudrateDetectionTimer.start();
-    mD->initializeTimer.start();
-}
-
-bool UartUbloxDevice::setupUart(std::uint32_t baudrate) noexcept
-{
+    auto result = std::make_shared<System::AsyncResultWithValue<bool>>();
     auto options = termios{};
     if (tcgetattr(mD->uartFd, &options) < 0) {
         SPDLOG_ERROR("Failed to read UBlox UART options. Error: {}", strerror(errno));
-        return false;
+        result->setResult(System::Result::Error);
+        result->setResultValue(false);
+        return result;
     }
     cfmakeraw(&options);
+
+    // // Configure 8N1 (8 data bits, no parity, 1 stop bit)
+    // options.c_cflag = (options.c_cflag & ~CSIZE) | CS8; // 8-bit characters
+    // options.c_cflag &= ~PARENB; // No parity bit
+    // options.c_cflag &= ~CSTOPB; // 1 stop bit
+    // options.c_cflag &= ~CRTSCTS; // Disable hardware flow control (RTS/CTS)
+    //
+    // // Enable the receiver and set local mode
+    // options.c_cflag |= (CLOCAL | CREAD);
+    //
+    // // Disable canonical mode, echo, and signal characters
+    // options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+    //
+    // // Disable software flow control
+    // options.c_iflag &= ~(IXON | IXOFF | IXANY);
+    //
+    // // Raw output mode
+    // options.c_oflag &= ~OPOST;
+    //
 
     if (cfsetispeed(&options, baudrate) < 0) {
         SPDLOG_ERROR("Failed ot set in speed {} for UBlox UART. Error: {}",
                      baudRateToString(baudrate),
                      strerror(errno));
-        return false;
+        result->setResult(System::Result::Error);
+        result->setResultValue(false);
+        return result;
     }
 
     if (cfsetospeed(&options, baudrate) < 0) {
         SPDLOG_ERROR("Failed ot set out speed {} for UBlox UART. Error: {}",
                      baudRateToString(baudrate),
                      strerror(errno));
-        return false;
+        result->setResult(System::Result::Error);
+        result->setResultValue(false);
+        return result;
     }
+
+    options.c_cflag |= (CLOCAL | CREAD);
+    options.c_cflag &= ~PARENB;
+    options.c_cflag &= ~CSTOPB;
+    options.c_cflag &= ~CSIZE;
+    options.c_cflag |= CS8;
+    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+    options.c_oflag &= ~OPOST;
+    options.c_cc[VMIN] = 0;
+    options.c_cc[VTIME] = 100; // Ten seconds (100 deciseconds)
 
     // directly switching the baudrate causes problems on the PI3.
     // Even with TCSAFLUSH or TCSADRAIN the data are not correctly send.
     // An extra delay of 50ms makes sure that the data is correctly send.
-    mD->baudrateActivationTimerConnection = mD->baudrateActivationTimer.timeout.connect([this, options, baudrate] {
-        if (tcsetattr(mD->uartFd, TCSAFLUSH, &options) < 0) {
-            SPDLOG_ERROR("Failed to set UBlox UART options. Error: {}", strerror(errno));
-            return;
-        }
-        mD->lastUsedBaudrate = baudrate;
-        mD->baudrateActivationTimer.stop();
-        SPDLOG_INFO("Setup UBlox UART with {} baud", baudRateToString(baudrate));
+    mD->configurationTimerConnection = mD->configurationTimer.timeout.connect([this, result] {
+        mD->configurationTimer.stop();
+        result->setResult(System::Result::Ok);
+        result->setResultValue(false);
     });
-    mD->baudrateActivationTimer.start();
-    return true;
+
+    if (tcsetattr(mD->uartFd, TCSANOW, &options) < 0) {
+        SPDLOG_ERROR("Failed to set UBlox UART options. Error: {}", strerror(errno));
+        return result;
+    }
+
+    int status = 0;
+    if (ioctl(mD->uartFd, TIOCMGET, &status)) {
+        SPDLOG_ERROR("ioctl tiomcget failed");
+        return result;
+    }
+
+    status |= TIOCM_DTR;
+    status |= TIOCM_RTS;
+    if (ioctl(mD->uartFd, TIOCMSET, &status)) {
+        SPDLOG_ERROR("ioctl tiocmset failed");
+        return result;
+    }
+
+    mD->configurationTimer.setInterval(std::chrono::milliseconds{250});
+    mD->configurationTimer.start();
+    return result;
 }
 
 void UartUbloxDevice::configureUart() noexcept
@@ -307,17 +339,47 @@ void UartUbloxDevice::configureUart() noexcept
 
     auto rawMsg = mD->serializeMessage(msg);
     write(rawMsg);
+    mD->portConfigured = true;
     SPDLOG_INFO("Send UART configuration for {} baud with NMEA disabled and UBX enabled.", baudRateToString(B115200));
 }
+
+namespace
+{
+std::string hexDump(std::span<uint8_t> const& buffer, size_t bytesPerLine = 16)
+{
+    std::ostringstream oss;
+
+    for (size_t i = 0; i < buffer.size(); i++) {
+        // Print address offset at the start of each line
+        if (i % bytesPerLine == 0) {
+            oss << fmt::format("\n{:08X}: ", i);
+        }
+
+        // Print the hex byte
+        oss << fmt::format("{:02X} ", buffer[i]);
+
+        // Extra space after 8 bytes for better readability
+        if ((i + 1) % 8 == 0 && (i + 1) % bytesPerLine != 0) {
+            oss << " ";
+        }
+    }
+
+    return oss.str();
+}
+} // namespace
 
 void UartUbloxDevice::readRawMessage()
 {
     auto bytesRead = ::read(mD->uartFd, mD->inBuffer.data(), mD->inBuffer.size());
     if (bytesRead < 0) {
-        SPDLOG_ERROR("Failed to read data from UBLOX UART. Error: {}", strerror(errno));
+        SPDLOG_ERROR("Failed to read data from UBLOX UART. Error Code: {} Error: {}", errno, strerror(errno));
         return;
     }
     mD->msgCache.insert(mD->msgCache.end(), mD->inBuffer.cbegin(), mD->inBuffer.cbegin() + bytesRead);
+    if (bytesRead > 0) {
+        SPDLOG_INFO("Bytes read: {}", bytesRead);
+        SPDLOG_INFO("Hex Dump: {}", hexDump(mD->inBuffer));
+    }
     if (not mD->initialized) {
         mD->processData();
     } else if (bytesRead > 0) {
@@ -331,7 +393,7 @@ void UartUbloxDevice::requestUartConfig() noexcept
     msg.field_portId().setValue(std::uint8_t{1});
     auto rawMsg = mD->serializeMessage(msg);
     write(rawMsg);
-    SPDLOG_INFO("Request UART configuration for initialization on {}", baudRateToString(mD->lastUsedBaudrate));
+    SPDLOG_INFO("Request UART configuration for initialization.");
 }
 
 } // namespace Rapid::Positioning
