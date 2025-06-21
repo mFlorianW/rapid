@@ -29,6 +29,7 @@ public:
                   Rapid::Storage::ITrackDatabase& trackDatabase);
 
 private:
+    void hasFix(Rapid::Positioning::GpsFixMode mode);
     void startSession();
 
     Rapid::Positioning::IGpsPositionProvider& mPositionProvider;

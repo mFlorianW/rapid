@@ -28,10 +28,7 @@ LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvid
     });
 
     mGpsFixModeConnection = mGpsInfoProvider.gpsFixModeChanged.connect([this](auto&& mode) {
-        if (mode == Positioning::GpsFixMode::Fix2d or mode == Positioning::GpsFixMode::Fix3d) {
-            mHasFix = true;
-            startSession();
-        }
+        hasFix(mode);
     });
 
     mLapFinishedConnection = mActiveSessionWorkflow.lapFinished.connect([this] {
@@ -49,6 +46,17 @@ LappyHeadless::LappyHeadless(Rapid::Positioning::IGpsPositionProvider& posProvid
         SPDLOG_INFO("Succesful start REST server");
     } else {
         SPDLOG_ERROR("Failed to start REST server");
+    }
+
+    auto const mode = mGpsInfoProvider.getGpsFixMode();
+    hasFix(mode);
+}
+
+void LappyHeadless::hasFix(Rapid::Positioning::GpsFixMode mode)
+{
+    if (mode == Positioning::GpsFixMode::Fix2d or mode == Positioning::GpsFixMode::Fix3d) {
+        mHasFix = true;
+        startSession();
     }
 }
 
