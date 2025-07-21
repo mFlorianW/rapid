@@ -8,6 +8,7 @@
 #include <comms/process.h>
 #include <comms/units.h>
 #include <spdlog/spdlog.h>
+#include <system/Timer.hpp>
 
 namespace Rapid::Positioning
 {
@@ -36,19 +37,32 @@ public:
         : ubloxDevice{std::move(device)}
         , mQ{q}
     {
-        std::ignore = ubloxDevice->dataReady.connect([this] {
+        mDataReadyConnection = ubloxDevice->dataReady.connect([this] {
             processData();
         });
 
         if (ubloxDevice->isReady()) {
             pollCfgMsg();
             pollCfgRate();
+            mCfgMsgTimer.start();
+            mCfgRateTimer.start();
         } else {
-            std::ignore = ubloxDevice->ready.connect([this] {
+            mDeviceReadyConnection = ubloxDevice->ready.connect([this] {
                 pollCfgMsg();
                 pollCfgRate();
+                mCfgMsgTimer.start();
+                mCfgRateTimer.start();
             });
         }
+
+        mCfgRateTimer.setInterval(std::chrono::milliseconds{3000});
+        mCfgRateTimerConnection = mCfgRateTimer.timeout.connect([this] {
+            pollCfgRate();
+        });
+        mCfgMsgTimer.setInterval(std::chrono::milliseconds{3000});
+        mCfgMsgTimerConnection = mCfgMsgTimer.timeout.connect([this] {
+            pollCfgMsg();
+        });
     }
 
     void handle(InMessage const& msg)
@@ -63,11 +77,15 @@ public:
             SPDLOG_INFO("Message configuration for NAV-PVT successful requested");
             mCfgMsgPolled = true;
         } else if (msgId == cc_ublox::MsgId::MsgId_CfgMsg) {
+            mCfgMsgConfigured = true;
+            mCfgMsgTimer.stop();
             SPDLOG_INFO("CFG-MSG configuration for NAV-PVT  successful configured");
         } else if (not mCfgRatePolled and msgId == cc_ublox::MsgId::MsgId_CfgRate) {
             SPDLOG_INFO("CFG-Rate configuration successful polled");
             mCfgRatePolled = true;
         } else if (mCfgRatePolled and msgId == cc_ublox::MsgId::MsgId_CfgRate) {
+            mCfgRateConfigured = true;
+            mCfgRateTimer.stop();
             SPDLOG_INFO("CFG-Rate configuration successful configured");
         }
     }
@@ -153,6 +171,8 @@ public:
         auto velocity = Common::VelocityData{speedMeterPerSecond};
         mQ->gpsPosition.set({pos, time, date, velocity});
 
+        SPDLOG_INFO("asdasdasdasdasdasdasdasdasdasdas LAT: {}, LONG: {}", pos.getLatitude(), pos.getLongitude());
+
         auto const sats = navPvt.field_numSV().getValue();
         if (sats != numberOfSatellites) {
             numberOfSatellites = sats;
@@ -219,9 +239,17 @@ public:
     std::unique_ptr<IUbloxDevice> ubloxDevice = nullptr;
     UbloxFrame frame;
     bool mCfgMsgPolled = false;
+    bool mCfgMsgConfigured = false;
     UbloxGpsPositionInformationProvider* mQ;
     bool mCfgRatePolled = false;
+    bool mCfgRateConfigured = false;
     std::uint8_t numberOfSatellites = 0;
+    KDBindings::ScopedConnection mDataReadyConnection;
+    KDBindings::ScopedConnection mDeviceReadyConnection;
+    System::Timer mCfgMsgTimer;
+    KDBindings::ScopedConnection mCfgMsgTimerConnection;
+    System::Timer mCfgRateTimer;
+    KDBindings::ScopedConnection mCfgRateTimerConnection;
 };
 
 UbloxGpsPositionInformationProvider::UbloxGpsPositionInformationProvider(std::unique_ptr<IUbloxDevice> dataProvider)
