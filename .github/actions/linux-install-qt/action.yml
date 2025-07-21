@@ -12,7 +12,7 @@ runs:
       if: (inputs.os == 'ubuntu-latest') || (inputs.os == 'ubuntu-24.04') || (inputs.os == 'ubuntu-22.04') || (inputs.os == 'default')
       uses: jurplel/install-qt-action@v4
       with:
-        version: '6.5.*'
+        version: '6.8.*'
         cache: 'true'
         modules: 'qtlocation qtpositioning'
         setup-python: false
